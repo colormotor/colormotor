@@ -950,7 +950,7 @@ TMatrix4x4<T> TMatrix4x4<T>::operator - ( const TMatrix4x4<T> &in ) const
 template <typename T>
 TVec3<T> TMatrix4x4<T>::operator * ( const TVec3<T> &v ) const
 {
-	TVec4<T> out;
+	TVec3<T> out;
 	out.x = m11 * v.x   +   m12 * v.y		+	m13 * v.z +	m14;
 	out.y = m21 * v.x   +   m22 * v.y		+	m23 * v.z + m24;	
 	out.z = m31 * v.x   +   m32 * v.y		+	m33 * v.z +	m34;
