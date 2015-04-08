@@ -67,10 +67,6 @@ common:
 	ADDON_SOURCES_EXCLUDE += src/app/cmGLFWApp.cpp
 	ADDON_SOURCES_EXCLUDE += libs/glfw/%
 	ADDON_SOURCES_EXCLUDE += src/core/cmThread.cpp
-	
-	ADDON_SOURCES_EXCLUDE += src/gfx/cmIndexBuffer.cpp
-	ADDON_SOURCES_EXCLUDE += src/gfx/cmVertexBuffer.cpp
-	ADDON_SOURCES_EXCLUDE += src/gfx/cmRenderTarget.cpp
 
 		
 
