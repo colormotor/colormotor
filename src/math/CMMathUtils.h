@@ -24,6 +24,10 @@ namespace cm
 	
 	Vec3 cartesianToSpherical( const Vec3 & v );
 
+	float sphereInternalAngle( float theta1, float theta2, float phi1, float phi2 );
+    
+    float sphereChordLength(float theta1, float theta2, float phi1, float phi2 );
+    
 	/// return double value in descreet steps
 	double discretize( double v,  double step );	
 

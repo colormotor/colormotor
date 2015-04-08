@@ -41,6 +41,30 @@ Vec3 cartesianToSpherical( const Vec3 & v )
     return Vec3(theta, phi, r);
 }
 
+float sphereInternalAngle( float theta1, float theta2, float phi1, float phi2 )
+{
+    //http://en.wikipedia.org/wiki/Great-circle_distance
+    float dphi = fabs(phi2 - phi1);
+    float v1 = cos(theta2) * sin(dphi);
+    float v2 = cos(theta1) * sin(theta2) -
+               sin(theta1) * cos(theta2) * cos(dphi);
+    v1 *= v1;
+    v2 *= v2;
+    float den = sin(theta1) * sin(theta2) + cos(theta1)*cos(theta2)*cos(dphi);
+    return atan2( sqrt( v1 + v2 ), den );
+}
+
+float sphereChordLength(float theta1, float theta2, float phi1, float phi2 )
+{
+    // from http://en.wikipedia.org/wiki/Great-circle_distance
+    float dx = cos(theta2)*cos(phi2) - cos(theta1)*cos(phi1);
+    float dy = cos(theta2)*sin(phi2) - cos(theta1)*sin(phi1);
+    float dz = sin(theta2) - sin(theta1);
+
+    return sqrt( dx*dx + dy*dy + dz*dz );
+}
+
+
 double discretize( double v,  double step )
 {
 	return roundf(v/step)*step;
