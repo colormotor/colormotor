@@ -242,7 +242,7 @@ void	endVertices();
 
 void	drawTriangleList(  float * v, unsigned int * inds, int numIndices );
 
-
+void 	drawLineStrip( const std::vector<Vec3> & P );
 
 void	identity();
 

@@ -1055,6 +1055,14 @@ void	drawTriangleList( float * v, unsigned int * inds, int numIndices )
 	GeometryDrawer::reset();
 }
 
+void drawLineStrip( const std::vector<Vec3> & P )
+{
+    gfx::beginVertices(LINESTRIP);
+    for( int i = 0; i < P.size(); i++ )
+        gfx::vertex(P[i]);
+    gfx::endVertices();
+}
+
 void	identity()
 {
 CM_GLCONTEXT	
