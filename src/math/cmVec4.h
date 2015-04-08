@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "CMMathIncludes.h"
+#include "cmMathIncludes.h"
 #include "cmVec3.h"
 
 namespace cm

@@ -1,9 +1,9 @@
-#include "CM.h" // just for warnings on Win32
-#include "gfx/CMGLInternal.h"
-#include "gfx/CMFont.h"
-#include "gfx/CMGfxUtils.h"
-#include "gfx/CMGeometryDrawer.h"
-#include "gfx/CMGeometryUtils.h"
+#include "cm.h" // just for warnings on Win32
+#include "gfx/cmGLInternal.h"
+#include "gfx/cmFont.h"
+#include "gfx/cmGfxUtils.h"
+#include "gfx/cmGeometryDrawer.h"
+#include "gfx/cmGeometryUtils.h"
 
 #include <math.h>
 

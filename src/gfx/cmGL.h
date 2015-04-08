@@ -1,15 +1,4 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+
 
 #pragma once
 
@@ -26,15 +15,19 @@
 	#ifndef GL_CLAMP_TO_EDGE
 	#define GL_CLAMP_TO_EDGE 0x812F
 	#endif
+#else 
 
-#else // MAC	
-	
+#ifdef CM_LINUX
+#define GL_GLEXT_PROTOTYPES
+	 #include <GL/glew.h>
+     #include <GL/gl.h>
+     #include <GL/glx.h>
+
+	#define CM_GLCONTEXT
+	#define CM_GETGLCONTEXT
+
+#else
 	#ifndef CM_GLES
-
-		#ifndef RESAPI_NOCGLMACROS
-//	 	#define CGLCONTEXTS	// undef if you don't want to use CGL context macros
-		#endif
-		
 		#include <OpenGL/glu.h>
 		#include <OpenGL/OpenGL.h>
 		#include <OpenGL/gl.h>
@@ -48,18 +41,19 @@
 	#endif
 		
 
+	// On mac only define context macros
+	#ifdef CGLCONTEXTS
+	#include <OpenGL/CGLMacro.h>
+	#define CM_GLCONTEXT	CGLContextObj cgl_ctx = CGLGetCurrentContext();	
+	#define CM_GETGLCONTEXT	cgl_ctx = CGLGetCurrentContext();	
+	#else
+	#define CM_GLCONTEXT
+	#define CM_GETGLCONTEXT
+	#endif
+
+#endif
 #endif
 
-
-// On mac only define context macros
-#ifdef CGLCONTEXTS
-#include <OpenGL/CGLMacro.h>
-#define CM_GLCONTEXT	CGLContextObj cgl_ctx = CGLGetCurrentContext();	
-#define CM_GETGLCONTEXT	cgl_ctx = CGLGetCurrentContext();	
-#else
-#define CM_GLCONTEXT
-#define CM_GETGLCONTEXT
-#endif
 
 #define CM_GLERROR		cmGetGLError()
 #define CM_GLVERBOSE	1	// if 1 gl errors are printed out

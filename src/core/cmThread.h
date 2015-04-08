@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CMCoreIncludes.h"
+#include "cmCoreIncludes.h"
 
 namespace cm
 {
@@ -54,7 +54,7 @@ namespace cm
 		//you need to overide this with the function you want to thread
 		virtual void run()
 		{
-			printf("CMThread: overide run with your own\n");
+			printf("cmThread: overide run with your own\n");
 		}
 	protected:
 		CriticalSection cs;

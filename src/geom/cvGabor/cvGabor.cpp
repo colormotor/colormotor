@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "cvgabor.h"
+#include "cvGabor.h"
 #include "cmMath.h"
 #include "opencv/cv.h"
 

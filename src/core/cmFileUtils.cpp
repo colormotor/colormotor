@@ -1,18 +1,7 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+
 
 #include "cmFileUtils.h"
-#include "CMUtils.h"
+#include "cmUtils.h"
 
 #include <sys/types.h>
 
@@ -21,7 +10,11 @@
 	#include <direct.h>
 	#define GETCWD	_getcwd
 #else
+#ifndef CM_LINUX
 	#include <mach-o/dyld.h>
+#else
+	#include <unistd.h>
+#endif
 	#define GETCWD	getcwd
 	#include <sys/types.h>
 	#include <dirent.h>

@@ -1,18 +1,7 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
-#include "CMGLInternal.h"
-#include "CMShader.h"
+
+#include "cmGLInternal.h"
+#include "cmShader.h"
 
 
 namespace cm
@@ -149,21 +138,21 @@ bool ShaderProgram::createShaderString( std::string & out, const char * path )
 		int b1 = str.find('\"',ind);
 		if( b1 == -1)
 		{
-			debugPrint("CMShader:: preprocessor error expected \" after #include 'n");
+			debugPrint("cmShader:: preprocessor error expected \" after #include 'n");
 			return false;
 		}
 		
 		int b2 = str.find('\"',b1+1);
 		if( b2 == -1)
 		{
-			debugPrint("CMShader:: preprocessor error expected \" \n");
+			debugPrint("cmShader:: preprocessor error expected \" \n");
 			return false;
 		}
 		
 		cur = str.find('\n',b2);
 		if( cur == -1 )
 		{
-			debugPrint("CMShader:: preprocessor error expected new line \n");
+			debugPrint("cmShader:: preprocessor error expected new line \n");
 			return false;
 		}
 		

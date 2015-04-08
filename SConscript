@@ -45,10 +45,10 @@ src/core/cmUtils.cpp
 """.split()
 
 src += """
-src/math/CMArcBall.cpp
-src/math/CMPerlin.cpp
-src/math/CMRay.cpp
-src/math/CMTransform.cpp
+src/math/cmArcBall.cpp
+src/math/cmPerlin.cpp
+src/math/cmRay.cpp
+src/math/cmTransform.cpp
 src/math/cmFrustum.cpp
 src/math/cmMathUtils.cpp
 src/math/cmHomography.cpp
@@ -56,7 +56,7 @@ src/math/cmNumeric.cpp
 """.split()
 
 src += """
-src/gfx/CMGeometryUtils.cpp
+src/gfx/cmGeometryUtils.cpp
 src/gfx/cmFont.cpp
 src/gfx/cmGL.cpp
 src/gfx/cmGeometry.cpp
@@ -95,10 +95,10 @@ src/geom/Shape.cpp
 
 src += """
 src/app/cmGLFWApp.cpp
-src/app/CMCanvas.cpp
-src/app/CMEvents.cpp
-src/app/CMKeyboard.cpp
-src/app/CMMouse.cpp
+src/app/cmCanvas.cpp
+src/app/cmEvents.cpp
+src/app/cmKeyboard.cpp
+src/app/cmMouse.cpp
 src/app/GLCanvas.cpp
 src/app/QuickGUI.cpp
 """.split()
@@ -109,7 +109,7 @@ libs/tinyxml/tinyxml.cpp
 libs/tinyxml/tinyxmlerror.cpp
 libs/tinyxml/tinyxmlparser.cpp
 
-libs/stb/CMStbImage.cpp
+libs/stb/cmStbImage.cpp
 
 """.split()
 
@@ -183,7 +183,7 @@ if env['PLATFORM'] == 'darwin':
 	""".split()
 
 	src+="""
-	src/core/platform/osx/CMOSX.mm
+	src/core/platform/osx/cmOSX.mm
 	""".split()
 
 	'''

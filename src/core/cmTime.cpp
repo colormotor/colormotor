@@ -6,8 +6,8 @@
  *  Copyright 2010 __MyCompanyName__. All rights reserved.
  *
  */
-#include "CM.h"
-#include "CMTime.h"
+#include "cm.h"
+#include "cmTime.h"
 
 #ifdef CM_WINDOWS
 #include <windows.h>
@@ -84,10 +84,11 @@ double getFrameTime()
 
 double getTickCount()
 {
+	assert(0);
 	#ifdef CM_WINDOWS
 	return (double) GetTickCount();
 	#else
-	return CFAbsoluteTimeGetCurrent()*1000;
+	return 0.0; //CFAbsoluteTimeGetCurrent()*1000;
 	#endif
 	return 0.0;
 }

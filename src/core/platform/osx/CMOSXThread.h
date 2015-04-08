@@ -28,7 +28,7 @@ void Thread::startThread(bool _blocking)
 { 
 	if( threadRunning )
 	{ 
-		printf("CMThread: thread already running\n"); 
+		printf("cmThread: thread already running\n"); 
 		return; 
 	} 
 
@@ -51,12 +51,12 @@ void Thread::stopThread()
 	 { 
 		 pthread_detach(THREAD); 
 		
-		 printf("CMThread: thread stopped\n"); 
+		 printf("cmThread: thread stopped\n"); 
 		 threadRunning = false; 
 	 } 
 	 else 
 	 { 
-		 printf("CMThread: thread already stopped\n"); 
+		 printf("cmThread: thread already stopped\n"); 
 	 } 
 	 usleep(500000); // some time while thread is stopping ...		
 }
@@ -84,7 +84,7 @@ public:
 		int value = pthread_mutex_trylock(&mutex); 
 		if(value != 0)
 		{
-			printf("CMThread: mutext is busy - already locked\n"); 
+			printf("cmThread: mutext is busy - already locked\n"); 
 			return false; 
 		} 
 		return true;

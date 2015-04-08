@@ -1,21 +1,10 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
 
-#include "CMMathUtils.h"
-#include "math/CMMathUtils.h"
-#include "math/CMPlane.h"
-#include "math/CMRect.h"
+
+#include "cmMathUtils.h"
+#include "math/cmMathUtils.h"
+#include "math/cmPlane.h"
+#include "math/cmRect.h"
 
 namespace cm
 {
@@ -101,7 +90,7 @@ void computeNormal( Vec3 * n, const Vec3 & a, const Vec3 & b, const Vec3 & c )
 // Local utility function for saving matrix inversions...
 static void unprojectRay( Ray * ray, float x, float y, int w, int h, const Matrix4x4 &invWorldView, const Matrix4x4 &projection )
 {
-	//#ifdef CM_LEFTHANDED
+	//#ifdef cm_LEFTHANDED
 	//float z = 1.0f;
 	//#else
  	float z = -1.0f;

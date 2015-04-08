@@ -1,26 +1,15 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+
 
 #pragma once 
 
-#include "gfx/CMGfxIncludes.h"
-#include "gfx/CMVertexBuffer.h"
-#include "gfx/CMIndexBuffer.h"
-#include "gfx/CMGfxUtils.h"
+#include "gfx/cmGfxIncludes.h"
+#include "gfx/cmVertexBuffer.h"
+#include "gfx/cmIndexBuffer.h"
+#include "gfx/cmGfxUtils.h"
 
 
 /*
- *  CMGeometry.h
+ *  cmGeometry.h
  *  resapiTest
  *
  *  Created by Daniel Berio on 5/4/10.
@@ -30,9 +19,9 @@
 
 #pragma once 
 
-#include "gfx/CMGfxUtils.h"
-#include "gfx/CMVertexBuffer.h"
-#include "gfx/CMIndexBuffer.h"
+#include "gfx/cmGfxUtils.h"
+#include "gfx/cmVertexBuffer.h"
+#include "gfx/cmIndexBuffer.h"
 
 namespace cm
 {

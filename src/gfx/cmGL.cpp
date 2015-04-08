@@ -8,9 +8,9 @@
 ///
 ///////////
 
-#include "gfx/CMGLInternal.h"
-#include "core/CMUtils.h"
-#include "gfx/CMGL.h"
+#include "gfx/cmGLInternal.h"
+#include "core/cmUtils.h"
+#include "gfx/cmGL.h"
 
 static int glVersion = 1;
 

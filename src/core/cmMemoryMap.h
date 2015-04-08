@@ -9,7 +9,7 @@
 
 #pragma once 
 
-#include "CMCoreIncludes.h"
+#include "cmCoreIncludes.h"
 
 namespace cm
 {

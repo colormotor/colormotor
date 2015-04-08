@@ -9,7 +9,7 @@
  
 #pragma once
 
-#include "CM.h"
+#include "cm.h"
 
 #ifdef CM_WINDOWS
 extern "C"

@@ -15,7 +15,7 @@ void Thread::startThread(bool _blocking)
 { 
 	if( threadRunning )
 	{ 
-		printf("CMThread: thread already running\n"); 
+		printf("cmThread: thread already running\n"); 
 		return; 
 	} 
 
@@ -35,10 +35,10 @@ void Thread::stopThread()
 	if(threadRunning)
 	{ 
 		CloseHandle(thread); 
-		printf("CMThread: thread stopped\n"); 
+		printf("cmThread: thread stopped\n"); 
 		threadRunning = false; 
 	} else { 
-		printf("CMThread: thread already stopped\n"); 
+		printf("cmThread: thread already stopped\n"); 
 	} 
 	
 	Sleep(5000);	

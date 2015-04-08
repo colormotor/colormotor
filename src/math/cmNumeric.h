@@ -11,7 +11,7 @@
  ****************************************************/
 
 #pragma once
-#include "math/CMMathIncludes.h"
+#include "math/cmMathIncludes.h"
 #include "math/cmMathDefs.h"
 #include "math/cmVector.h"
 #include "opencv/cv.h"

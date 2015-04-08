@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "CMMathIncludes.h"
+#include "cmMathIncludes.h"
 
 #define CM_VEC2
 

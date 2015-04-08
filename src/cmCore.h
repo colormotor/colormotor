@@ -1,25 +1,14 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+
 
 #pragma once
 
-#include "core/CMUtils.h"
-#include "core/CMParamList.h"
-#include "core/CMRTTI.h"
+#include "core/cmUtils.h"
+#include "core/cmParamList.h"
+#include "core/cmRTTI.h"
 #include "core/TPtrList.h"
-#include "core/CMFileUtils.h"
-#include "core/CMThread.h"
-#include "core/CMTime.h"
+#include "core/cmFileUtils.h"
+#include "core/cmThread.h"
+#include "core/cmTime.h"
 #include "core/cmRefPtr.h"
 #include "core/HashMap.h"
 #include "core/Array2D.h"

@@ -214,10 +214,7 @@ namespace cm
                 {
                     path.addPoint(points[i]);
                 }
-                if(close)
-                {
-                    path.close();
-                }
+                
                 gfx::getEps()->fillShape(path, gfx::getCurrentColor());
             }
             #endif      

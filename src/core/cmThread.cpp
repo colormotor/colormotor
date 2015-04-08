@@ -1,9 +1,9 @@
-#include "CMThread.h"
+#include "cmThread.h"
 
 #ifdef CM_WIN32
-#include "platform/win32/CMWin32Thread.h"
+#include "platform/win32/cmWin32Thread.h"
 #else
-#include "platform/osx/CMOSXThread.h"
+#include "platform/osx/cmOSXThread.h"
 #endif
 
 
@@ -74,7 +74,7 @@ void Thread::startThread(bool _blocking)
 { 
 	if( threadRunning )
 	{ 
-		printf("CMThread: thread already running\n"); 
+		printf("cmThread: thread already running\n"); 
 		return; 
 	} 
 
@@ -136,10 +136,10 @@ void Thread::stopThread()
 		#else
 		pthread_detach(thread); 
 		#endif 
-		printf("CMThread: thread stopped\n"); 
+		printf("cmThread: thread stopped\n"); 
 		threadRunning = false; 
 	} else { 
-		printf("CMThread: thread already stopped\n"); 
+		printf("cmThread: thread already stopped\n"); 
 	} 
 	#ifdef CM_WIN32 
 		Sleep(5000);

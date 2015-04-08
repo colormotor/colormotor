@@ -13,13 +13,13 @@
 
 #pragma once
 
-#include "math/CMMathIncludes.h"
-#include "math/CMVec2.h"
-#include "math/CMVec3.h"
-#include "math/CMVec4.h"
-#include "math/CMMatrix4x4.h"
-#include "math/CMMatrix3x3.h"
-#include "math/CMQuat.h"
+#include "math/cmMathIncludes.h"
+#include "math/cmVec2.h"
+#include "math/cmVec3.h"
+#include "math/cmVec4.h"
+#include "math/cmMatrix4x4.h"
+#include "math/cmMatrix3x3.h"
+#include "math/cmQuat.h"
 
 namespace cm
 {
@@ -185,10 +185,10 @@ T	dot(const TVec3<T> & a, const TVec4<T> & b);
 template <typename T>	
 T	dot(const TVec4<T> & a, const TVec4<T> & b);
 
-/// Angle between two TVectors ( CMDIANS )
+/// Angle between two TVectors ( cmDIANS )
 template <typename T>	
 T	angleBetween( const TVec2<T> & a, const TVec2<T> & b );
-/// Angle between two TVectors  ( CMDIANS )
+/// Angle between two TVectors  ( cmDIANS )
 template <typename T>	
 T	angleBetween( const TVec3<T> & a, const TVec3<T> & b );
 

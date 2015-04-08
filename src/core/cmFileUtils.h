@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "core/CMCoreIncludes.h"
+#include "core/cmCoreIncludes.h"
 
 namespace cm
 {

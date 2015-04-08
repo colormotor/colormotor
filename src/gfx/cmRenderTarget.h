@@ -13,8 +13,8 @@
 
 #pragma once
 
-#include "gfx/CMGfxIncludes.h"
-#include "gfx/CMTexture.h"
+#include "gfx/cmGfxIncludes.h"
+#include "gfx/cmTexture.h"
 
 
 namespace cm

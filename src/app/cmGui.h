@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "CMMouse.h"
-#include "CMKeyboard.h"
+#include "cmMouse.h"
+#include "cmKeyboard.h"
 
 namespace cm
 {

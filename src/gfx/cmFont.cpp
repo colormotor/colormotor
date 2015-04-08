@@ -1,24 +1,13 @@
-///////////////////////////////////////////////////////////////////////////                                                     
-//	 _________  __   ____  ___  __  _______  __________  ___			
-//	/ ___/ __ \/ /  / __ \/ _ \/  |/  / __ \/_  __/ __ \/ _ \			
-// / /__/ /_/ / /__/ /_/ / , _/ /|_/ / /_/ / / / / /_/ / , _/			
-// \___/\____/____/\____/_/|_/_/  /_/\____/ /_/  \____/_/|_|alpha.		
-//																		
-//  Daniel Berio 2008-2011												
-//	http://www.enist.org/												
-//																	
-//																		
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
-#include "gfx/CMGLInternal.h"
-#include "gfx/CMVertexFormat.h"
+
+#include "gfx/cmGLInternal.h"
+#include "gfx/cmVertexFormat.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-#include "CMFont.h"
-#include "CMGfxUtils.h"
+#include "cmFont.h"
+#include "cmGfxUtils.h"
 
 
 
