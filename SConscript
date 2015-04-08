@@ -113,44 +113,6 @@ libs/stb/CMStbImage.cpp
 
 """.split()
 
-src += """
-src/engine/effects/Accumulator.cpp
-src/engine/effects/Blur.cpp
-src/engine/effects/Downsample.cpp
-src/engine/effects/Glow.cpp
-src/engine/effects/ShaderEffect.cpp
-src/engine/effects/Threshold.cpp
-""".split()
-
-src += """
-src/engine/renderSys/AnimCache.cpp
-src/engine/renderSys/Animation.cpp
-src/engine/renderSys/BVHParser.cpp
-src/engine/renderSys/Camera.cpp
-src/engine/renderSys/DefaultMaterial.cpp
-src/engine/renderSys/Material.cpp
-src/engine/renderSys/Mesh.cpp
-src/engine/renderSys/MeshAdjacency.cpp
-src/engine/renderSys/Node.cpp
-src/engine/renderSys/RenderChunk.cpp
-src/engine/renderSys/RenderSys.cpp
-src/engine/renderSys/Renderable.cpp
-src/engine/renderSys/Renderer.cpp
-src/engine/renderSys/ResourceManager.cpp
-src/engine/renderSys/Scene.cpp
-src/engine/renderSys/SceneLoader.cpp
-src/engine/renderSys/ShadowMesh.cpp
-src/engine/renderSys/Skeleton.cpp
-src/engine/renderSys/SkeletonAnimInstance.cpp
-src/engine/renderSys/SkeletonAnimSource.cpp
-src/engine/renderSys/SkeletonAnimator.cpp
-src/engine/renderSys/SkeletonAnimSystem.cpp
-src/engine/renderSys/RunningSkeleton.cpp
-src/engine/renderSys/TextureLines.cpp
-src/engine/renderSys/utils/HalfEdgeCm.cpp
-""".split()
-
-
 
 # library paths
 libPaths = """
@@ -231,10 +193,12 @@ if env['PLATFORM'] == 'darwin':
 	opencv_highgui
 	'''
 	
+	libs = None
+	'''
 	libs = """
 	rtaudio
 	""".split()
-	
+	'''
 
 	frameworks = """
 	Carbon

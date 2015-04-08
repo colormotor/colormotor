@@ -19,10 +19,6 @@
 #include "cmGeom.h"
 #include "cmApp.h"
 
-#ifndef CM_OFX
-#include "cmAudio.h"
-#endif
-
 #ifndef CM_DONT_AUTOUSE_NAMESPACE
 using namespace cm;
 #endif
