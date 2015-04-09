@@ -20,6 +20,9 @@
 	#include <dirent.h>
 #endif
 
+#ifdef CM_OFX
+#include "ofMain.h"
+#endif
 
 namespace cm
 {
@@ -349,5 +352,34 @@ bool  fwriteShort(short v,FILE * file)
 		return false;
 	return true;
 }
+
+#ifdef CM_OFX
+
+bool openFileDialog( std::string & path,  const char * type, int maxsize   )
+{
+    ofFileDialogResult res = ofSystemLoadDialog("Open..");
+    if(res.bSuccess)
+    {
+    	path = res.filePath;
+    	return true;
+    }
+
+    return false;
+}
+
+/// Dialog for saving file
+bool saveFileDialog( std::string & path, const char * type, int maxsize   )
+{
+	ofFileDialogResult res = ofSystemSaveDialog("Save...","Save");
+    if(res.bSuccess)
+    {
+    	path = res.filePath;
+    	return true;
+    }
+
+    return false;
+}
+
+#endif
 
 }
