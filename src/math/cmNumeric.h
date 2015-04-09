@@ -126,7 +126,7 @@ namespace cm
     std::vector<T> filter( const std::vector<T> & X, T2 func );
     
     template <typename T, typename T2 >
-    std::vector<T> map( const std::vector<T> & X, T2 func );
+    std::vector<T> mapv( const std::vector<T> & X, T2 func );
     
     /// Pad array for convolution
     enum
@@ -622,7 +622,7 @@ namespace cm
     }
     
     template <typename T, typename T2 >
-    std::vector<T> map( const std::vector<T> & X, T2 func )
+    std::vector<T> mapv( const std::vector<T> & X, T2 func )
     {
         std::vector<T> Y(X.size());
         for( int i = 0; i < Y.size(); i++ )

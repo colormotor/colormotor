@@ -14,7 +14,7 @@
 #pragma once
 
 #include "geom/Shape2d.h"
-#include "geom/Image.h"
+//#include "geom/Image.h"
 #include "geom/PolyClipper.h"
 #include "geom/TriMesh.h"
 #include "geom/Triangulator.h"

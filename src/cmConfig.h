@@ -5,3 +5,6 @@
 
 //#define CM_DONT_AUTOUSE_NAMESPACE
 //#define CM_OFX
+
+#ifdef CM_OFX
+#endif

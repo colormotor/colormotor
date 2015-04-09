@@ -1173,9 +1173,10 @@ Font * getFont()
 
 void	drawText( float x, float y, const char * fmt, ... )
 {
+#ifdef GFX_TO_EPS
 	bool tmpEps = renderingToEps;
 	renderingToEps = false;
-
+#endif
 	char txt[2048];
 	va_list	parameter;
 	va_start(parameter,fmt);
@@ -1183,9 +1184,10 @@ void	drawText( float x, float y, const char * fmt, ... )
 	va_end(parameter);
 	font->print(x,y,txt);
 
+#ifdef GFX_TO_EPS   // GFX_TO_EPS
 	renderingToEps = tmpEps;
 	
-#ifdef GFX_TO_EPS   // GFX_TO_EPS
+
 	if( renderingToEps )
 	{
 		eps.strokeNone();
@@ -1244,8 +1246,10 @@ void drawLine( float x0, float y0, float x1, float y1)
 
 void drawArrow( const Vec2 & a, const Vec2 & b, float size )
 {
+#ifdef GFX_TO_EPS
 bool tmpEps = renderingToEps;
 renderingToEps = false;
+#endif
 
 	gfx::drawLine(a,b);
 	Vec2 d = b-a;
@@ -1256,9 +1260,9 @@ renderingToEps = false;
 	gfx::drawLine(b-d-perp,b);
 	gfx::drawLine(b-d+perp,b);
 
+#ifdef GFX_TO_EPS
 renderingToEps = tmpEps;
 
-#ifdef GFX_TO_EPS
 	if(renderingToEps)
     	eps.drawArrow(a, b, size, currentColor);
 #endif

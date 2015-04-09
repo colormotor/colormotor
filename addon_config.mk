@@ -33,8 +33,18 @@ common:
 	
 	# any special flag that should be passed to the compiler when using this
 	# addon
-	# ADDON_CFLAGS =
-	
+	ADDON_CFLAGS = -DCM_OFX
+
+
+	ADDON_CFLAGS += -Wno-overloaded-virtual
+	ADDON_CFLAGS += -Wno-reorder
+	ADDON_CFLAGS += -Wno-unused
+	ADDON_CFLAGS += -Wno-switch
+
+	ADDON_CFLAGS += -Wno-format-security
+	ADDON_CFLAGS += -Wno-comment
+	ADDON_CFLAGS += -Wno-unused-but-set-variable
+	ADDON_CFLAGS += -Wno-sign-compare
 	# any special flag that should be passed to the linker when using this
 	# addon, also used for system libraries with -lname
 	# ADDON_LDFLAGS =
@@ -68,12 +78,18 @@ common:
 	ADDON_SOURCES_EXCLUDE += libs/glfw/%
 	ADDON_SOURCES_EXCLUDE += src/core/cmThread.cpp
 
-		
+	ADDON_SOURCES_EXCLUDE += libs/lzf/%
+	ADDON_SOURCES_EXCLUDE += SConscript
+
+	ADDON_SOURCES_EXCLUDE += src/geom/cvGabor/cvGabor.cpp
+	ADDON_SOURCES_EXCLUDE += src/geom/Image.cpp
+
+	ADDON_SOURCES_EXCLUDE += src/geom/libtess2/%	
 
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
     # ADDON_INCLUDES_EXCLUDE = 
 	
-	
+	# https://github.com/ros/rospack/issues/4
 	
 

@@ -264,7 +264,7 @@ template <class Type> struct Trigger
 
 
 
-
+/*
 /// Addons for stl
 namespace __gnu_cxx
 {
@@ -278,3 +278,4 @@ namespace __gnu_cxx
   };                                                                                          
 }    
 
+*/
