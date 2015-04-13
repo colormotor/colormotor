@@ -9,6 +9,7 @@ if shared:
 
 src = []
 
+'''
 src+= """
 libs/glfw/lib/enable.c
 libs/glfw/lib/fullscreen.c
@@ -29,7 +30,9 @@ libs/glfw/lib/cocoa/cocoa_init.m
 libs/glfw/lib/cocoa/cocoa_joystick.m
 libs/glfw/lib/cocoa/cocoa_time.m
 libs/glfw/lib/cocoa/cocoa_window.m
+src/app/cmGLFWApp.cpp
 """.split()
+'''
 
 src += """
 src/core/cmBuffer.cpp
@@ -94,7 +97,6 @@ src/geom/Shape.cpp
 
 
 src += """
-src/app/cmGLFWApp.cpp
 src/app/cmCanvas.cpp
 src/app/cmEvents.cpp
 src/app/cmKeyboard.cpp

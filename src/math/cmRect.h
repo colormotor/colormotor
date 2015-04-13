@@ -1,3 +1,20 @@
+/********************************************************************
+ --------------------------------------------------------------------
+ --           _,(_)._
+ --      ___,(_______).      ____
+ --    ,'__.           \    /\___\-.
+ --   /,' /             \  /  /     \
+ --  | | |              |,'  /       \
+ --   \`.|                  /    ___|________
+ --    `. :           :    /     COLORMOTOR
+ --      `.            :.,'        Graphics and Multimedia Framework
+ --        `-.________,-'          © Daniel Berio
+ --								   http://www.enist.org
+ --								   drand48@gmail.com
+ --
+ --------------------------------------------------------------------
+ ********************************************************************/
+
 #pragma once
 
 
@@ -38,6 +55,8 @@ public:
 	
 	// construct rect by adding points, when index is 0 point is forced
 	void addPoint( T x, T y, int index, bool yUp = false);
+	void addPoint( const Vec2 & p, int index, bool yUp = false) { addPoint(p.x, p.y, yUp); }
+	
 	void addPoints( const std::vector< TVec2<T> > & pts, bool reset = true );
     
     void include( const TVec2<T> & p );

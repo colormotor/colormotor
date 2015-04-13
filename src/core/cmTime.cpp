@@ -1,11 +1,20 @@
-/*
- *  CMTime.cpp
- *  vboPerformanceTest
- *
- *  Created by ensta on 5/7/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
- *
- */
+/********************************************************************
+ --------------------------------------------------------------------
+ --           _,(_)._
+ --      ___,(_______).      ____
+ --    ,'__.           \    /\___\-.
+ --   /,' /             \  /  /     \
+ --  | | |              |,'  /       \
+ --   \`.|                  /    ___|________
+ --    `. :           :    /     COLORMOTOR
+ --      `.            :.,'        Graphics and Multimedia Framework
+ --        `-.________,-'          © Daniel Berio
+ --								   http://www.enist.org
+ --								   drand48@gmail.com
+ --
+ --------------------------------------------------------------------
+ ********************************************************************/
+ 
 #include "cm.h"
 #include "cmTime.h"
 
@@ -84,11 +93,15 @@ double getFrameTime()
 
 double getTickCount()
 {
-	assert(0);
 	#ifdef CM_WINDOWS
 	return (double) GetTickCount();
 	#else
-	return 0.0; //CFAbsoluteTimeGetCurrent()*1000;
+#ifdef CM_MAC
+	return CFAbsoluteTimeGetCurrent()*1000;
+#else
+    assert(false);
+    return 0.0;
+#endif
 	#endif
 	return 0.0;
 }

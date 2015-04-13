@@ -1,20 +1,19 @@
-/*
- *  CMGeometryUtils.h
- *
- *  Created by Daniel Berio on 9/28/11.
- *  http://www.enist.org
- *  Copyright 2011. All rights reserved.
- *
- */
-
-/*
- *  cmGeometryUtils.h
- *  colormotor
- *
- *  Created by Daniel Berio on 6/26/09.
- *  Copyright 2009 http://www.enist.org. All rights reserved.
- *
- */
+/********************************************************************
+ --------------------------------------------------------------------
+ --           _,(_)._
+ --      ___,(_______).      ____
+ --    ,'__.           \    /\___\-.
+ --   /,' /             \  /  /     \
+ --  | | |              |,'  /       \
+ --   \`.|                  /    ___|________
+ --    `. :           :    /     COLORMOTOR
+ --      `.            :.,'        Graphics and Multimedia Framework
+ --        `-.________,-'          © Daniel Berio
+ --								   http://www.enist.org
+ --								   drand48@gmail.com
+ --
+ --------------------------------------------------------------------
+ ********************************************************************/
 
 #pragma once 
 

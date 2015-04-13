@@ -1,4 +1,19 @@
-
+/********************************************************************
+ --------------------------------------------------------------------
+ --           _,(_)._
+ --      ___,(_______).      ____
+ --    ,'__.           \    /\___\-.
+ --   /,' /             \  /  /     \
+ --  | | |              |,'  /       \
+ --   \`.|                  /    ___|________
+ --    `. :           :    /     COLORMOTOR
+ --      `.            :.,'        Graphics and Multimedia Framework
+ --        `-.________,-'          © Daniel Berio
+ --								   http://www.enist.org
+ --								   drand48@gmail.com
+ --
+ --------------------------------------------------------------------
+ ********************************************************************/
 
 #include "cmFileUtils.h"
 #include "cmUtils.h"
@@ -353,7 +368,7 @@ bool  fwriteShort(short v,FILE * file)
 	return true;
 }
 
-#ifdef CM_OFX
+#if defined CM_OFX && !defined CM_MAC
 
 bool openFileDialog( std::string & path,  const char * type, int maxsize   )
 {

@@ -1,14 +1,19 @@
-/****************************************************
- *
- * A series of utilities for numeric manipulation with
- * the std library the numpy/matlab way.
- * Easy to use but very unoptimized since most functions
- * return by value.
- *
- * © Daniel Berio 2015
- * http://www.enist.org
- *
- ****************************************************/
+/********************************************************************
+ --------------------------------------------------------------------
+ --           _,(_)._
+ --      ___,(_______).      ____
+ --    ,'__.           \    /\___\-.
+ --   /,' /             \  /  /     \
+ --  | | |              |,'  /       \
+ --   \`.|                  /    ___|________
+ --    `. :           :    /     COLORMOTOR
+ --      `.            :.,'        Graphics and Multimedia Framework
+ --        `-.________,-'          © Daniel Berio
+ --                                http://www.enist.org
+ --                                drand48@gmail.com
+ --
+ --------------------------------------------------------------------
+ ********************************************************************/
 
 #pragma once
 #include "math/cmMathIncludes.h"
@@ -106,6 +111,18 @@ namespace cm
     
     template <typename T>
     T sum( const std::vector<T> & X );
+    
+    template <typename T>
+    int argmax( T* X, int size );
+    
+    template <typename T>
+    int argmax( const std::vector<T> & X );
+    
+    template <typename T>
+    int argmin( T* X, int size );
+    
+    template <typename T>
+    int argmin( const std::vector<T> & X );
     
     template <typename T>
     std::vector<T> diff( const std::vector<T> & X );
@@ -566,6 +583,80 @@ namespace cm
         for( int i = 1; i < X.size(); i++ )
             v += X[i];
         return v;
+    }
+    
+    template <typename T>
+    int argmax( T* X, int size )
+    {
+        int mi = 0;
+        T mx = X[0];
+        for( int i = 1; i < size; i++ )
+        {
+            T x = X[i];
+            if(x > mx)
+            {
+                mi = i;
+                mx = x;
+            }
+        }
+        
+        return mi;
+    }
+    
+    template <typename T>
+    int argmax( const std::vector<T> & X )
+    {
+        assert(X.size());
+        int mi = 0;
+        T mx = X[0];
+        for( int i = 1; i < X.size(); i++ )
+        {
+            T x = X[i];
+            if(x > mx)
+            {
+                mi = i;
+                mx = x;
+            }
+        }
+        
+        return mi;
+    }
+    
+    template <typename T>
+    int argmin( T* X, int size )
+    {
+        int mi = 0;
+        T mx = X[0];
+        for( int i = 1; i < size; i++ )
+        {
+            T x = X[i];
+            if(x < mx)
+            {
+                mi = i;
+                mx = x;
+            }
+        }
+        
+        return mi;
+    }
+    
+    template <typename T>
+    int argmin( const std::vector<T> & X )
+    {
+        assert(X.size());
+        int mi = 0;
+        T mx = X[0];
+        for( int i = 1; i < X.size(); i++ )
+        {
+            T x = X[i];
+            if(x < mx)
+            {
+                mi = i;
+                mx = x;
+            }
+        }
+        
+        return mi;
     }
     
     template <typename T>
