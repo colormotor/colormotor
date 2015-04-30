@@ -130,8 +130,10 @@ Color 	getCurrentColor();
 EpsFile *getEps();
 #endif
 
-GLenum	getGLPRIMITIVETYPE( int in );
+void 	setPixelScale( float scale );
+float	getPixelScale();
 
+GLenum	getGLPRIMITIVETYPE( int in );
 
 void	setFillMode( int mode );
 

@@ -217,7 +217,7 @@ std::string binarize( const std::string & path, const std::string & name )
     
     std::stringstream sizes, defs;
     sizes << "size_t " << name <<  "_size=" << (int)sz;
-    defs << ";\nconst unsigned char * " << name << "=\n{" << bufs << "\n};";
+    defs << "\nunsigned char " << name << "[" << (int)sz << "] = \n{" << bufs << "\n};";
     return sizes.str() + defs.str();
 }
 

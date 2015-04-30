@@ -68,7 +68,7 @@ public:
 	Param* addCString( const std::string& name, char * address );
 	Param* addString( const std::string& name, std::string * address );
 	Param* addSelection( const std::string& name, std::string * names, int * addr, int numSelections );
-	Param* addColor( const std::string& name, float * address );
+	Param* addColor( const std::string& name, Color * address );
 	void addSpacer();
 	void addSeparator();
 	

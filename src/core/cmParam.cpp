@@ -81,6 +81,11 @@ Param::~Param()
 			std::string * s = (std::string*)_data;
 			delete s;
 		}
+		else if(_type == PARAM_COLOR)
+		{
+			Color * c = (Color*)_data;
+			delete c;
+		}
 		else
 		{
 			delete [] _data;
@@ -118,7 +123,9 @@ void Param::clone( const Param & param )
 		case PARAM_STRING:
 		case PARAM_CSTRING:
 			setString( getString() );
-			
+		case PARAM_COLOR:
+			setColor( getColor() );
+			break;
 		break;
 		
 	}
@@ -162,8 +169,10 @@ Param * Param::clone( bool keepAddress )
 		case PARAM_STRING:
 		case PARAM_CSTRING:
 			p->setString( getString() );
-			
-		break;
+			break;
+		case PARAM_COLOR:
+			p->setColor( getColor() );
+			break;
 			
 	}
 	
@@ -320,9 +329,17 @@ void Param::initFloatArray( const std::string& name, float * addr, int numElemen
 	_numElements = numElements;
 }
 
-void Param::initColor( const std::string& name, float * addr )
+void Param::initColor( const std::string& name, Color * addr )
 {
 	_addr = addr;
+	_numElements = 4;
+	if(!_addr)
+	{
+		_data = (char*)new Color(0,0,0,0);//char[4*sizeof(float)]; 
+		_addr = _data;
+		//memset(_data,0,4*sizeof(float));
+	}
+
 	_type = PARAM_COLOR;
 	_name = name;
 }
@@ -474,6 +491,17 @@ void Param::setString( const std::string& val, bool bInformListeners )
 	}
 }
 
+void Param::setColor( const Color & clr, bool bInformListeners )
+{
+	setColor(clr.r, clr.g, clr.b, clr.a);
+	
+	if(bInformListeners)
+	{
+		CALL_LISTENERS(onParamChanged)
+	}
+}
+
+
 void Param::setColor( float * clr, bool bInformListeners )
 {
 	setColor(clr[0],clr[1],clr[2],clr[3]);
@@ -489,11 +517,8 @@ void Param::setColor( float r, float g, float b, float a, bool bInformListeners 
 	if( _type != PARAM_COLOR )
 		return;
 
-	float * c = (float*)_addr;
-	c[0] = r;
-	c[1] = g;
-	c[2] = b;
-	c[3] = a;
+	Color * c = (Color*)_addr;
+	*c = Color(r,g,b,a);
 	
 	if(bInformListeners)
 	{
@@ -578,12 +603,12 @@ const char* Param::getString()
 	}
 }
 
-float *  Param::getColor()
+Color  Param::getColor()
 {
 	if( _type != PARAM_COLOR && _type != PARAM_SELECTION )
-		return 0;
-	
-	return (float*)_addr;
+		return Color(0,0,0,0);
+	Color * c=  (Color*)_addr;
+	return *c;
 }
 
 

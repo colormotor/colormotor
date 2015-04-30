@@ -127,6 +127,8 @@ public MouseBroadcaster
 		
 		double frameMsecs;
 		
+		void * windowHandle;
+
 	protected:
 		
 		

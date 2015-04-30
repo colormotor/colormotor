@@ -30,8 +30,8 @@ namespace cm {
 enum KEY
 {
 	KEY_UNKNOWN = -1,
-	KEY_BACKSPACE = 128,
-	KEY_TAB,
+	KEY_BACKSPACE = 0,
+	KEY_TAB = 1,
 	KEY_ENTER,
 	KEY_PAUSE,
 	KEY_SCROLL_LOCK,

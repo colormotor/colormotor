@@ -18,33 +18,35 @@
 #ifndef CM_OFX
 
 #include "cmGLFWApp.h"
-#include "GL/glfw.h"
+#include "GLFW/glfw3.h"
+#include "cmGfx.h"
 
 namespace cm
 {
 
 
 static GfxAppModule *_app = 0;
+static GLFWwindow * win = 0;
+
 bool running = false;
 
 //////////////////////////////////////////////////////////////////////////
 
-static int glfwExit( void )
+static void glfwExit( GLFWwindow * ww )
 {
 	running = false;
-	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-static void glfwMouseButton( int button, int action )
+static void glfwMouseButton( GLFWwindow * ww, int button, int action, int mods )
 {
 	if(!_app)
 		return;
 		
-	int x=0;
-	int y=0;
-	glfwGetMousePos(&x,&y);
+	double x=0;
+	double y=0;
+	glfwGetCursorPos(ww, &x, &y);
 	
 	switch( button )
 	{
@@ -126,7 +128,7 @@ static void glfwMouseButton( int button, int action )
 	}
 }
 
-static void glfwMousePos( int x, int y )
+static void glfwMousePos( GLFWwindow * ww, double x, double y )
 {
 	if(!_app)
 		return;
@@ -175,64 +177,132 @@ static int getKeyFromGLFW(int key)
 	if(key>='A' && key<='Z')
 		return tolower(key);
 		
-	static KEY conv[45] = 
+
+	static int conv[] =
 	{
-		KEY_ESCAPE,
-		KEY_UNKNOWN, //#define GLFW_KEY_F1           (GLFW_KEY_SPECIAL+2)
-		KEY_UNKNOWN, //#define GLFW_KEY_F2           (GLFW_KEY_SPECIAL+3)
-		KEY_UNKNOWN, //#define GLFW_KEY_F3           (GLFW_KEY_SPECIAL+4)
-		KEY_UNKNOWN, //#define GLFW_KEY_F4           (GLFW_KEY_SPECIAL+5)
-		KEY_UNKNOWN, //#define GLFW_KEY_F5           (GLFW_KEY_SPECIAL+6)
-		KEY_UNKNOWN, //#define GLFW_KEY_F6           (GLFW_KEY_SPECIAL+7)
-		KEY_UNKNOWN, //#define GLFW_KEY_F7           (GLFW_KEY_SPECIAL+8)
-		KEY_UNKNOWN, //#define GLFW_KEY_F8           (GLFW_KEY_SPECIAL+9)
-		KEY_UNKNOWN, //#define GLFW_KEY_F9           (GLFW_KEY_SPECIAL+10)
-		KEY_UNKNOWN, //#define GLFW_KEY_F10          (GLFW_KEY_SPECIAL+11)
-		KEY_UNKNOWN, //#define GLFW_KEY_F11          (GLFW_KEY_SPECIAL+12)
-		KEY_UNKNOWN, //#define GLFW_KEY_F12          (GLFW_KEY_SPECIAL+13)
-		KEY_UNKNOWN, //#define GLFW_KEY_F13          (GLFW_KEY_SPECIAL+14)
-		KEY_UNKNOWN, //#define GLFW_KEY_F14          (GLFW_KEY_SPECIAL+15)
-		KEY_UNKNOWN, //#define GLFW_KEY_F15          (GLFW_KEY_SPECIAL+16)
-		KEY_UNKNOWN, //#define GLFW_KEY_F16          (GLFW_KEY_SPECIAL+17)
-		KEY_UNKNOWN, //#define GLFW_KEY_F17          (GLFW_KEY_SPECIAL+18)
-		KEY_UNKNOWN, //#define GLFW_KEY_F18          (GLFW_KEY_SPECIAL+19)
-		KEY_UNKNOWN, //#define GLFW_KEY_F19          (GLFW_KEY_SPECIAL+20)
-		KEY_UNKNOWN, //#define GLFW_KEY_F20          (GLFW_KEY_SPECIAL+21)
-		KEY_UNKNOWN, //#define GLFW_KEY_F21          (GLFW_KEY_SPECIAL+22)
-		KEY_UNKNOWN, //#define GLFW_KEY_F22          (GLFW_KEY_SPECIAL+23)
-		KEY_UNKNOWN, //#define GLFW_KEY_F23          (GLFW_KEY_SPECIAL+24)
-		KEY_UNKNOWN, //#define GLFW_KEY_F24          (GLFW_KEY_SPECIAL+25)
-		KEY_UNKNOWN, //#define GLFW_KEY_F25          (GLFW_KEY_SPECIAL+26)
-		KEY_UP, //#define GLFW_KEY_UP           (GLFW_KEY_SPECIAL+27)
-		KEY_DOWN, //#define GLFW_KEY_DOWN         (GLFW_KEY_SPECIAL+28)
-		KEY_LEFT, //#define GLFW_KEY_LEFT         (GLFW_KEY_SPECIAL+29)
-		KEY_RIGHT, //#define GLFW_KEY_RIGHT        (GLFW_KEY_SPECIAL+30)
-		KEY_SHIFT_L, //#define GLFW_KEY_LSHIFT       (GLFW_KEY_SPECIAL+31)
-		KEY_SHIFT_R, //#define GLFW_KEY_RSHIFT       (GLFW_KEY_SPECIAL+32)
-		KEY_CTRL_L, //#define GLFW_KEY_LCTRL        (GLFW_KEY_SPECIAL+33)
-		KEY_CTRL_R,//#define GLFW_KEY_RCTRL        (GLFW_KEY_SPECIAL+34)
-		KEY_ALT_L, //#define GLFW_KEY_LALT         (GLFW_KEY_SPECIAL+35)
-		KEY_ALT_R, //#define GLFW_KEY_RALT         (GLFW_KEY_SPECIAL+36)
-		KEY_TAB, //#define GLFW_KEY_TAB          (GLFW_KEY_SPECIAL+37)
-		KEY_ENTER, //#define GLFW_KEY_ENTER        (GLFW_KEY_SPECIAL+38)
-		KEY_BACKSPACE,//#define GLFW_KEY_BACKSPACE    (GLFW_KEY_SPECIAL+39)
-		KEY_INSERT,//#define GLFW_KEY_INSERT       (GLFW_KEY_SPECIAL+40)
-		KEY_DELETE,//#define GLFW_KEY_DEL          (GLFW_KEY_SPECIAL+41)
-		KEY_PAGE_UP, //#define GLFW_KEY_PAGEUP       (GLFW_KEY_SPECIAL+42)
-		KEY_PAGE_DOWN,//#define GLFW_KEY_PAGEDOWN     (GLFW_KEY_SPECIAL+43)
-		KEY_HOME,//#define GLFW_KEY_HOME         (GLFW_KEY_SPECIAL+44)
-		KEY_END,//#define GLFW_KEY_END          (GLFW_KEY_SPECIAL+45)
+		KEY_ESCAPE   ,
+		KEY_ENTER    ,
+		KEY_TAB      ,
+		KEY_BACKSPACE,
+		KEY_INSERT   ,
+		KEY_DELETE   ,
+		KEY_RIGHT    ,
+		KEY_LEFT     ,
+		KEY_DOWN     ,
+		KEY_UP       ,
+		KEY_PAGE_UP  ,
+		KEY_PAGE_DOWN,
+		KEY_HOME     ,
+		KEY_END      ,  //269
+        
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        
+		KEY_CAPS_LOCK   , //280
+		KEY_SCROLL_LOCK ,
+		KEY_NUM_LOCK    ,
+		KEY_UNKNOWN		,
+		KEY_PAUSE       , // 284
+        
+        
+        
+        KEY_UNKNOWN		, // 285
+        KEY_UNKNOWN		, // 286
+        KEY_UNKNOWN		, // 287
+        KEY_UNKNOWN		, // 288
+        KEY_UNKNOWN		, // 289
+
+        
+		KEY_UNKNOWN		, //KEY_F1          ,290
+		KEY_UNKNOWN		, //KEY_F2          ,
+		KEY_UNKNOWN		, //KEY_F3          ,
+		KEY_UNKNOWN		, //KEY_F4          ,
+		KEY_UNKNOWN		, //KEY_F5          ,
+		KEY_UNKNOWN		, //KEY_F6          ,
+		KEY_UNKNOWN		, //KEY_F7          ,
+		KEY_UNKNOWN		, //KEY_F8          ,
+		KEY_UNKNOWN		, //KEY_F9          ,
+		KEY_UNKNOWN		, //KEY_F10         ,
+		KEY_UNKNOWN		, //KEY_F11         ,
+		KEY_UNKNOWN		, //KEY_F12         ,
+		KEY_UNKNOWN		, //KEY_F13         ,
+		KEY_UNKNOWN		, //KEY_F14         ,
+		KEY_UNKNOWN		, //KEY_F15         ,
+		KEY_UNKNOWN		, //KEY_F16         ,
+		KEY_UNKNOWN		, //KEY_F17         ,
+		KEY_UNKNOWN		, //KEY_F18         ,
+		KEY_UNKNOWN		, //KEY_F19         ,
+		KEY_UNKNOWN		, //KEY_F20         ,
+		KEY_UNKNOWN		, //KEY_F21         ,
+		KEY_UNKNOWN		, //KEY_F22         ,
+		KEY_UNKNOWN		, //KEY_F23         ,
+		KEY_UNKNOWN		, //KEY_F24         ,
+		KEY_UNKNOWN		, //KEY_F25         , 314
+        
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        
+		KEY_UNKNOWN		, //KEY_KP_0        , 320
+		KEY_UNKNOWN		, //KEY_KP_1        ,
+		KEY_UNKNOWN		, //KEY_KP_2        ,
+		KEY_UNKNOWN		, //KEY_KP_3        ,
+		KEY_UNKNOWN		, //KEY_KP_4        ,
+		KEY_UNKNOWN		, //KEY_KP_5        ,
+		KEY_UNKNOWN		, //KEY_KP_6        ,
+		KEY_UNKNOWN		, //KEY_KP_7        ,
+		KEY_UNKNOWN		, //KEY_KP_8        ,
+		KEY_UNKNOWN		, //KEY_KP_9        ,
+		KEY_UNKNOWN		, //KEY_KP_DECIMAL  ,
+		KEY_UNKNOWN		, //KEY_KP_DIVIDE   ,
+		KEY_UNKNOWN		, //KEY_KP_MULTIPLY ,
+		KEY_UNKNOWN		, //KEY_KP_SUBTRACT ,
+		KEY_UNKNOWN		, //KEY_KP_ADD      ,
+		KEY_UNKNOWN		, //KEY_KP_ENTER    ,
+		KEY_UNKNOWN		, //KEY_KP_EQUAL    , 336
+        
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        KEY_UNKNOWN		,
+        
+		KEY_SHIFT_L		, //KEY_LEFT_SHIFT  , 340
+		KEY_CTRL_L		, //KEY_LEFT_CONTROL,
+		KEY_ALT_L		, //KEY_LEFT_ALT    ,
+		KEY_UNKNOWN		, //KEY_LEFT_SUPER  ,
+		KEY_SHIFT_R		, //KEY_RIGHT_SHIFT ,
+		KEY_CTRL_R		, //KEY_RIGHT_CONTROL,
+		KEY_ALT_R		, //KEY_RIGHT_ALT   ,
+		KEY_UNKNOWN		, //KEY_RIGHT_SUPER ,
+		KEY_UNKNOWN		, //KEY_MENU        ,
 	};
+#define ARRAYSIZE(_ARR)          ((int)(sizeof(_ARR)/sizeof(*_ARR)))
+    int arsz = ARRAYSIZE(conv);
 	
-	if( key > GLFW_KEY_SPECIAL && key <= (GLFW_KEY_SPECIAL+45))
-		return conv[key-GLFW_KEY_SPECIAL-1];
-		
+	if( key >= GLFW_KEY_ESCAPE && key <= (GLFW_KEY_MENU))
+    {
+        int ind = key-GLFW_KEY_ESCAPE;
+        int res = conv[ind];
+        int test;
+        test = KEY_UNKNOWN;
+        test = KEY_CTRL_L;
+        return res; //conv[key-GLFW_KEY_ESCAPE];
+    }
 	return KEY_UNKNOWN;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-static void glfwMouseWheel( int pos )
+static void glfwMouseWheel( GLFWwindow * ww, double pos, double y )
 {
 	if(!_app)
 		return;
@@ -244,7 +314,7 @@ static void glfwMouseWheel( int pos )
 
 //////////////////////////////////////////////////////////////////////////
 
-static void glfwKey( int key, int action )
+static void glfwKey( GLFWwindow * ww, int key, int scanCode, int action, int mods )
 {
 	if(!_app)
 		return;
@@ -279,7 +349,7 @@ static void glfwKey( int key, int action )
 
 //////////////////////////////////////////////////////////////////////////
 
-static void glfwChar( int character, int action )
+static void glfwChar( GLFWwindow * ww, unsigned int character )
 {
 	_app->sendAscii( character );
 	_app->ascii( character );
@@ -289,7 +359,7 @@ static void glfwChar( int character, int action )
 
 //////////////////////////////////////////////////////////////////////////
 
-static void glfwWindowSize( int w, int h )
+static void glfwWindowSize( GLFWwindow * ww, int w, int h )
 {
 	_app->viewport.x = 0;
 	_app->viewport.y = 0;
@@ -312,26 +382,74 @@ bool setupGlfwApp( GfxAppModule * app, int w, int h, bool fullscreen, const char
 	if (glfwInit() != GL_TRUE)
 		return false;
 	
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
+	
 	glfwSwapInterval(1);
 	//if(GLFWApplication::borderless)
 	//	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, 1);
+	glfwDefaultWindowHints();
+	glfwWindowHint(GLFW_RED_BITS, 8);
+	glfwWindowHint(GLFW_GREEN_BITS, 8);
+	glfwWindowHint(GLFW_BLUE_BITS, 8);
+	glfwWindowHint(GLFW_ALPHA_BITS, 8);
+	glfwWindowHint(GLFW_DEPTH_BITS, 24);
+	glfwWindowHint(GLFW_STENCIL_BITS, 8);
+	glfwWindowHint(GLFW_VISIBLE,GL_FALSE);
+	// double buffering
+	//glfwWindowHint(GLFW_AUX_BUFFERS,1);
+
+	glfwWindowHint(GLFW_SAMPLES,4);
+	glfwWindowHint(GLFW_RESIZABLE,0);
+	//glfwWindowHint(GLFW_DECORATED, 1);
+	//glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
+	if(fullscreen)
+	{
+		win = glfwCreateWindow(w,h, "",  glfwGetPrimaryMonitor(), NULL );
+	}
+	else
+	{
+		win = glfwCreateWindow(w, h, title, NULL, NULL);
+	}
+
+	glfwShowWindow(win);
+
+	//if(!glfwOpenWindow(w,h,8,8,8,8,24,8, fullscreen?GLFW_FULLSCREEN:GLFW_WINDOW))
+	//	return false;
+	glfwMakeContextCurrent(win);
 	
-	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE,1);
-	if(!glfwOpenWindow(w,h,8,8,8,8,24,8, fullscreen?GLFW_FULLSCREEN:GLFW_WINDOW))
-		return false;
+	// fix retina if necessary
+	// from OF code
+	int retinaw,retinah;
+	glfwGetWindowSize(win, &w, &h );
+    
+    
+	int framebufferW, framebufferH;
+    glfwGetFramebufferSize(win, &framebufferW, &framebufferH);
+    
+    //this lets us detect if the window is running in a retina mode
+    
+    if( framebufferW != w ){
+        float pixelScreenCoordScale = (float)framebufferW / w;
+        gfx::setPixelScale(pixelScreenCoordScale);
+
+        //have to update the windowShape to account for retina coords
+        if( !fullscreen )
+        {
+            //glfwSetWindowSize(win, w/pixelScreenCoordScale, h/pixelScreenCoordScale);
+        }
+	}
 	
-	glfwEnable(GLFW_MOUSE_CURSOR);
 	
 	// set GLFW callbacks.
-	glfwSetWindowCloseCallback(&glfwExit);
-	glfwSetMouseButtonCallback(&glfwMouseButton);
-	glfwSetMousePosCallback(&glfwMousePos);
-	glfwSetMouseWheelCallback(&glfwMouseWheel);
-	glfwSetKeyCallback(&glfwKey);
-	glfwSetCharCallback(&glfwChar);
-	glfwSetWindowSizeCallback(glfwWindowSize);
+	glfwSetWindowCloseCallback(win, &glfwExit);
+	glfwSetMouseButtonCallback(win, &glfwMouseButton);
+	glfwSetCursorPosCallback(win, &glfwMousePos);
+	glfwSetScrollCallback(win, &glfwMouseWheel);
+	glfwSetKeyCallback(win, &glfwKey);
+	glfwSetCharCallback(win, &glfwChar);
+	glfwSetWindowSizeCallback(win, glfwWindowSize);
 	
+    glfwMakeContextCurrent(win);
 	CM_GLCONTEXT
 	glEnable(GL_MULTISAMPLE);
 	//glfwSwapInterval(1);
@@ -383,11 +501,13 @@ bool beginGlfwLoop( GfxAppModule * app )
 		
 		app->frameMsecs = msecs;
 		
+        glfwPollEvents();
+        
 		if( frameTime >= delta )
 		{
-			int x=0;
-			int y=0;
-			glfwGetMousePos(&x,&y);
+			double x=0;
+			double y=0;
+			glfwGetCursorPos(win, &x, &y);
 
 			cm::Mouse::mousex[0] = x;
 			cm::Mouse::mousey[0] = y;
@@ -413,14 +533,28 @@ bool beginGlfwLoop( GfxAppModule * app )
 			frameTime = 0;
 		}
 		
+		glfwMakeContextCurrent(win);
 		CM_GLCONTEXT
 		
-		glColor4f(1,1,1,1);
+        int framebufferW, framebufferH;
+	    glfwGetFramebufferSize(win, &framebufferW, &framebufferH);
+	    
+	    //this lets us detect if the window is running in a retina mode
+    
+        float pixelScreenCoordScale = (float)framebufferW / app->viewport.width;
+        gfx::setPixelScale(pixelScreenCoordScale);
+
+        gfx::setViewport(0,0, gfx::getPixelScale()*app->viewport.width, gfx::getPixelScale()*app->viewport.height);
+		// glColor4f(1,1,1,1);
+		// glClearColor(1,0,0,1);
+		// glClear(GL_COLOR_BUFFER_BIT);
+	
 		app->draw();
 		app->drawGui();
 		
+        glFlush();
 		// swap back and front buffers
-		glfwSwapBuffers();
+		glfwSwapBuffers(win);
 		
 		usleep(5000);
 	}

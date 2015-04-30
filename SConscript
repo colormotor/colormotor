@@ -9,8 +9,8 @@ if shared:
 
 src = []
 
+
 '''
-src+= """
 libs/glfw/lib/enable.c
 libs/glfw/lib/fullscreen.c
 libs/glfw/lib/glext.c
@@ -30,9 +30,12 @@ libs/glfw/lib/cocoa/cocoa_init.m
 libs/glfw/lib/cocoa/cocoa_joystick.m
 libs/glfw/lib/cocoa/cocoa_time.m
 libs/glfw/lib/cocoa/cocoa_window.m
+'''
+
+src+= """
 src/app/cmGLFWApp.cpp
 """.split()
-'''
+
 
 src += """
 src/core/cmBuffer.cpp
@@ -119,14 +122,13 @@ libs/stb/cmStbImage.cpp
 # library paths
 libPaths = """
 #libs/glee/lib/osx
-#libs/glfw/osx/lib
+#libs/glfw3/lib/osx
 #libs/rtaudio/lib
 """.split()
 
 includePaths = """
 #src
-#libs/glfw/include
-#libs/glfw/lib
+#libs/glfw3/include
 """.split()
 
 # modify these based on debug.
@@ -195,12 +197,17 @@ if env['PLATFORM'] == 'darwin':
 	opencv_highgui
 	'''
 	
-	libs = None
 	'''
 	libs = """
 	rtaudio
 	""".split()
 	'''
+	'''
+	libs = """
+	libglfw3.a
+	""".split()
+	'''
+	libs = None
 
 	frameworks = """
 	Carbon
@@ -217,6 +224,9 @@ if env['PLATFORM'] == 'darwin':
 	env.Append(LINKFLAGS = archflag)
 	env.Append(LINKFLAGS = ' -stdlib=libc++')
 	env.Append(CCFLAGS = ' -mmacosx-version-min=10.8 ')
+
+	env.Append(LINKFLAGS=['-Wl,--whole-archive','-lglfw3','-Wl,--no-whole-archive']) 
+
 
 	# homebrew
 	#includePaths += ['/usr/local/Cellar/opencv/2.4.6.1/include']

@@ -18,6 +18,8 @@
 #pragma once
 
 #include "cmCoreIncludes.h"
+#include "math/cmVector.h"
+#include "math/cmColor.h"
 
 #ifdef USING_TINYXML
 #include "TinyXmlObject.h"
@@ -89,8 +91,9 @@ public:
 	void initEvent( const std::string& name, bool * addr );
 	void initString( const std::string& name, std::string * addr );
 	void initCString( const std::string& name, char * addr );
-	void initColor( const std::string& name, float * addr );
-
+	void initColor( const std::string& name, Color * addr );
+	//void initColor( const std::string& name, float * addr );
+	
 	// this could be done in a much fancier way by handling arrays of values...
 	void initSelection(  const std::string& name, std::string* names, int * addr, int numSelections );
 	
@@ -106,6 +109,7 @@ public:
 	void setString( const std::string& val, bool bInformListeners = true );
 	void setInt( int val, bool bInformListeners = true );
 	
+	void setColor( const Color & clr, bool bInformListeners = true );
 	void setColor( float * clr, bool bInformListeners = true );
 	void setColor( float r, float g, float b, float a, bool bInformListeners = true );
 	
@@ -116,7 +120,7 @@ public:
 	bool  getBool();
 	int	  getInt();
 	const char* getString();
-	float * getColor();
+	Color getColor();
 	
 	double getDouble01();
 	void setDouble01( double v, int index = 0, bool bInformListeners = true) ;

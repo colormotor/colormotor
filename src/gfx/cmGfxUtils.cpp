@@ -130,6 +130,15 @@ EpsFile *getEps()
 
 #endif
 
+static float pixelScale = 1.0f;
+
+void 	setPixelScale( float s )
+{
+	pixelScale = s;
+}
+
+float 	getPixelScale() { return pixelScale; }
+
 //////////////////////////////////////////////////////////////////
 
 void	clear( float r, float g, float b, float a, bool depth, float depthClear )
@@ -194,11 +203,12 @@ void	setViewport( int x, int y, int w, int h, bool save )
 	CM_GLCONTEXT
 	
 	// save in case user didn't
+	/*
 	if( lastViewport[2] == 0 )
 	{
 		glGetIntegerv(GL_VIEWPORT, (GLint*)lastViewport);
 	}
-	
+	*/
 	
 	curViewport[0] = x;
 	curViewport[1] = y;
@@ -213,7 +223,7 @@ void	setViewport( int x, int y, int w, int h, bool save )
 		lastViewport[3] = curViewport[3];
 	}
 	
-	glViewport( x,y,w,h );
+	glViewport( curViewport[0],curViewport[1],curViewport[2],curViewport[3] );
 }
 
 

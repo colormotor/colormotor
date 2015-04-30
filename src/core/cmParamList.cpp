@@ -60,6 +60,7 @@ void ParamList::release()
 	params.clear();
 	paramMap.clear();
 	paramsThatHaveChanged.clear();
+	children.clear();
 }
 
 void ParamList::addParam( Param * param )
@@ -135,7 +136,7 @@ void ParamList::addParams( const ParamList & plist )
 		addParam(plist.getParam(i));
 }
 
-Param* ParamList::addColor( const std::string& name, float * address )
+Param* ParamList::addColor( const std::string& name, Color * address )
 {
 	Param * p = new Param();
 	p->initColor(name,address);
@@ -376,6 +377,13 @@ Param * ParamList::find( const std::string& name_ )
 			if( params[i]->isName(name) ) 
 				return params[i];
 		}
+        
+
+        // TODO figure this out properly
+        for( int i = 0; i < getNumChildren(); i++ )
+        {
+            return children[i]->find(name);
+        }
 	}
 	else
 	{
