@@ -16,7 +16,7 @@
  ********************************************************************/
 
 #pragma once
-#include "Shape2d.h"
+#include "Shape.h"
 
 namespace cm
 {
@@ -32,20 +32,20 @@ enum
 class PolyClipper
 {	
 public:
-	const Shape2d& apply( int type, const Shape2d & a, const Shape2d & b );
-	const Shape2d& apply( int type, const Path2d & a, const Path2d & b );
+	const Shape& apply( int type, const Shape & a, const Shape & b );
+	const Shape& apply( int type, const Contour & a, const Contour & b );
 	
 	// would have liked to call this union... maybe Uppercase func names are better at the end...
-	const Shape2d& merge( Shape2d & a, const Shape2d & b, double offset = 2.0 );
-	const Shape2d& merge( Shape2d & shape, double offset = 2.0 );
-	Shape2d result;
+	const Shape& merge( Shape & a, const Shape & b, double offset = 2.0 );
+	const Shape& merge( Shape & shape, double offset = 2.0 );
+	Shape result;
 protected:
-	void op( int type, const Shape2d & a, const Shape2d & b, double offset = 0.0 );
+	void op( int type, const Shape & a, const Shape & b, double offset = 0.0 );
 };
 
-Shape2d shapeUnion( const Shape2d & a, const Shape2d & b );
-Shape2d shapeDifference( const Shape2d & a, const Shape2d & b );
-Shape2d shapeIntersection( const Shape2d & a, const Shape2d & b );
-Shape2d shapeXor( const Shape2d & a, const Shape2d & b );
+Shape shapeUnion( const Shape & a, const Shape & b );
+Shape shapeDifference( const Shape & a, const Shape & b );
+Shape shapeIntersection( const Shape & a, const Shape & b );
+Shape shapeXor( const Shape & a, const Shape & b );
 
 }

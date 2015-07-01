@@ -42,29 +42,29 @@ Vec2 convertToVec2( const ClipperLib::IntPoint & p, const Rectf & rect )
 	return Vec2f(v.x,v.y);
 }
 
-void PolyClipper::op( int type, const Shape2d & a, const Shape2d & b, double offset )
+void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset )
 {	
 	Vec2 scale;
 	
-	Rectf r = a.calcBoundingBox();
-	r.include(b.calcBoundingBox());	
+	Rectf r = a.boundingBox();
+	r.include(b.boundingBox());	
 	
 	ClipperLib::Polygons pa;
 	ClipperLib::Polygons pb;
 	ClipperLib::Polygons sol;
 	
-	pa.resize(a.getNumContours());
-	pb.resize(b.getNumContours());
+	pa.resize(a.size());
+	pb.resize(b.size());
 	
-	for( int i = 0; i < a.getNumContours(); i++ )
+	for( int i = 0; i < a.size(); i++ )
 	{
-		const Path2d & p = a.getContour(i);
+		const Contour & p = a.getContour(i);
 		for( int j = 0; j < p.size(); j++ )
 			pa[i].push_back(convertToIntPoint(p.getPoint(j),r));
 	}
-	for( int i = 0; i < b.getNumContours(); i++ )
+	for( int i = 0; i < b.size(); i++ )
 	{
-		const Path2d & p = b.getContour(i);
+		const Contour & p = b.getContour(i);
 		for( int j = 0; j < p.size(); j++ )
 			pb[i].push_back(convertToIntPoint(p.getPoint(j),r));
 	}
@@ -86,28 +86,28 @@ void PolyClipper::op( int type, const Shape2d & a, const Shape2d & b, double off
 	for( int i = 0; i < sol.size(); i++ )
 	{
 		const ClipperLib::Polygon &poly = sol[i];
-		Path2d path;
+		Contour path;
 		for( int j = 0; j < sol[i].size(); j++ )
 		{
 			const ClipperLib::IntPoint & p = poly[j];
 			path.addPoint(convertToVec2(p,r));
 		}
 		path.close();
-		result.appendContour(path);
+		result.addContour(path);
 	}
 }
 
 
-const Shape2d & PolyClipper::apply( int type, const Path2d & a, const Path2d & b )
+const Shape & PolyClipper::apply( int type, const Contour & a, const Contour & b )
 {
-	Shape2d sa;
-	sa.appendContour(a);
-	Shape2d sb;
-	sb.appendContour(b);
+	Shape sa;
+	sa.addContour(a);
+	Shape sb;
+	sb.addContour(b);
 	return apply(type,sa,sb);
 }
 
-const Shape2d & PolyClipper::apply( int type, const Shape2d & a, const Shape2d & b )
+const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b )
 {
 	int conv[] = {
 	ClipperLib::ctDifference,
@@ -117,22 +117,22 @@ const Shape2d & PolyClipper::apply( int type, const Shape2d & a, const Shape2d &
 	};
 	
 	if( a.size() == 0 )
-		result = Shape2d(b);
+		result = Shape(b);
 	if( b.size() == 0 )
-		result = Shape2d(a);
+		result = Shape(a);
 	else
 		op(conv[type],a,b);
 	
 	return result;
 }
 
-const Shape2d& PolyClipper::merge( Shape2d & a, const Shape2d & b, double offset )
+const Shape& PolyClipper::merge( Shape & a, const Shape & b, double offset )
 {
 	op(ClipperLib::ctUnion,a,b,offset);
 	return result;
 }
 	
-const Shape2d& PolyClipper::merge( Shape2d & shape, double offset  )
+const Shape& PolyClipper::merge( Shape & shape, double offset  )
 {
 	if( shape.size() == 0)
 	{
@@ -147,12 +147,12 @@ const Shape2d& PolyClipper::merge( Shape2d & shape, double offset  )
 	}
 	
 
-	Shape2d a,b;
-	a = Shape2d(shape[0]);
+	Shape a,b;
+	a = Shape(shape[0]);
 	for( int i = 1; i < shape.size(); i++ )
 	{
 		
-		b = Shape2d(shape[i]);
+		b = Shape(shape[i]);
 		a = merge( a,b,offset );
 	}
 	
@@ -161,28 +161,28 @@ const Shape2d& PolyClipper::merge( Shape2d & shape, double offset  )
 
 	
 	
-Shape2d shapeUnion( const Shape2d & a, const Shape2d & b )
+Shape shapeUnion( const Shape & a, const Shape & b )
 {
 	PolyClipper clip;
 	clip.apply(CLIP_UNION,a,b);
 	return clip.result;
 }
 
-Shape2d shapeDifference( const Shape2d & a, const Shape2d & b )
+Shape shapeDifference( const Shape & a, const Shape & b )
 {
 	PolyClipper clip;
 	clip.apply(CLIP_DIFFERENCE,a,b);
 	return clip.result;
 }
 
-Shape2d shapeIntersection( const Shape2d & a, const Shape2d & b )
+Shape shapeIntersection( const Shape & a, const Shape & b )
 {
 	PolyClipper clip;
 	clip.apply(CLIP_INTERSECTION,a,b);
 	return clip.result;
 }
 
-Shape2d shapeXor( const Shape2d & a, const Shape2d & b )
+Shape shapeXor( const Shape & a, const Shape & b )
 {
 	PolyClipper clip;
 	clip.apply(CLIP_XOR,a,b);
