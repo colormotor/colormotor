@@ -382,7 +382,10 @@ namespace cm
                 if( ctr.size() < 2 )
                     continue;
                 glVertexPointer( 2, GL_FLOAT, 0, &(ctr.points[0]) );
-                glDrawArrays( GL_LINE_STRIP, 0, ctr.size() );
+                if(ctr.isClosed())
+                    glDrawArrays( GL_LINE_LOOP, 0, ctr.size() );
+                else
+                    glDrawArrays( GL_LINE_STRIP, 0, ctr.size() );
             }
             glDisableClientState( GL_VERTEX_ARRAY );
             
