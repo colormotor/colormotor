@@ -4879,6 +4879,7 @@ int stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *c
    return e("unknown image type", "Image not of any known type, or corrupt");
 }
 
+#undef e
 #endif // STBI_HEADER_FILE_ONLY
 
 /*
