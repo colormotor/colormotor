@@ -42,7 +42,8 @@ class Contour
         void addPoint( const Vec2 & p );
         void addPoint( float x, float y );
         void addPoints( const std::vector<Vec2> & P );
-        
+        void append( const Vec2 & p ) { addPoint(p); }
+
         void insertPoint( int i, const Vec2 & p );
         
         const Vec2 & operator [] ( int i ) const { return points[mod(i, (int)points.size())]; }
@@ -133,7 +134,12 @@ class Contour
         const Contour & getContour( int i ) const  { return contours[i]; }
         Contour & getContour( int i ) { return contours[i]; }
         const Contour & last() const { return contours.back(); }
+        Contour & last() { return contours.back(); }
         
+        void append( const Shape & s ) { addShape(s); }
+        void append( const Contour & s ) { addContour(s); }
+        
+        void addShape( const Shape & s ) { for( int i = 0; i < s.size(); i++ ) addContour(s[i]); }
         void addContour( const Contour & ctr ) { contours.push_back(ctr); }
         void appendContour() { contours.push_back(Contour()); }
         
@@ -143,6 +149,8 @@ class Contour
         
         Rect boundingBox() const;
         Vec2  centroid() const;
+        
+        void close() { for( int i = 0; i < contours.size(); i++ ) contours[i].close(); }
         
         void simplify( float tol );
 
