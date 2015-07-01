@@ -158,7 +158,8 @@ namespace cm
 		int getHeight() const { return height; }
 		int getSize() const { return stride*height*bytesPerPixel; }
 		int getStride() const { return stride; }
-
+		Rectf getRect() const { return Rectf(0,0,width,height); }
+		
 		/// Get intensity over a convex shape, less precise but much faster than getIntensity
 		float getIntensityConvex( const cm::Path2d & shape, float srcW = 0, float srcH = 0);
 		/// Get intensity over a shape, can pass also a path in
