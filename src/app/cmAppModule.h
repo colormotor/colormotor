@@ -33,6 +33,9 @@ class AppModule
 		virtual void update() {}
 		virtual void exit() {}
 		
+		virtual bool internalInit() { return true; }
+		virtual void internalExit() {}
+		
 		std::string appName;
 };
 

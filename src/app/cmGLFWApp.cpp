@@ -464,6 +464,9 @@ bool setupGlfwApp( GfxAppModule * app, int w, int h, bool fullscreen, const char
 	app->params.loadXmlFile("app.xml");
 	app->paramsToSave.loadXmlFile("params.xml");
 	
+	if(!app->internalInit())
+		return false;
+
 	if(!app->init())
 		return false;
 	
@@ -563,6 +566,7 @@ bool beginGlfwLoop( GfxAppModule * app )
 	app->paramsToSave.saveXmlFile("params.xml");
 	
 	app->exit();
+	app->internalExit();
 	
 	if(_app->_gui && _app->_gui->visible )
 		app->_gui->release();
