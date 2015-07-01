@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "math/cmMathDefs.h"
+#include "cmMathIncludes.h"
 #include "math/cmVec3.h"
 
 namespace cm {

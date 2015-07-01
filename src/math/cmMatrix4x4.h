@@ -117,6 +117,23 @@ template <typename T> struct TMatrix4x4
         m44 = mat.m33;
     }
 
+#ifdef ARMADILLO_SUPPORT
+	TMatrix4x4( const arma::mat & v )
+	{
+		setX(v(0));
+		setY(v(1));
+		setZ(v(2));
+		setTrans(v(3));
+	}	
+
+	TMatrix4x4( const arma::fmat & v )
+	{
+		setX(v(0));
+		setY(v(1));
+		setZ(v(2));
+		setTrans(v(3));
+	}
+#endif
 
 	const T	&operator () ( int row, int col ) const
 	{	return debug[col][row]; }
@@ -524,6 +541,24 @@ template <typename T> struct TMatrix4x4
 
 	
 	std::string toString( bool newLine = true )  const;
+
+#ifdef ARMADILLO_SUPPORT
+	operator arma::fmat () const 
+	{ 
+		return arma::fmat({ (arma::fvec)x(), 
+							(arma::fvec)y(),
+							(arma::fvec)z(),
+							(arma::fvec)trans()} ); 
+	}
+
+	operator arma::mat  () const 
+	{ 
+		return arma::mat({ (arma::vec)x(), 
+							(arma::vec)y(),
+							(arma::vec)z(),
+							(arma::vec)trans()} ); 
+	}
+#endif
 	
 	/// \todo: !frustum matrix..
 	//void	frustum() {}

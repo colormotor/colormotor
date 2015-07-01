@@ -224,7 +224,7 @@ if env['PLATFORM'] == 'darwin':
 	env.Append(LINKFLAGS = archflag)
 	env.Append(LINKFLAGS = ' -stdlib=libc++')
 	env.Append(CCFLAGS = ' -mmacosx-version-min=10.8 ')
-
+	env.Append(CPPDEFINES=['__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0'])
 	env.Append(LINKFLAGS=['-Wl,--whole-archive','-lglfw3','-Wl,--no-whole-archive']) 
 
 

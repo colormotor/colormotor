@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "cmMathIncludes.h"
+ 
 template <class PT, class RT> class Triangle2D
 {
 public:

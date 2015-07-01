@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "cm.h"
+#include "cmMathIncludes.h"
 #include "cmVector.h"
 
 namespace cm {

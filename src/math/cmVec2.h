@@ -41,6 +41,23 @@ namespace cm
         }
 #endif
         
+#ifdef ARMADILLO_SUPPORT
+		TVec2( const arma::vec & v )
+		:
+		x(v[0]),
+		y(v[1])
+		{
+
+		}
+
+		TVec2( const arma::fvec & v )
+		:
+		x(v[0]),
+		y(v[1])
+		{
+
+		}
+#endif
 		TVec2(T x, T y)
 		:
 		x(x),y(y)
@@ -217,6 +234,15 @@ namespace cm
 			return ((T*)this)[i];
 		}
 			
+#ifdef CM_OFX
+    operator ofVec2f () const { return ofVec2f(x,y); }
+#endif
+	
+#ifdef ARMADILLO_SUPPORT
+	operator arma::fvec () const { return arma::fvec({x,y}); }
+	operator arma::vec () const { return arma::vec({x,y}); }
+#endif
+
 		std::string toString() const 
 		{
 			std::string s;

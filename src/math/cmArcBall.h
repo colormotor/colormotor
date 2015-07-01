@@ -42,6 +42,8 @@
   
 #pragma once
 
+#include "cmMathIncludes.h"
+  
 #include "math/cmMatrix4x4.h"
 #include "math/cmVector.h"
 #include "math/cmQuat.h"

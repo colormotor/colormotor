@@ -25,3 +25,7 @@
 #include "core/cmUtils.h"
 #include "math/cmMathDefs.h"
 
+#ifdef ARMADILLO_SUPPORT
+#include <armadillo>
+#endif
+

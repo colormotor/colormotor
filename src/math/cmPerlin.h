@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cmMathIncludes.h"
+
 #include "cm.h" // just for win32 warnings
 
 namespace cm

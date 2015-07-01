@@ -45,7 +45,24 @@ template <typename T> struct TMatrix3x3
 	{
 		memcpy(this,ar,sizeof(TMatrix3x3<T>));
 	}
-	
+
+#ifdef ARMADILLO_SUPPORT
+	TMatrix3x3( const arma::mat & v )
+	{
+		setX(v(0));
+		setY(v(1));
+		setTrans(v(2));
+	}	
+
+	TMatrix3x3( const arma::fmat & v )
+	{
+		setX(v(0));
+		setY(v(1));
+		setTrans(v(2));
+	}
+#endif
+
+
 	/// Set matrix from buffer
 	/// buffer is expected with columns linear in memory
 	void	set( T ar[9] )
@@ -297,6 +314,22 @@ template <typename T> struct TMatrix3x3
 	
 	std::string toString( bool newLine = true )  const;
 	
+#ifdef ARMADILLO_SUPPORT
+	operator arma::fmat () const 
+	{ 
+		return arma::fmat({ (arma::fvec)x(), 
+							(arma::fvec)y(),
+							(arma::fvec)trans()} ); 
+	}
+
+	operator arma::mat  () const 
+	{ 
+		return arma::mat({ (arma::vec)x(), 
+							(arma::vec)y(),
+							(arma::vec)trans()} ); 
+	}
+#endif
+
 	/// \todo: !frustum matrix..
 	//void	frustum() {}
 	

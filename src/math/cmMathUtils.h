@@ -17,6 +17,8 @@
 
 #pragma once
  
+#include "cmMathIncludes.h"
+ 
 #include "math/cmVector.h"
 #include "math/cmRay.h"
 #include "math/cmRect.h"

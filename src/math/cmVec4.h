@@ -39,6 +39,28 @@ struct  TVec4
         
     }
 #endif
+
+#ifdef ARMADILLO_SUPPORT
+	TVec4( const arma::vec & v )
+	:
+	x(v[0]),
+	y(v[1]),
+	z(v[2]),
+	w(v[3])
+	{
+
+	}
+
+	TVec4( const arma::fvec & v )
+	:
+	x(v[0]),
+	y(v[1]),
+	z(v[2]),
+	w(v[3])
+	{
+
+	}
+#endif
     
 	TVec4(T x, T y, T z, T w)
 	:
@@ -165,6 +187,16 @@ struct  TVec4
 	inline  const T & operator[]  (int i) const {
 		return ((T*)this)[i];
 	}
+
+#ifdef CM_OFX
+    operator ofVec3f () const { return ofVec4f(x,y,z,w); }
+#endif
+
+#ifdef ARMADILLO_SUPPORT
+	operator arma::fvec () const { return arma::fvec({x,y,z,w}); }
+	operator arma::vec () const { return arma::vec({x,y,z,w}); }
+#endif
+
 	
 	operator T* () { return (T*)this; }
 	operator const T* () const { return (const T*)this; }

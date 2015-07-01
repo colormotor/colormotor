@@ -35,10 +35,14 @@
 #include <iomanip>  //for setprecision
 #include <errno.h>
 
+// Should take care of the ugly 'check' def in AssertMactos.h
+#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
+
 #if (defined (_WIN32) || defined (_WIN64))
 #define      CM_WIN32 1
 #define		  CM_WINDOWS 1
 #elif defined(__APPLE_CPP__) || defined(__APPLE_CC__)
+
 #include <CoreFoundation/CoreFoundation.h> // (needed to find out what platform we're using)
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
 #define     CM_IPHONE 1

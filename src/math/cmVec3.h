@@ -20,6 +20,7 @@
 #include "cmMathIncludes.h"
 #include "cmVec2.h"
 
+
 namespace cm
 {
 
@@ -30,7 +31,27 @@ namespace cm
 template <class T>
 struct  TVec3
 {
-	#ifdef CM_OFX
+#ifdef ARMADILLO_SUPPORT
+	TVec3( const arma::vec & v )
+	:
+	x(v[0]),
+	y(v[1]),
+	z(v[2])
+	{
+
+	}
+
+	TVec3( const arma::fvec & v )
+	:
+	x(v[0]),
+	y(v[1]),
+	z(v[2])
+	{
+
+	}
+#endif
+
+#ifdef CM_OFX
     TVec3(const ofVec3f & v)
     :
     x(v.x),
@@ -39,7 +60,7 @@ struct  TVec3
     {
         
     }
-    #endif
+#endif
     
 	TVec3(T x, T y, T z) 
 	: 
@@ -316,9 +337,14 @@ struct  TVec3
 	}
     
     #ifdef CM_OFX
-    operator const ofVec3f & () const { return ofVec3f(x,y,z); }
+    operator ofVec3f () const { return ofVec3f(x,y,z); }
 	#endif
 	
+	#ifdef ARMADILLO_SUPPORT
+	operator arma::fvec () const { return arma::fvec({x,y,z}); }
+	operator arma::vec () const { return arma::vec({x,y,z}); }
+	#endif
+
 	operator T* () { return (T*)this; }
 	operator const T* () const { return (const T*)this; }
 

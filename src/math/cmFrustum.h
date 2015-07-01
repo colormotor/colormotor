@@ -17,7 +17,8 @@
  
 #pragma once
 
-
+#include "cmMathIncludes.h"
+ 
 #include "math/cmVector.h"
 #include "math/cmAABox.h"
 #include "math/cmPlane.h"

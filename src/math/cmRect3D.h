@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "cmMathIncludes.h"
+ 
 #include "math/cmPlane.h"
 
 namespace cm
