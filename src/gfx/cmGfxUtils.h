@@ -266,6 +266,8 @@ void	scale( float x, float y, float z = 0.0f );
 
 void	scale( float s );
 
+void 	pushMatrix( const M33 & m );
+void 	pushMatrix( const M44 & m );
 void	pushMatrix();
 
 void	popMatrix();

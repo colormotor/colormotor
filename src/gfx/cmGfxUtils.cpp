@@ -1160,6 +1160,17 @@ CM_GLCONTEXT
 #endif
 }
 
+void 	pushMatrix( const M33 & m )
+{
+	pushMatrix();
+	applyMatrix(m);
+}
+
+void 	pushMatrix( const M44 & m )
+{
+	pushMatrix();
+	applyMatrix(m);
+}
 
 void	pushMatrix()
 {
