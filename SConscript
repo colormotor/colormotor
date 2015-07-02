@@ -246,7 +246,7 @@ else:
 	#env.Append(LINKFLAGS = ' -stdlib=libc++')
 	env.Append(LINKFLAGS=['-Wl,--whole-archive','-lglfw3','-Wl,--no-whole-archive']) 
 
-	env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
+	env.ParseConfig('pkg-config --cflags --libs gtk+-2.0 opencv glew glfw3')
 
 	# homebrew
 	#includePaths += ['/usr/local/Cellar/opencv/2.4.6.1/include']
