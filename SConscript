@@ -9,29 +9,6 @@ if shared:
 
 src = []
 
-
-'''
-libs/glfw/lib/enable.c
-libs/glfw/lib/fullscreen.c
-libs/glfw/lib/glext.c
-libs/glfw/lib/image.c
-libs/glfw/lib/init.c
-libs/glfw/lib/input.c
-libs/glfw/lib/joystick.c
-libs/glfw/lib/stream.c
-libs/glfw/lib/tga.c
-libs/glfw/lib/thread.c
-libs/glfw/lib/time.c
-libs/glfw/lib/window.c
-libs/glfw/lib/cocoa/cocoa_enable.m
-libs/glfw/lib/cocoa/cocoa_fullscreen.m
-libs/glfw/lib/cocoa/cocoa_glext.m
-libs/glfw/lib/cocoa/cocoa_init.m
-libs/glfw/lib/cocoa/cocoa_joystick.m
-libs/glfw/lib/cocoa/cocoa_time.m
-libs/glfw/lib/cocoa/cocoa_window.m
-'''
-
 src+= """
 src/app/cmGLFWApp.cpp
 """.split()
@@ -119,12 +96,7 @@ libs/stb/cmStbImage.cpp
 """.split()
 
 
-# library paths
-libPaths = """
-#libs/glee/lib/osx
-#libs/glfw3/lib/osx
-#libs/rtaudio/lib
-""".split()
+
 
 includePaths = """
 #src
@@ -133,13 +105,15 @@ includePaths = """
 
 # modify these based on debug.
 
-env = Environment()
+env = Environment(ENV = {'PATH' : os.environ['PATH'],
+                         'TERM' : os.environ['TERM'],
+                         'HOME' : os.environ['HOME']})
 
 debug = True #ARGUMENTS.get('debug', 1)
 if debug:
 	print "Debug Build"
 
-CCFLAGS = '-ggdb -pipe -Wall -ffast-math -fPIC -pthread -stdlib=libc++ -std=c++11'
+CCFLAGS = '-ggdb -pipe -Wall -ffast-math -fPIC -pthread -std=c++11'
 warnings = """
 -Wno-backslash-newline-escape
 -Wno-overloaded-virtual
@@ -149,6 +123,7 @@ warnings = """
 -Wno-self-assign
 -Wno-#warnings
 -Wno-format-security
+-Wno-sign-compare
 """.split()
 
 for w in warnings:
@@ -165,22 +140,31 @@ for f in CCFLAGS.split():
 
 # setup clang and colored output
 env['ENV']['TERM'] = os.environ['TERM']
-env["CXX"] = "clang++"
-env["CC"] = "clang"
+
 
 env.MergeFlags(ARGUMENTS.get('CCFLAGS', '').split())
 env.MergeFlags(ARGUMENTS.get('LDFLAGS', '').split())
 
 if env['PLATFORM'] == 'win32':
-	print("!!!! not supported yet")
+	print("windows not supported yet")
 	
-if env['PLATFORM'] == 'darwin':
+elif env['PLATFORM'] == 'darwin':
+	print "Building OSX variant"
+	env["CXX"] = "clang++"
+	env["CC"] = "clang"
+
 	# append platform specific include directories to watch
 	'''
 	libPaths+="""
 	#libs/opencv/lib
 	""".split()
 	'''
+
+	# library paths
+	libPaths = """
+	#libs/glee/lib/osx
+	#libs/glfw3/lib/osx
+	""".split()
 
 	includePaths+="""
 	#libs/glfw/lib/cocoa
@@ -190,31 +174,13 @@ if env['PLATFORM'] == 'darwin':
 	src/core/platform/osx/cmOSX.mm
 	""".split()
 
-	'''
-	opencv_core
-	opencv_imgproc
-	opencv_legacy
-	opencv_highgui
-	'''
-	
-	'''
-	libs = """
-	rtaudio
-	""".split()
-	'''
-	'''
-	libs = """
-	libglfw3.a
-	""".split()
-	'''
-	libs = None
-
 	frameworks = """
 	Carbon
 	OpenGL
 	Cocoa
 	""".split()
 
+	libs = None
 	
 	if debug:
 		env.Append(CCFLAGS = '-g')
@@ -223,10 +189,10 @@ if env['PLATFORM'] == 'darwin':
 	env.Append(CCFLAGS = archflag) #i386
 	env.Append(LINKFLAGS = archflag)
 	env.Append(LINKFLAGS = ' -stdlib=libc++')
+	env.Append(CCFLAGS = '-stdlib=libc++')
 	env.Append(CCFLAGS = ' -mmacosx-version-min=10.8 ')
 	env.Append(CPPDEFINES=['__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0'])
 	env.Append(LINKFLAGS=['-Wl,--whole-archive','-lglfw3','-Wl,--no-whole-archive']) 
-
 
 	# homebrew
 	#includePaths += ['/usr/local/Cellar/opencv/2.4.6.1/include']
@@ -243,10 +209,73 @@ if env['PLATFORM'] == 'darwin':
 		includePaths += ['/usr/local/include']
 		libPaths += ['/usr/local/lib']
 	'''
-	
-if shared:
-	env.SharedLibrary(target='../lib/libcm.so',source=src,LIBS=libs,FRAMEWORKS=frameworks,LIBPATH=libPaths,CPPPATH=includePaths)
+
+	if shared:
+		env.SharedLibrary(target='../lib/libcm.so',source=src,LIBS=libs,FRAMEWORKS=frameworks,LIBPATH=libPaths,CPPPATH=includePaths)
+	else:
+		env.StaticLibrary(target='../lib/libcm.a',source=src,LIBS=libs,FRAMEWORKS=frameworks,LIBPATH=libPaths,CPPPATH=includePaths) #LIBS=libs,
+
+
 else:
-	env.StaticLibrary(target='../lib/libcm.a',source=src,LIBS=libs,FRAMEWORKS=frameworks,LIBPATH=libPaths,CPPPATH=includePaths) #LIBS=libs,
+	# Assume posix
+	print 'Building posix variant'
+
+	# library paths
+	libPaths = """
+	#libs/glee/lib/osx
+	#libs/glfw3/lib/linux
+	""".split()
+
+	includePaths+="""
+	#libs/glfw/lib/cocoa
+	""".split()
+
+	src+="""
+	src/core/platform/linux/cmLinux.cpp
+	""".split()
+
+	libs = None
+
+	if debug:
+		env.Append(CCFLAGS = '-g')
+		
+	#archflag = ' -arch ' + arch
+	#env.Append(CCFLAGS = archflag) #i386
+
+	#env.Append(LINKFLAGS = archflag)
+	#env.Append(LINKFLAGS = ' -stdlib=libc++')
+	env.Append(LINKFLAGS=['-Wl,--whole-archive','-lglfw3','-Wl,--no-whole-archive']) 
+
+	env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
+
+	# homebrew
+	#includePaths += ['/usr/local/Cellar/opencv/2.4.6.1/include']
+	#libPaths += ['/usr/local/Cellar/opencv/2.4.6.1/lib']
+	includePaths += ['/usr/local/include']
+	libPaths += ['/usr/local/lib']
+	includePaths += ['/usr/include']
+	libPaths += ['/usr/lib']
+
+	env.Append(CPPPATH=includePaths)
+	env.Append(LIBPATH=libPaths)
+	if libs:
+		env.Append(LIBS=libs)
+
+	'''
+	if False: #os.path.exists('/opt/local/lib'):
+		# macports
+		includePaths += ['/opt/local/include']
+		libPaths += ['/opt/local/lib']
+	else:
+		# homebrew
+		includePaths += ['/usr/local/include']
+		libPaths += ['/usr/local/lib']
+	'''
+	if shared:
+		env.SharedLibrary(target='../lib/libcm.so',source=src)
+	else:
+		env.StaticLibrary(target='../lib/libcm.a',source=src) #LIBS=libs,
+
+
 
 
