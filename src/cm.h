@@ -52,6 +52,7 @@
 #endif
 #else
 #define 	CM_LINUX 1
+#include <unistd.h>
 #endif
 
 

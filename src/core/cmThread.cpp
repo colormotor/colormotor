@@ -19,6 +19,8 @@
 
 #ifdef CM_WIN32
 #include "platform/win32/cmWin32Thread.h"
+#elif defined CM_LINUX
+#include "platform/linux/cmPosixThread.h"
 #else
 #include "platform/osx/cmOSXThread.h"
 #endif
