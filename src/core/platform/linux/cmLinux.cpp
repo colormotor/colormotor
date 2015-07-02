@@ -7,6 +7,8 @@
 #include <string.h>
 #include <gtk/gtk.h>
 
+namespace cm
+{
 
 /// Error alert
 void  alert(const char *pFormat,... )
@@ -63,3 +65,4 @@ std::string  getExecutablePath()
 	return std::string("");
 }
 
+}

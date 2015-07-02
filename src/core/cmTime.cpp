@@ -99,8 +99,13 @@ double getTickCount()
 #ifdef CM_MAC
 	return CFAbsoluteTimeGetCurrent()*1000;
 #else
-    assert(false);
-    return 0.0;
+	// from http://stackoverflow.com/questions/2958291/equivalent-to-gettickcount-on-linux
+    struct timespec ts;
+    unsigned theTick = 0U;
+    clock_gettime( CLOCK_REALTIME, &ts );
+    theTick  = ts.tv_nsec / 1000000;
+    theTick += ts.tv_sec * 1000;
+    return theTick;
 #endif
 	#endif
 	return 0.0;
