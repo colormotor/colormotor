@@ -7,8 +7,8 @@ cm.a
 
 # rule to avoid non-official apps going into git
 # see apps/.gitignore
-apps/*
-addons/*
+apps/apps
+# addons/*
 
 # also, see examples/.gitignore
 
