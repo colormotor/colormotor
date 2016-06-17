@@ -1,4 +1,4 @@
-# COLORMOTOR 2
+# COLORMOTOR
 
 Yet another iteration of the Colormotor graphics framework, principally aimed at research purposes. Builds on top of Armadillo for linear algebra operations, OpenCV for image manipulation and OpenGL for hardware accellerated rendering. 
 
