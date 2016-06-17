@@ -583,7 +583,8 @@ Vec2  Shape::centroid() const
             n++;
         }
     }
-    c/=size();
+    if(n)
+        c/=n;
     return c;
 }
 

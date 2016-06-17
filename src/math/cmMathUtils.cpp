@@ -20,7 +20,7 @@
 #include "math/cmMathUtils.h"
 #include "math/cmPlane.h"
 #include "math/cmRect.h"
-#include <armadillo>
+
 
 
 namespace cm

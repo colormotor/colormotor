@@ -26,6 +26,6 @@
 #include "math/cmMathDefs.h"
 
 #ifdef ARMADILLO_SUPPORT
-#include <armadillo>
+#include "armadillo"
 #endif
 
