@@ -10,6 +10,7 @@ void appRender( float w, float h );
 void appExit();
 float appWidth();
 float appHeight();
+double appFrameTime();
 V2 appCenter();
     
 class AppModule
