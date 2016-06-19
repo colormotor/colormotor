@@ -8,6 +8,7 @@
 
 	#ifdef CM_MAC
 		#include <mach-o/dyld.h>
+        #include <sys/event.h>
 	#else
 		#include <unistd.h>
 	#endif
@@ -28,10 +29,13 @@ bool in( A key, const std::map<A,B>& dict )
 }
 
 
+// Time
+double getTickCount();
+    
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
-// File utilities 
-
+// File utilities
+    
 /// Prints on the same line, useful for progress tracing
 void printSameLine( const char * format, ... );
 
@@ -94,5 +98,42 @@ bool openFolderDialog( std::string & str, const char *title );
 bool openFileDialog( std::string & path,  const char * type, int maxsize = 2048  );
 /// Dialog for saving file
 bool saveFileDialog( std::string & path, const char * type, int maxsize = 2048  );
-    
+
+///////////////////////////////////////////////////////
+// File watcher (gross for the moment)
+
+class FileWatcher
+{
+public:
+	FileWatcher( const std::string & path, int msecs = 200 );
+
+	~FileWatcher();
+	
+	bool hasFileChanged();
+	void stop();
+	void run();
+
+	std::thread thread;
+	bool running;
+	std::mutex mutex;
+
+	unsigned int fileFlags;
+	int msecs;
+	int numFiles;
+
+#ifdef CM_OSX
+	int kq;
+    int event_fd;
+    struct kevent events_to_monitor[1];
+    struct kevent event_data[1];
+    void *user_data;
+    struct timespec timeout;
+    unsigned int vnode_events;
+#elif defined CM_LINUX
+	// Linux
+	int fd;
+	std::vector<int> Wd;
+#endif
+
+};
 }

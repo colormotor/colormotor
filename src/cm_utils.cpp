@@ -1,4 +1,7 @@
 #include "cm_utils.h"
+#ifdef CM_OSX
+#include <CoreFoundation/CFDate.h>
+#endif
 
 namespace cm
 {
@@ -178,7 +181,9 @@ bool readLine( std::string & s, FILE * file )
 
 	s = "";
 	
-	while( c != '\n' && c!= '\r')
+    if(c==EOF || c=='\x01')
+        return false;
+	while( c != '\n' && c!= '\r' )
 	{
 		if( c == EOF )
 		{
@@ -333,8 +338,8 @@ std::string binarize( const std::string & path, const std::string & name )
     std::string bufs = hexDump(&buf[0], sz);
     
     std::stringstream sizes, defs;
-    sizes << "size_t " << name <<  "_size=" << (int)sz;
-    defs << "\nunsigned char " << name << "[" << (int)sz << "] = \n{" << bufs << "\n};";
+    sizes << "size_t " << name <<  "_size=" << (int)sz << ";";
+    defs << "\nunsigned char " << name << "[] = \n{" << bufs << "\n};";
     
     fclose(f);
     return sizes.str() + defs.str();
@@ -424,6 +429,23 @@ std::string shaderString( const std::string& path )
 	}
 
 	return out;
+}
+
+double getTickCount()
+{
+#ifdef CM_LINUX
+    // from http://stackoverflow.com/questions/2958291/equivalent-to-gettickcount-on-linux
+    struct timespec ts;
+    unsigned theTick = 0U;
+    clock_gettime( CLOCK_REALTIME, &ts );
+    theTick  = ts.tv_nsec / 1000000;
+    theTick += ts.tv_sec * 1000;
+    return theTick;
+#elif defined CM_OSX
+    return CFAbsoluteTimeGetCurrent()*1000;
+#else
+    return (double) GetTickCount();
+#endif
 }
 
 
