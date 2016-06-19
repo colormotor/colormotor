@@ -324,7 +324,7 @@ msecs(msecs)
     timeout.tv_nsec = msecs * 1000000;//1000000;//500000000;    // 500 milliseconds
 	
     /* Set up a list of events to monitor. */
-    vnode_events = NOTE_DELETE |  NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_LINK | NOTE_RENAME | NOTE_REVOKE;
+    vnode_events = NOTE_DELETE |  NOTE_WRITE | NOTE_LINK | NOTE_RENAME | NOTE_REVOKE; //NOTE_ATTRIB | NOTE_EXTEND
     EV_SET( &events_to_monitor[0], event_fd, EVFILT_VNODE, EV_ADD | EV_CLEAR, vnode_events, 0, user_data);
 	
 	numFiles =  1;
@@ -373,12 +373,12 @@ void FileWatcher::run()
 		
 		if (event_count) 
 		{
-            /*
-			printf("Event  occurred.  Filter %d, flags %d, filter flags %s\n",
-				   event_data[0].filter,
-				   event_data[0].flags,
-				   flagstring(event_data[0].fflags));
-			*/
+            
+//			printf("Event  occurred.  Filter %d, flags %d, filter flags %s\n",
+//				   event_data[0].filter,
+//				   event_data[0].flags,
+//				   flagstring(event_data[0].fflags));
+			
 			fileFlags = event_data[0].fflags;
 		}
 		else
