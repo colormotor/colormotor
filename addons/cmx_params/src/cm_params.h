@@ -230,6 +230,9 @@ public:
 	Param* appendOption( const std::string & opt ) { options += opt; return this; }
 	bool hasOption( const std::string & opt );
 	
+    Param* sameLine() { return appendOption("sameline"); }
+    Param* noGui() { return appendOption("h"); }
+    
 	const std::string & getPath() const { return _path; }
 	void setPath( const std::string & path );
     
