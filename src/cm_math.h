@@ -76,7 +76,7 @@ M44 lookAt(const V3 & pos, const V3 & target, const V3 & up );
 V4 quatMul( const V4&a, const V4& b );
 V4 quat( const M44& m, double eps=1e-10 );
 M44 m44( const V4& q_ );
-V4 quat( const V3& axis, double angle );
+V4 quatAxisAngle( const V3& axis, double angle );
 V4 quatIdentity();
 V3 quatAxis( const V4& q, double eps=1e-10 );
 V4 quatEuler( double x, double y, double z );

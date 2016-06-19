@@ -171,8 +171,9 @@ bool areNonPowerOfTwoTexturesSupported() { return gfx::GLExtension("GL_ARB_textu
 #else
 static bool bPowerOf2Tex = true;
  
-bool cmAreNonPowerOfTwoTexturesSupported() { return bPowerOf2Tex; }
-void cmSetPowerOfTwoTexturesSupport( bool flag )
+bool areNonPowerOfTwoTexturesSupported() { return bPowerOf2Tex; }
+    
+void setPowerOfTwoTexturesSupport( bool flag )
 {
 	bPowerOf2Tex = flag;
 }
@@ -1168,27 +1169,27 @@ void drawPrimitives( const std::vector<V2> & P, int prim, int offset, int inc )
 }
 
 
-void drawPrimitives( const std::vector<arma::vec> & P, int prim, int offset, int inc )
+void drawPrimitives( const arma::mat & P, int prim, int offset, int inc )
 {
 	if(!P.size())
 		return;
 
 	gfx::beginVertices(prim);
-	switch(P[0].size())
+	switch(P.n_rows)
 	{
 		case 2:
 		{
-			for( int i = offset; i < P.size(); i+=inc )
+			for( int i = offset; i < P.n_cols; i+=inc )
 			{
-				glVertex2f(P[i][0], P[i][1] );
+				glVertex2f(P(0,i), P(1,i) );
 			}
 			break;
 		}
 		default:
 		{
-			for( int i = offset; i < P.size(); i+=inc )
+			for( int i = offset; i < P.n_cols; i+=inc )
 			{
-				glVertex3f(P[i][0], P[i][1], P[i][2] );
+				glVertex3f(P(0,i), P(1,i), P(2,i) );
 			}
 			break;
 		}
@@ -1203,13 +1204,13 @@ void draw( const Mesh& mesh )
     
     if(mesh.colors.size())
     {
-        glColorPointer( 4, GL_FLOAT, 0, &(mesh.colors[0]) );
+        glColorPointer( 4, GL_FLOAT, sizeof(float4), &(mesh.colors[0]) );
         glEnableClientState( GL_COLOR_ARRAY );
     }
 
     if(mesh.uvs.size())
     {
-        glTexCoordPointer( 2, GL_FLOAT, 0, &(mesh.uvs[0]) );
+        glTexCoordPointer( 2, GL_FLOAT, sizeof(float2), &(mesh.uvs[0]) );
         glEnableClientState( GL_TEXTURE_COORD_ARRAY );
     }
 
@@ -1412,7 +1413,7 @@ void drawLine( float x0, float y0, float x1, float y1)
 }
 
 
-void drawArrow( const arma::vec  &a, const arma::vec  &b, float size )
+void drawArrow( const V2&a, const V2&b, float size )
 {
 	#ifdef GFX_TO_EPS
 		bool tmpEps = renderingToEps;
@@ -1848,28 +1849,26 @@ void fillRect( float x, float y, float w, float h )
 
 }
 
-void drawFrustum( const M44& proj, const M44& invView )
+void drawFrustum( const M44& proj_, const M44& invView_ )
 {
-    drawFrustum((double*)proj.memptr(), (double*)invView.memptr());
-}
+	const double * proj = proj_.memptr();
+	const double * invView = invView_.memptr();
 
-void drawFrustum( const double * proj, const double * invView )
-{
 	// Get near and far from the Projection matrix.
-	const double near = proj[14] / (proj[10] - 1.0);
-	const double far = proj[14] / (1.0 + proj[10]);
+	const float near = proj[14] / (proj[10] - 1.0);
+	const float far = proj[14] / (1.0 + proj[10]);
  
 	// Get the sides of the near plane.
-	const double nLeft = near * (proj[8] - 1.0) / proj[0];
-	const double nRight = near * (1.0 + proj[8]) / proj[0];
-	const double nTop = near * (1.0 + proj[9]) / proj[5];
-	const double nBottom = near * (proj[9] - 1.0) / proj[5];
+	const float nLeft = near * (proj[8] - 1.0) / proj[0];
+	const float nRight = near * (1.0 + proj[8]) / proj[0];
+	const float nTop = near * (1.0 + proj[9]) / proj[5];
+	const float nBottom = near * (proj[9] - 1.0) / proj[5];
  
 	// Get the sides of the far plane.
-	const double fLeft = far * (proj[8] - 1.0) / proj[0];
-	const double fRight = far * (1.0 + proj[8]) / proj[0];
-	const double fTop = far * (1.0 + proj[9]) / proj[5];
-	const double fBottom = far * (proj[9] - 1.0) / proj[5];
+	const float fLeft = far * (proj[8] - 1.0) / proj[0];
+	const float fRight = far * (1.0 + proj[8]) / proj[0];
+	const float fTop = far * (1.0 + proj[9]) / proj[5];
+	const float fBottom = far * (proj[9] - 1.0) / proj[5];
  
 	pushMatrix();
 	glMultMatrixd( invView );
@@ -1918,6 +1917,7 @@ void drawFrustum( const double * proj, const double * invView )
 	
 	popMatrix();
 }
+
 
 void bindTexture( int id, int sampler )
 {
@@ -4213,20 +4213,26 @@ bool setM44( const std::string& handle, const M44& v )
 	return true;
 }
 
-bool setM44Array( const std::string& handle, const float* data, int n )
-{
-	int id = getUniformLocation(handle);
-	if(id == -1)
-		return false;
+// TODO fixme
+// bool setM44Array( const std::string& handle, const float* data, int n )
+// {
+// 	int id = getUniformLocation(handle);
+// 	if(id == -1)
+// 		return false;
 	
-	glUniformMatrix4fv(id, n, GL_FALSE, data);
-	return true;
-}
+// 	glUniformMatrix4fv(id, n, GL_FALSE, data);
+// 	return true;
+// }
 
-bool setM44Array( const std::string& handle, const std::vector<M44>& v )
-{
-	return setM44Array(handle, (const float*)&v[0], v.size());
-}
+// bool setM44Array( const std::string& handle, const std::vector<M44>& v )
+// {
+// 	return setM44Array(handle, (const float*)&v[0], v.size());
+// }
+
+// bool setM44Array( const std::string& handle, const std::vector<M44>& v )
+// {
+// 	return setM44Array(handle, (const float*)&v[0], v.size());
+// }
 
 bool setFloatArray( const std::string& handle, float*v, int n)
 {

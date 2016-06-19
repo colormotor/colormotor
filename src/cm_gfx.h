@@ -805,12 +805,12 @@ struct Mesh
     
     void color( const V4& clr )
     {
-        colors.push_back(clr);
+        colors.push_back(_float4(clr.x, clr.y, clr.z, clr.w));
     }
     
     void uv( const V2& coords )
     {
-        uvs.push_back(coords);
+        uvs.push_back(_float2(coords.x, coords.y));
     }
     
     int numVertices() const { return vertices.size()/3; }
@@ -818,8 +818,8 @@ struct Mesh
     
     
     std::vector <float> vertices;
-    std::vector <V4> colors;
-    std::vector <V2> uvs;
+    std::vector <float4> colors;
+    std::vector <float2> uvs;
     
     std::vector <unsigned int> indices;
     int primitive = gfx::TRIANGLELIST;
@@ -847,6 +847,8 @@ struct Tessellator
 	WINDING_ODD = GLU_TESS_WINDING_ODD,
 	WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
     };
+    
+    Tessellator() {}
     
     Tessellator( const Shape& shape, int winding=Tessellator::WINDING_ODD )
 	{
@@ -1018,15 +1020,7 @@ void lookAt(GLfloat eyex, GLfloat eyey, GLfloat eyez,
 void set2DView( float w, float h, int rotate );
 
 void setProjectionMatrix( const M44& mat );
-
-void setProjectionMatrix( const arma::fmat& mat );
-void setProjectionMatrix( const arma::mat& mat );
-
-void setModelViewMatrix( const arma::fmat& mat );
 void setModelViewMatrix( const arma::mat& mat );
-
-    
-void applyMatrix( const arma::fmat& mat );
 void applyMatrix( const arma::mat& mat );
 
 M44 getProjectionMatrix();
@@ -1070,7 +1064,7 @@ void normal( const arma::vec& v );
     
 /// Specify uv coordinates 
 void uv( float u, float v, int texIndex=0  );
-void uv( const arma::vec& v, int texIndex=0 );
+void uv( const V2& v, int texIndex=0 );
 
 /// Specify color (r,g,b,a)
 void color( const V4& c );
@@ -1142,7 +1136,7 @@ void drawPrimitives( const std::vector<V3> & P, int prim, int offset=0, int inc 
 void drawPrimitives( const std::vector<V2> & P, int prim, int offset=0, int inc = 1 );
     
 /// Draw a 3d box, given min and max coords
-void drawWireBox( const V3& min, const V3& max );
+void drawWireBox( const arma::vec& min, const arma::vec& max );
 
 void drawCube( const V3& center, const V3&size );
 void drawWireCube( const V3& center, const V3&size );
@@ -1154,7 +1148,6 @@ void drawAxis( const M44& mat, float scale  );
 
 /// Draw frustrum given a projection matrix and the inverse of the view matrix
 void drawFrustum( const M44& proj_, const M44& invView_ );
-void drawFrustum( const float *proj_, const float* invView_ );
 
 /// Draw 2d multivariate gaussian
 void drawGauss2d( const arma::vec& mu, const arma::mat& Sigma, const arma::vec& clr=arma::vec({1.0,0.5,0.0,0.3}), float stdDevScale=3.,  int subd=30 );
@@ -1171,7 +1164,7 @@ void deleteAllShaders();
 int loadShader( const std::string& vs, const std::string& ps );
 int reloadShader( int id, const std::string& vs, const std::string& ps );
 std::string shaderString( const std::string& path );
-void setTexture( const std::string& handle, const Texture& tex, int sampler );
+bool setTexture( const std::string& handle, Texture& tex, int sampler );
 void bindShader( int id );
 void unbindShader();
 
@@ -1182,8 +1175,8 @@ bool setFloat2( const std::string& handle, const V2& v );
 bool setFloat3( const std::string& handle, const V3& v );
 bool setFloat4( const std::string& handle, const V4& v );
 bool setM44( const std::string& handle, const M44& v );
-bool setM33( const std::string& handle, const M33& v );
-bool setM44Array( const std::string& handle, const std::vector<M44>& v );
+//bool setM33( const std::string& handle, const M33& v );
+//bool setM44Array( const std::string& handle, const std::vector<M44>& v );
 bool setFloatArray( const std::string& handle, float*v, int n);
 
 ///

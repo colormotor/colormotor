@@ -483,7 +483,7 @@ M44 lookAt(const V3 & pos, const V3 & target, const V3 & up )
         return m;
     }
     
-    V4 quat( const V3& axis, double angle )
+    V4 quatAxisAngle( const V3& axis, double angle )
     {
         V4 o;
         double hang = angle * 0.5f;
