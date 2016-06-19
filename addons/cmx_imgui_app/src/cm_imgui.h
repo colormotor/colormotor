@@ -11,6 +11,9 @@ namespace ImGui
     void BeginHighlightButton();
     void EndHighlightButton();
     void Title( const std::string & title );
+    void SetupStyleFromHue();
+    bool IconButton(const std::string &str);
+    bool IconSelectable(const std::string &str, bool active);
 }
 
 namespace cm
@@ -34,6 +37,14 @@ namespace cm
                 return false;
             
             return ImGui::IsMouseClicked(btn);
+        }
+        
+        static bool doubleClicked( int btn = 0 )
+        {
+            if(!hasFocus())
+                return false;
+            
+            return ImGui::IsMouseDoubleClicked(btn);
         }
         
         static bool released( int btn = 0 )
