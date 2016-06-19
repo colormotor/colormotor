@@ -14,7 +14,7 @@
 //#define ImVector  MyVector
 
 //---- Define assertion handler. Defaults to calling assert().
-//#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
+//#define IM_ASSERT(_EXPR)  if(!(_EXPR)) printf("IMGUI Error!");
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define IMGUI_API __declspec( dllexport )
@@ -44,8 +44,8 @@
 #define IM_VEC2_CLASS_EXTRA                                                 \
         ImVec2(const cm::V2& f) { x = f.x; y = f.y; }                       \
         ImVec2(const arma::vec& f) { x = f[0]; y = f[1]; }                       \
-        operator cm::V2() const { return cm::V2(x,y); }
-
+        operator cm::V2() const { return cm::V2(x,y); } 
+       // operator arma::vec() const { return arma::vec({x,y}); }
 #define IM_VEC4_CLASS_EXTRA                                                 \
         ImVec4(const cm::V4& f) { x = f.x; y = f.y; z = f.z; w = f.w; }     \
         operator cm::V4() const { return cm::V4(x,y,z,w); }

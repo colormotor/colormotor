@@ -20,6 +20,7 @@
 #pragma once
 #include "imgui.h"
 #include "gfx_ui_config.h"
+#include <stdlib.h>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -32,7 +33,7 @@ namespace ui
         DRAGGER_SQUARE = 1
     };
     
- 
+
     struct Trans2d
     {
         Trans2d() {}
@@ -40,7 +41,7 @@ namespace ui
         : x(x), y(y), pos(pos) {}
         
 #ifdef UI_TRANS2D_CLASS_EXTRA
-       UI_TRANS2D_CLASS_EXTRA
+        UI_TRANS2D_CLASS_EXTRA
 #endif
         
         ImVec2 x;
@@ -73,7 +74,7 @@ namespace ui
             draggerSize = 4.0;
             lineColor = 0xff666666;
             hoverColor = 0xff0000ff;
-            selectedColor = 0xff00ffff;
+            selectedColor = 0xff0044ff;
             color=0xff666666;
         }
 
@@ -100,7 +101,7 @@ namespace ui
     void init( float iconSize=20.0, const std::string& iconFontPath="");
     
     /// The UI should be called withing these begin end blocks
-    void begin( const std::string& name="ui" );
+    void begin( const std::string& name="gfx_ui" );
     void end();
     
     /// Will return true if the previous widget call has caught an interaction
@@ -112,6 +113,9 @@ namespace ui
     /// Highlights a dragger
     void highlightDragger( const ImVec2& pos, float size=-1.  );
     
+    /// Draw a line from a to b
+    void line( const ImVec2& a, const ImVec2& b );
+
     /// Angle handle widget
     float handle( int index, float ang, const ImVec2& pos, float length, bool selected=false );
     

@@ -22,6 +22,7 @@
 #include "gfx_ui.h"
 
 // IM dragger interface
+
 namespace ui
 {
     Config config;
@@ -53,6 +54,10 @@ namespace ui
     bool hasFocus()
     {
         ImGuiContext& g = *GImGui;
+        
+        // maintains cross compatibility with ImGui
+        if(!g.IO.WantCaptureMouse)
+            return false;
         
         if( g.HoveredWindow == uiWindow && g.HoveredIdPreviousFrame == 0 && g.HoveredId==0 && g.ActiveId==0 )
         {
@@ -118,8 +123,6 @@ namespace ui
         const ImGuiID id = window->GetID(idstr.str().c_str());
         const float w = ImGui::CalcItemWidth();
         
-        // Interaction first, helps with lag
-        // Need to check what is the best logic here
         bool res = false;
         if(g.ActiveId == id)
         {
@@ -144,16 +147,14 @@ namespace ui
         
         // Check hovered
         const bool hovered = ImGui::IsHovered(rect, id);
-        
         if (hovered)
         {
             ImGui::SetHoveredID(id);
-        }
-        
-        if (hovered && g.IO.MouseClicked[0])
-        {
-            ImGui::SetActiveID(id, window);
-            ImGui::FocusWindow(window);
+            if(g.IO.MouseClicked[0])
+            {
+                ImGui::SetActiveID(id, window);
+                ImGui::FocusWindow(window);
+            }
         }
         
         // Draw
@@ -176,12 +177,17 @@ namespace ui
         drawDragger(window, rect, config.selectedColor);
         //window->DrawList->AddRectFilled(rect.Min, rect.Max, config.selectedColor, config.rounding); //, rounding);
     }
-    
+
+    void line( const ImVec2& a, const ImVec2& b )
+    {
+        ImGui::GetCurrentWindow()->DrawList->AddLine(a, b, config.lineColor);
+    }
+
     static ImVec2 handlePos( const ImVec2& pos, float theta, float length )
     {
         return ImVec2(pos.x + cos(theta)*length, pos.y + sin(theta)*length);
     }
-
+                                  
     float handle( int index, float ang, const ImVec2& pos, float length, bool selected )
     {
         mod = false;
@@ -198,14 +204,12 @@ namespace ui
         const ImGuiID id = window->GetID(idstr.str().c_str());
         const float w = ImGui::CalcItemWidth();
         
-        // Interaction first, helps with lag
-        // Need to check what is the best logic here
         bool res = false;
         if(g.ActiveId == id)
         {
             if (g.IO.MouseDown[0])
             {
-                ang = atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
+                ang = ::atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
                 res=mod=true;
             }
             else
@@ -227,12 +231,11 @@ namespace ui
         if (hovered)
         {
             ImGui::SetHoveredID(id);
-        }
-         
-        if (hovered && g.IO.MouseClicked[0])
-        {
-            ImGui::SetActiveID(id, window);
-            ImGui::FocusWindow(window);
+            if(g.IO.MouseClicked[0])
+            {
+                ImGui::SetActiveID(id, window);
+                ImGui::FocusWindow(window);
+            }
         }
         
         // Draw
@@ -283,9 +286,9 @@ namespace ui
             return t;
         
         bool pmod=false, xmod=false, ymod=false;
-        ImGui::PushID(idstr.str().c_str());
-        
         ImVec2 px, py;
+        
+        ImGui::PushID(idstr.str().c_str());
         
         // position
         t.pos = dragger(0, t.pos, selected, config.draggerSize ); pmod = modified();
@@ -341,9 +344,8 @@ namespace ui
         
         if(ImGui::IsMouseDragging() && dragging)
         {
-            printf("Dragging\n");
             mod = true;
-            return makeFlipRect(clickp, ImGui::GetMousePos()); //clickp+ImGui::GetMouseDragDelta());
+            return makeFlipRect(clickp, ImGui::GetMousePos());
         }
         
         if(ImGui::IsMouseReleased(0))
@@ -364,9 +366,14 @@ namespace ui
             size = ImVec2(iconSize*items.length(), iconSize);
         else
             size = ImVec2(iconSize,iconSize*items.length());
-        //ImGui::SetNextWindowSize(size);
-        ImGui::Begin(title.c_str(), NULL, size, -1.0f,  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize );
+
+        int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
         ImGui::PushID(title.c_str());
+        if(horizontal)
+            ImGui::Begin(title.c_str(), NULL, size, -1.0f, flags);
+        else
+            ImGui::Begin("  ", NULL, size, -1.0f, flags);
+        
         ImGui::PushFont(iconFont);
     
         int sel = selectedItem;
@@ -389,8 +396,8 @@ namespace ui
         }
         
         ImGui::PopFont();
-        ImGui::PopID();
         ImGui::End();
+        ImGui::PopID();
         
         return sel;
     }
@@ -410,6 +417,8 @@ namespace ui
                                  ImVec2(0,100), // Y axis (expected orthogonal)
                                  ImVec2(200,500)); // position
 
+        static ImVec2 p1(300,300), p2(500,300), c1(350,200), c2(450,200);
+
         if(first)
         {
             for( int i = 0; i < 7; i++ )
@@ -421,6 +430,15 @@ namespace ui
         }
         ui::begin("demo");
         ImGuiWindow *win= ImGui::GetCurrentWindow();
+
+        // Edit bezier curve
+        p1 = ui::dragger( -100, p1);
+        p2 = ui::dragger( -101, p2);
+        c1 = ui::dragger( -102, c1);
+        c2 = ui::dragger( -103, c2);
+        ui::line(p1,c1);
+        ui::line(p2,c2);
+        win->DrawList->AddBezierCurve(p1, c1, c2, p2, 0xffff0000, 2.);
 
         // Edit an angle (arc test)
         arcPos = ui::dragger(pts.size(), /*numeric id starts at pts.size so we don't conflict with next ones*/ 
@@ -505,9 +523,11 @@ namespace ui
         // the letters in the second parameter correspond with the ascii codes 
         // for symbols in the loaded font (iconFont), which is set when calling ui::init
         state = ui::toolbar("state","ab",state);
-        // Show characters corresponding to each Icon in the font
+        
+        // This shows characters corresponding to each icon in the font
         static int foo = 0;
         foo = ui::toolbar("Default icons, hover to view the corresponding character","abcdefg123456789",foo, true, true);
+        
         ui::end();
         
        
@@ -1467,4 +1487,3 @@ namespace ui
     
 
 }
-
