@@ -11,7 +11,7 @@ public:
 	static App * instance;
     ParamList params;
     ArcBall ball;
-    
+    V4 clr;
 	App()
 	:
 	AppModule("Main Module")
@@ -24,6 +24,9 @@ public:
         params.addFloat("foo", 0.0, 0.0, 1.0); // A parameter not connected to a variable
         											 // can access it with params.getFloat("foo")
         params.addBool("foo b", true); // Bool case, use params.getBool("foo b")
+        clr = V4(1,0,0,1);
+        params.addColor("background",&clr);
+        params.loadXml("params.xml");
         
 	}
 
@@ -34,6 +37,7 @@ public:
 
 	void exit()
 	{
+        params.saveXml("params.xml");
 	}
 
 	bool gui()
@@ -79,7 +83,7 @@ public:
         float w = appWidth();
         float h = appHeight();
         
-        gfx::clear(1,1,1,1);
+        gfx::clear(clr);
         
 		gfx::setBlendMode(gfx::BLENDMODE_ALPHA);
 		gfx::enableDepthBuffer(false);

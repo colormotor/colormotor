@@ -14,6 +14,7 @@ namespace ImGui
     void SetupStyleFromHue();
     bool IconButton(const std::string &str);
     bool IconSelectable(const std::string &str, bool active);
+    bool ColorSelector(const std::string &label, cm::V4* clr);
 }
 
 namespace cm

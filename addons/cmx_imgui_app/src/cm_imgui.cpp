@@ -61,7 +61,7 @@ namespace ImGui
         
         float dummy;
         ImVec4 rgb;
-        ImGui::ColorEditMode(ImGuiColorEditMode_HSV);
+        //ImGui::ColorEditMode(ImGuiColorEditMode_HSV);
         
         ImGui::ColorConvertHSVtoRGB(hue/255.f, col_main_sat, col_main_val, rgb.x, rgb.y, rgb.z);
         ImGui::ColorEdit3("main", &rgb.x);
@@ -146,6 +146,15 @@ namespace ImGui
         return active;
     }
     
+    bool ColorSelector(const std::string &label, cm::V4* clr)
+    {
+        float imclr[4] = {clr->x, clr->y, clr->z, clr->w};
+        
+        bool res = ColorEdit4(label.c_str(), imclr);
+        *clr = cm::V4(imclr[0], imclr[1], imclr[2], imclr[3]);
+        return res;
+    }
+
 }
 
 
@@ -265,6 +274,10 @@ void imgui( ParamList& plist, float cursorPos  )
                 
             case PARAM_CSTRING:
                 p->dirty = ImGui::InputText(p->getName(),(char*)p->getAddress(), 50); // HACK!
+                break;
+
+            case PARAM_COLOR:
+                p->dirty = ImGui::ColorSelector(p->getName(), (V4*)p->getAddress());
                 break;
                 
         }
