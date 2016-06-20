@@ -6,16 +6,25 @@ built with [SWIG](http://www.swig.org) and a modified version of [ArmanPy](https
 
 To compile, you will need to install:
 
-- [Colormotor](https://github.com/colormotor/colormotor)
 - [SWIG](http://www.swig.org)  
 - [NumPy](http://www.scipy.org/install.html)
 
-Ideally the repository directory should be located at the same level as colormotor, then you can generate the binding code with
+## Compiling
+First generate the bindings with
+
 ```
 sh swig.sh
 ```
 
-This will generate the Python and C++ code necessary to call Colormotor functions from Python.
+Then compile with:
+
+```
+mkdir build; cd build
+cmake ..
+make
+```
+
+This will generate the python wrappers and dynamic libraries that will be located in the *modules* sub-directory.
 
 ## Notes
 ### Armadillo/NumPy
