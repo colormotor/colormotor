@@ -410,14 +410,17 @@ class Texture : public GfxObject
 
 /// Wrapper around an OpenCV mat, 
 /// handles conversion to OpenGL textures
+
+%rename(mat) Image::toArma() const;
+
 class Image
 {
 public:
 	enum 
 	{
-		GRAYSCALE = CV_8UC1,
-		BGRA = CV_8UC4,
-        RGB = CV_8UC3,
+		GRAYSCALE = 0,
+		BGRA = 1,
+        BGR = 2,
         UNKNOWN = -1
 	};
 
@@ -440,6 +443,12 @@ public:
 
 	~Image() { release(); }
 	
+	/// Build from armadillo cube
+	Image( const arma::uchar_cube &src );
+	
+	/// Convert to armadillo cube
+	arma::uchar_cube toArma() const;
+
 	void release();
 
 	/// Load image from file
@@ -473,10 +482,17 @@ public:
 	
 	void save( const std::string& path ) const;
 
-	// Todo convert to from ROS
-	
-	cv::Mat mat;
-	cv::Mat tmp;
+	/// threshold the image
+	void threshold(float thresh, bool inv=false);
+
+	/// Blur the image 
+	void blur( float value, bool gaussian=false );
+
+	/// Find contours in image
+	/// approx simpifies the contour
+	/// if minArea > 0, only contours with minArea<area<maxArea are kept
+	Shape findContours( bool approx=true, float minArea=0., float maxArea=1e30 );
+
 
     Texture tex;
 	//cv::ogl::Texture2D tex;
@@ -484,7 +500,6 @@ public:
 	int boundSampler = -1;
 	bool dirty = true;
 };
-
 
 /// Arcball, based on Shoemake 92 article
 class ArcBall
@@ -883,6 +898,12 @@ void fill( const Contour& shape, int winding=Tessellator::WINDING_ODD );
 
 /// Fill a shape
 void fill( const Shape& shape, int winding=Tessellator::WINDING_ODD );
+
+/// Draw an image (note this is SLOW, but handy for opencv interop)
+void image( Image& img, float x, float y, float w=0., float h=0. );
+
+/// Draw an image (note this is SLOW, but handy for opencv interop)
+void image( const arma::uchar_cube& img, float x, float y, float w=0., float h=0. );
 
 /// draw a set of primitives (2d/3d)
 void drawPrimitives( const arma::mat & P, int prim, int offset=0, int inc = 1 );

@@ -68,7 +68,8 @@ public:
 	const std::string & getPath() const { return _path; }
 	void setPath( const std::string & path );
     
-
+	Param* sameLine() { return appendOption("sameline"); }
+    Param* noGui() { return appendOption("h"); }
 };
 
 

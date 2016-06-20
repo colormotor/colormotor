@@ -134,7 +134,9 @@ static const char* names[NUM_PARAM_TYPES+1] =
 	"EVENT",
 	"SELECTION",
 	"INT",
-	"PARAM_COLOR",
+	"VECTORf",
+	"VECTORd",
+	"COLOR",
 	"UNKNOWN"
 };
 

@@ -22,6 +22,7 @@ namespace cm
 namespace gfx
 {
 
+
 bool init()
 {
 	#ifdef CM_LINUX
@@ -1259,6 +1260,18 @@ void fill( const Shape& shape, int winding )
         eps.fillShape(shape, currentColor);
     }
 #endif
+}
+
+/// Draw an image
+void image( Image& img, float x, float y, float w, float h )
+{
+	img.draw(x, y, w, h);
+}
+
+void image( const arma::uchar_cube& img, float x, float y, float w, float h )
+{
+	Image im(img);
+	im.draw(x,y,w,h);
 }
 
 void identity()
@@ -3607,6 +3620,61 @@ bool	Texture::readPixels( void * data, int width, int height, FORMAT fmt )
 ////////////////////////////////////////////////////////////////
 // Image impl
 
+static void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
+{
+	if(src.channels() == 1)
+	{
+		switch(format)
+		{
+			case Image::GRAYSCALE:
+				dst = src.clone();
+				break;
+			case Image::BGR:
+				cv::cvtColor(src, dst, CV_GRAY2BGR);
+				break;
+			case Image::BGRA:
+				cv::cvtColor(src, dst, CV_GRAY2BGRA);
+				break;
+		}
+	}
+	else if(src.channels() == 3)
+	{
+		switch(format)
+		{
+			case Image::GRAYSCALE:
+				cv::cvtColor(src, dst, CV_BGR2GRAY);
+				
+				break;
+			case Image::BGR:
+				dst = src.clone();
+				break;
+			case Image::BGRA:
+				cv::cvtColor(src, dst, CV_BGR2BGRA);
+				break;
+		}
+	}
+	else if(src.channels() == 4)
+	{
+		switch(format)
+		{
+			case Image::GRAYSCALE:
+				cv::cvtColor(src, dst, CV_BGRA2GRAY);
+				
+				break;
+			case Image::BGR:
+				cv::cvtColor(src, dst, CV_BGRA2BGR);
+				break;
+			case Image::BGRA:
+				dst = src.clone();
+				break;
+		}
+	}
+	else
+	{
+		assert(false);
+	}
+}
+
 /// Creates an empty image
 Image::Image( int w, int h, int format )
 {
@@ -3622,7 +3690,7 @@ Image::Image( const Image & mom )
 /// Copy image
 Image::Image( const Image & mom, int format )
 {
-	mom.mat.convertTo(mat, format);
+	convertColor(mom.mat, mat, format);
 }
 
 /// Create from opencv Mat
@@ -3638,7 +3706,7 @@ Image::Image( const std::string & path, int fmt )
     /// CV_LOAD_IMAGE_COLOR (>0) loads the image in the RGB format
 
     int loadMode = CV_LOAD_IMAGE_UNCHANGED;
-    if(fmt == Image::RGB)
+    if(fmt == Image::BGR)
     {
         loadMode = CV_LOAD_IMAGE_COLOR;
     }
@@ -3649,6 +3717,47 @@ Image::Image( const std::string & path, int fmt )
     
 	mat = cv::imread(path.c_str(), loadMode);
 }
+
+// Code adapted from
+// https://gist.github.com/psycharo/5b724fbae5f07008e7de
+Image::Image( const arma::uchar_cube &src )
+{
+	std::vector<cv::Mat_<unsigned char>> channels;
+    for (size_t c = 0; c < src.n_slices; ++c)
+    {
+        auto *data = const_cast<unsigned char*>(src.slice(c).memptr());
+        channels.push_back({int(src.n_cols), int(src.n_rows), data});
+    }
+ 
+    cv::merge(channels, mat);
+}
+	
+/// Convert to armadillo cube
+arma::uchar_cube Image::toArma() const
+{
+	// Type conv if necessary
+    const cv::Mat * addr = &mat;
+    cv::Mat tmp;
+    if((mat.type()&CV_MAT_DEPTH_MASK) != CV_8U)
+    {
+        double min, max;
+        cv::minMaxLoc(mat, &min, &max);
+        tmp = mat;
+        tmp -= min;
+        tmp.convertTo(tmp,CV_8U, 255.0/(max-min),-255.0/min);
+        addr = &tmp;
+    }
+    
+    const cv::Mat& src = *addr;
+    std::vector<cv::Mat_<unsigned char>> channels;
+    arma::uchar_cube dst(src.cols, src.rows, src.channels());
+    for (int c = 0; c < src.channels(); ++c)
+        channels.push_back({src.rows, src.cols, dst.slice(c).memptr()});
+    cv::split(src, channels);
+    return dst;
+}
+
+
 
 void Image::release()
 {
@@ -3697,7 +3806,7 @@ void Image::updateTexture()
         Texture::FORMAT tfmt;
         switch (mat.type()) {
                 
-            case Image::RGB:
+            case Image::BGR:
                 if( !tex.create(mat.ptr(), mat.step/3, height(), Texture::R8G8B8) )
                 {
                     debugPrint("Failed to create texture!");
@@ -3720,6 +3829,7 @@ void Image::updateTexture()
                 
             
             default:
+            	debugPrint("Cannot create texture for image format\n");
                 break;
         }
 
@@ -3833,6 +3943,72 @@ void Image::save( const std::string& path ) const
 {
 	cv::imwrite(path, mat);
 }
+
+
+void Image::threshold(float thresh, bool inv)
+{
+	convertColor(mat, tmp, Image::GRAYSCALE);
+    cv::threshold( tmp, mat, thresh, 255, inv ? CV_THRESH_BINARY_INV : CV_THRESH_BINARY );
+    dirty = true;
+}
+
+
+void Image::blur( float value, bool gaussian )
+{
+    int v = value;
+    if(value==0)
+        return;
+    
+    if( v % 2 == 0 )
+        v++;
+    
+    if(gaussian)
+        cv::GaussianBlur(mat, tmp, cv::Size(v,v),0);
+    else
+        cv::blur(mat, tmp, cv::Size(v,v));
+    
+    mat = tmp.clone();
+    dirty = true;
+}
+
+Shape Image::findContours( bool approx, float minArea, float maxArea )
+{
+    convertColor(mat, tmp, Image::GRAYSCALE);
+
+    /// Find contours
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours( tmp, contours, hierarchy, CV_RETR_TREE, approx?CV_CHAIN_APPROX_SIMPLE:CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
+    
+    bool prune = false;
+    if(minArea > 0.0)
+        prune = true;
+    
+    Shape shape;
+    for( int i = 0; i < contours.size(); i++ )
+    {
+        Contour ctr;
+        const std::vector<cv::Point>& c=contours[i];
+        for( int j = 0; j < c.size(); j++ )
+            ctr.addPoint(c[j].x, c[j].y);
+        
+        if(prune)
+        {
+            Box box = ctr.boundingBox();
+            float area = box.width() * box.height();
+            if(area > minArea && area < maxArea)
+                shape.add(ctr);
+        }
+        else
+        {
+            shape.add(ctr);
+        }
+    }
+    
+    return shape;
+}
+
+
 	
 
 V3 ArcBall::projectToSphere( const V2 & p, const V2 & center, float radius, bool constrained, const V3& axis )
