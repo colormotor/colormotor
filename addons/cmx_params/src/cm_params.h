@@ -36,6 +36,13 @@
 #include "tinyxml2/tinyxml2.h"
 using namespace cmtinyxml2;
 
+#define IN_COLORMOTOR
+
+#ifdef IN_COLORMOTOR
+	#include "cm.h"
+	#include "cm_utils.h"
+#endif
+
 namespace cm
 {
 
@@ -89,6 +96,7 @@ enum PARAM_TYPE
 	PARAM_INT,
 	PARAM_VECTORf,
 	PARAM_VECTORd,
+	PARAM_COLOR,
 	NUM_PARAM_TYPES
 };
 
@@ -151,7 +159,8 @@ public:
 	void initEvent( const std::string& name, bool * addr );
 	void initString( const std::string& name, std::string * addr );
 	void initCString( const std::string& name, char * addr );
-	
+
+
 	// note. this could be better done by handling arrays of values...
 	void initSelection(  const std::string& name, std::string* names, int * addr, int numSelections );
 	
@@ -169,7 +178,11 @@ public:
 	void setVectorf( const std::vector<float> &v, bool bInformListeners=true );
 	void setVectord( const std::vector<double> &v, bool bInformListeners=true );
 	
-	
+#ifdef IN_COLORMOTOR
+	void initColor( const std::string& name, V4* addr );
+	void setColor( const V4& clr, bool bInformListeners = true );
+	V4 getColor();
+#endif
 	////////////////////////////////////////////
 	// getters 
 
@@ -321,6 +334,11 @@ public:
 	bool setDouble( const std::string& name, double v, bool inform = true );
 	bool setBool( const std::string& name, bool v, bool inform = true );
 	bool setInt( const std::string& name, int v, bool inform = true );
+
+#ifdef IN_COLORMOTOR
+	Param* addColor( const std::string& name, V4* address );
+	Param* addColor( const std::string& name, const V4& v );
+#endif
 
 	void addListener( ParamListener * l );
 	

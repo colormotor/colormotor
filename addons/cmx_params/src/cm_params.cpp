@@ -543,6 +543,46 @@ void Param::setVectord( const std::vector<double>& v, bool bInformListeners )
 	}
 }
 
+#ifdef IN_COLORMOTOR
+void Param::initColor( const std::string& name, V4* addr )
+{
+	_addr = addr;
+	_numElements = 4;
+	if(!_addr)
+	{
+		_data = (char*)new V4(0,0,0,0);//char[4*sizeof(float)]; 
+		_addr = _data;
+		//memset(_data,0,4*sizeof(float));
+	}
+
+	_type = PARAM_COLOR;
+	_name = name;
+}
+
+void Param::setColor( const V4& clr, bool bInformListeners )
+{
+	if( _type != PARAM_COLOR )
+		return;
+
+	V4 * c = (V4*)_addr;
+	*c = clr;
+	
+	if(bInformListeners)
+	{
+		CALL_LISTENERS(onParamChanged)
+	}
+}
+
+
+V4  Param::getColor()
+{
+	if( _type != PARAM_COLOR)
+		return V4(0,0,0,0);
+	V4 * c =  (V4*)_addr;
+	return *c;
+}
+
+#endif
 
 void Param::setFloatArray( float * buf, bool bInformListeners )
 {
@@ -758,6 +798,18 @@ XMLElement	*Param::createXML(XMLDocument& doc)
 		assert(false);
 		// TODO
 		break;
+
+#ifdef IN_COLORMOTOR
+	case PARAM_COLOR:
+	{
+		node->SetAttribute("name",getName());
+		V4 clr = getColor();
+		stdPrintf(value,"%g %g %g %g",clr.x, clr.y, clr.z, clr.w);
+		node->LinkEndChild( doc.NewText(value.c_str()) );
+		break;
+	}
+#endif
+
 	}
 	
 	if( getData() )
@@ -810,6 +862,18 @@ bool	Param::readXML( XMLElement * elem )
 			assert(false);
 			// TODO
 			break;
+	#ifdef IN_COLORMOTOR
+		case PARAM_COLOR:
+		{
+			std::vector<std::string> toks = split(val," ");
+			assert(toks.size()==4);
+			V4 c;
+			for( int i = 0; i < 4; i++ )
+				c[i] = atof(toks[i].c_str());
+			setColor(c);
+		}
+			break;
+	#endif
 	}
 
 	if(getData())
@@ -1110,6 +1174,24 @@ bool ParamList::setInt( const std::string& name, int v, bool inform )
 	
 	return true;
 }
+
+#ifdef IN_COLORMOTOR
+Param* ParamList::addColor( const std::string& name, V4* address )
+{
+	Param * p = new Param();
+	p->initColor(name, address);
+	addParam(p);
+	return p;
+}
+
+Param* ParamList::addColor( const std::string& name, const V4& v )
+{
+	Param * p = addColor(name,(V4*)0);
+	p->setColor(v);
+	return p;
+}
+#endif
+
 
 bool ParamList::remove( Param * v )
 {
