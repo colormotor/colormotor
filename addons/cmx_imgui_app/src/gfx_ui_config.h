@@ -1,10 +1,11 @@
 #pragma once
 #include "cm_gfx.h"
 
+// Trans2d(const cm::M33& f) { x.x=f(0,0);  x.y=f(1,0); \
+// y.x=f(0,1);  y.y=f(1,1); \
+// pos.x=f(0,2);  pos.y=f(1,2); } \
+
 #define UI_TRANS2D_CLASS_EXTRA \
-Trans2d(const cm::M33& f) { x.x=f(0,0);  x.y=f(1,0); \
-y.x=f(0,1);  y.y=f(1,1); \
-pos.x=f(0,2);  pos.y=f(1,2); } \
 Trans2d(const arma::mat& f) { x.x=f(0,0);  x.y=f(1,0); \
 y.x=f(0,1);  y.y=f(1,1); \
 pos.x=f(0,2);  pos.y=f(1,2); } \

@@ -541,22 +541,42 @@ static void error_callback(int error, const char* description){
 // default app funcs:
 // Need to be defined by app
 
+static int _appInit( void *userData, int argc, char ** argv) { return 0; }
+static void _appExit(){}
+static void _appGui(){}
+static void _appRender( float w, float h ) {}
+
+
 namespace cm
 {
 static double frameTime;
-    
-int appInit( void *userData, int argc, char ** argv);
-void appGui();
-void appRender( float w, float h );
-void appExit();
+
+static std::function<int (void *, int, char**)> appInit=0;
+static std::function<void (void)> appExit;
+static std::function<void (void)> appGui=0;
+static std::function<void (float, float)> appRender=0;
+
 float appWidth() { return ImGui::GetIO().DisplaySize.x; }
 float appHeight() { return ImGui::GetIO().DisplaySize.y; }
 V2 appCenter() { return V2(appWidth()/2, appHeight()/2); }
 double appFrameTime() { return frameTime; }
-    
-int imguiApp(int argc, char** argv, const char * name, int w, int h)
+ 
+int imguiApp(int argc, char** argv, 
+            const char * name, 
+            int w, int h,
+            std::function<int(void*,int,char**)> appInit_,
+            std::function<void(void)> appExit_,
+            std::function<void(void)> appGui_,
+            std::function<void(float,float)> appRender_)
 {
+    //Callbacks
+    appInit = appInit_;
+    appExit = appExit_;
+    appGui = appGui_;
+    appRender = appRender_;
+
     //Setup GUI
+
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
           exit(1);

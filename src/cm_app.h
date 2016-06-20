@@ -3,11 +3,6 @@
 
 namespace cm
 {
-
-int appInit( void *userData, int argc, char ** argv);
-void appGui();
-void appRender( float w, float h );
-void appExit();
 float appWidth();
 float appHeight();
 double appFrameTime();
