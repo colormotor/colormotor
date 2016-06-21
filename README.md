@@ -1,50 +1,31 @@
 # COLORMOTOR
 
-Yet another iteration of the Colormotor graphics framework, principally aimed at research purposes. Builds on top of Armadillo for linear algebra operations, OpenCV for image manipulation and OpenGL for hardware accellerated rendering. 
 
-Armadillo is definitely not a fast or lightweight solution for a graphics-oriented framework. On the other hand it provides many utilities that make it easy to switch between C++, Python and Matlab, and vectorised operations result in much more concise code.
+Colormotor is a creative coding framework with a "scientific twist". The framework builds on top of Armadillo for linear algebra operations, OpenCV for image manipulation and OpenGL for hardware accellerated rendering. 
 
-## **Dependencies**
+Armadillo is definitely not the fastest or most lightweight solution for a graphics-oriented framework. On the other hand, the library provides many utilities that make it easy to switch between C++, Python and Matlab, and vectorised operations result in much more concise code.
 
-#### OpenCV
+### Python Bindings
+Colormotor includes [Python bindings](https://github.com/colormotor/colormotor/tree/master/addons/pycolormotor) that can be used independently as a module, or within the [Colormotor Sandbox](https://github.com/colormotor/pycm_sandbox_gl) live coding environment.  
 
-#### Armadillo
+## Dependencies
+The framework depends on:
 
-Download and Install the latest version of armadillo (linear algebra library), following the recommandations and instructions provided at this link:
-http://arma.sourceforge.net/download.html#linux
+- [OpenCV](http://opencv.org)
+- [Armadillo](http://arma.sourceforge.net)
 
+#### Platform specific
+#### OSX
+The paths in the CMake files to build the frameworks, and the Python bindings as well, assume that the dependencies are installed with [Homebrew](http://brew.sh), and located in the */usr/local* folder.
 
-#### glfw3
+#### Linux
+TODO
 
-Clone and install the latest version of GLFW to a folder (not in the ros path):
-
-```
-git clone https://github.com/glfw/glfw.git```
-cd glfw
-mkdir build
-cd build
-cmake -DBUILD_SHARED_LIBS=ON ../
-make
-sudo make install
-```
-
-**Notes** The `-DBUILD_SHARED_LIBS` is necessary otherwise cmake will create a static library.
-
-At the current date this is not the case, but eventualy GLFW3 may be available on apt get with:
-*sudo apt-get install libglfw3-dev*
-
-## **Building**
-
-### OSX
-Duplicate the basic folder (*apps/examples/basic/*) and compile the xcodeproj file in Xcode.
-
-### Linux
-Duplicate the basic folder (*apps/examples/basic/*). 
-Navigate to the folder and then:
-
+## Building
 ```
 mkdir build
 cd build
 cmake ..
 make
 ```
+
