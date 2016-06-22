@@ -574,9 +574,11 @@ class Image
 public:
 	enum 
 	{
-		GRAYSCALE = 0,
-		BGRA = 1,
-        BGR = 2,
+		// Actually just the number of channels
+		GRAYSCALE = 1,
+		BGR = 3,
+		BGRA = 4,
+        
         UNKNOWN = -1
 	};
 

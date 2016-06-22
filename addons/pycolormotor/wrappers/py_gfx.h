@@ -418,9 +418,11 @@ class Image
 public:
 	enum 
 	{
-		GRAYSCALE = 0,
-		BGRA = 1,
-        BGR = 2,
+		// Actually just the number of channels
+		GRAYSCALE = 1,
+		BGR = 3,
+		BGRA = 4,
+        
         UNKNOWN = -1
 	};
 
@@ -493,8 +495,7 @@ public:
 	/// if minArea > 0, only contours with minArea<area<maxArea are kept
 	Shape findContours( bool approx=true, float minArea=0., float maxArea=1e30 );
 
-
-    Texture tex;
+    //Texture tex;
 	//cv::ogl::Texture2D tex;
 
 	int boundSampler = -1;

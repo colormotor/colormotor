@@ -1,4 +1,4 @@
-#include "cm_gfx.h"
+ #include "cm_gfx.h"
 
 #define GFX_TO_EPS
 
@@ -3620,7 +3620,7 @@ bool	Texture::readPixels( void * data, int width, int height, FORMAT fmt )
 ////////////////////////////////////////////////////////////////
 // Image impl
 
-static void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
+void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
 {
 	if(src.channels() == 1)
 	{
@@ -3804,7 +3804,7 @@ void Image::updateTexture()
     {
         dirty = false;
         Texture::FORMAT tfmt;
-        switch (mat.type()) {
+        switch (mat.channels()) {
                 
             case Image::BGR:
                 if( !tex.create(mat.ptr(), mat.step/3, height(), Texture::R8G8B8) )
