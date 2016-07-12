@@ -3678,7 +3678,21 @@ void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
 /// Creates an empty image
 Image::Image( int w, int h, int format )
 {
-	mat = cv::Mat(h, w, format);
+	switch(format)
+	{
+		case Image::GRAYSCALE:
+			mat = cv::Mat(h, w, CV_8UC1);
+			break;
+		case Image::BGR:
+			mat = cv::Mat(h, w, CV_8UC3);
+			break;
+		case Image::BGRA:
+			mat = cv::Mat(h, w, CV_8UC4);
+			break;
+		default:
+			assert(0);
+	}		
+
 }
 
 /// Copy image
@@ -3918,11 +3932,11 @@ void Image::grabFrameBuffer()
 	glPixelStorei(GL_PACK_ROW_LENGTH, mat.step/mat.elemSize());
 
 	int glFormat;
-	if(mat.type() == CV_8UC1)
+    if(mat.channels() == Image::GRAYSCALE)
 		glFormat = GL_LUMINANCE;
-	else if(mat.type() == CV_8UC3)
+    else if(mat.channels() == Image::BGR)
 		glFormat = GL_BGR;
-	else if(mat.type() == CV_8UC4)
+    else if(mat.channels() == Image::BGRA)
 		glFormat = GL_BGRA;
 	else
 	{
