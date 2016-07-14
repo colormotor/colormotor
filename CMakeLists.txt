@@ -5,10 +5,13 @@ add_definitions(-g)
 # make it c++11 compatible
 add_definitions(-std=c++11)
 
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-add_library(colormotor STATIC
+set(src
 	${PROJECT_SOURCE_DIR}/src/cm_epsfile.cpp
 	${PROJECT_SOURCE_DIR}/src/cm_geom.cpp
 	${PROJECT_SOURCE_DIR}/src/cm_gfx.cpp
@@ -16,8 +19,7 @@ add_library(colormotor STATIC
 	${PROJECT_SOURCE_DIR}/src/cm_utils.cpp
 	
 	${PROJECT_SOURCE_DIR}/src/deps/clipper/clipper.cpp
-	${PROJECT_SOURCE_DIR}/src/platform/cm_utils_osx.mm
-
+	
 	${PROJECT_SOURCE_DIR}/addons/cmx_params/src/cm_params.cpp
 	${PROJECT_SOURCE_DIR}/addons/cmx_params/src/tinyxml2/tinyxml2.cpp
 		
@@ -27,7 +29,6 @@ add_library(colormotor STATIC
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/gfx_ui.cpp
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/imgui_draw.cpp
-	
 )
 
 include_directories(
@@ -36,6 +37,24 @@ include_directories(
 	  
 	  ${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src
 	  ${PROJECT_SOURCE_DIR}/addons/cmx_params/src
+)
+
+
+if(APPLE)
+	set(src
+		${src}
+		${PROJECT_SOURCE_DIR}/src/platform/cm_utils_osx.mm
+	)
+elseif(UNIX)
+	set(src
+		${src}
+		${PROJECT_SOURCE_DIR}/src/platform/cm_utils_linux.cpp
+	)
+endif()
+
+
+add_library(colormotor STATIC
+	${src}
 )
 
 if(APPLE)
@@ -50,6 +69,7 @@ if(APPLE)
 		/usr/local/lib
 	)
 
+	
 	target_link_libraries(colormotor
 		opencv_core
 		opencv_imgproc
@@ -69,9 +89,8 @@ if(APPLE)
 		"-framework AGL"
 		"-framework GLUT"
 	)
-endif(APPLE)
-
-if(LINUX)
+elseif(UNIX)
+	
 	find_package(Armadillo REQUIRED)
 	find_package(PkgConfig REQUIRED)
 	find_package(OpenCV REQUIRED)
@@ -117,8 +136,7 @@ if(LINUX)
 	${OpenCV_LIBRARIES}
 	${GLEW_LIBRARIES}
 	)
-endif(LINUX)
-
+endif()
 
 
 

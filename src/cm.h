@@ -92,6 +92,10 @@ typedef std::complex<float> complexf;
 #include <sys/time.h>
 #endif
 
+#ifdef CM_LINUX 
+#include <mutex>
+#endif
+
 #pragma GCC diagnostic ignored "-Wnarrowing"
 // hope this is safe....
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
@@ -109,6 +113,15 @@ typedef std::complex<float> complexf;
 #define CM_INLINE inline
 #define CALLBACK
 #endif
+
+// Ext vector types
+typedef float float4 __attribute__((ext_vector_type(4)));
+typedef float float3 __attribute__((ext_vector_type(3)));
+typedef float float2 __attribute__((ext_vector_type(2)));
+CM_INLINE float4 _float4(float x, float y, float z, float w) { return {x,y,z,w}; }
+CM_INLINE float3 _float3(float x, float y, float z) { return {x,y,z}; }
+CM_INLINE float2 _float2(float x, float y) { return {x,y}; }
+
 
 namespace cm
 {
@@ -151,13 +164,6 @@ template <typename T>
 bool    feq( T a, T b, T eps = 1e-10 )
 { return (fabs(b-a) < eps); }
 
-// Ext vector types
-typedef float float4 __attribute__((ext_vector_type(4)));
-typedef float float3 __attribute__((ext_vector_type(3)));
-typedef float float2 __attribute__((ext_vector_type(2)));
-CM_INLINE float4 _float4(float x, float y, float z, float w) { return {x,y,z,w}; }
-CM_INLINE float3 _float3(float x, float y, float z) { return {x,y,z}; }
-CM_INLINE float2 _float2(float x, float y) { return {x,y}; }
 
 // Extensions on armadillo fixed vector types,
 // Quite bloated, but allows to use vector element accessors (x,y,z)
