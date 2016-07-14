@@ -47,6 +47,12 @@ static void WaitForCleanup(void)
         gtk_main_iteration();
 }
 
+bool openFolderDialog( std::string & str, const char *title )
+{
+    printf("openFolderDialog not implemented on LINUX!!");
+    return false;
+}
+
 /// \todo String!
 /// Dialog for opening file
 bool		openFileDialog( std::string & path,  const char*  type, int maxsize  )
