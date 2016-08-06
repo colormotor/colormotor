@@ -1,5 +1,8 @@
 #include "cm_utils.h"
 #include <gtk/gtk.h>
+#include <sys/types.h>
+#include <sys/inotify.h>
+#include <poll.h>
 
 namespace cm
 {
@@ -42,6 +45,12 @@ static void WaitForCleanup(void)
 {
     while (gtk_events_pending())
         gtk_main_iteration();
+}
+
+bool openFolderDialog( std::string & str, const char *title )
+{
+    printf("openFolderDialog not implemented on LINUX!!");
+    return false;
 }
 
 /// \todo String!
@@ -224,7 +233,7 @@ msecs(msecs)
   int wd = inotify_add_watch(fd, path.c_str(), IN_MODIFY ); //IN_ALL_EVENTS);
     Wd.push_back(wd);
 
-    paths.push_back(path);
+    //paths.push_back(path);
 
     running = true;
     thread = std::thread(&FileWatcher::run, this);

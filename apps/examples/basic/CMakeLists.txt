@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(basic_example)
 
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
 find_package(Armadillo REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -29,6 +32,7 @@ include_directories(include
 )
 
 link_directories(
+	${PROJECT_SOURCE_DIR}/../../../lib/
 	${GTK2_LIBRARY_DIRS}
 )
 
@@ -38,25 +42,10 @@ add_definitions(
 
 add_executable(basic_example
 	${PROJECT_SOURCE_DIR}/main.cpp
-	
-	${PROJECT_SOURCE_DIR}/../../../src/cm_epsfile.cpp
-	${PROJECT_SOURCE_DIR}/../../../src/cm_geom.cpp
-	${PROJECT_SOURCE_DIR}/../../../src/cm_gfx.cpp
-	${PROJECT_SOURCE_DIR}/../../../src/cm_math.cpp
-	${PROJECT_SOURCE_DIR}/../../../src/cm_utils.cpp
-	
-	${PROJECT_SOURCE_DIR}/../../../src/deps/clipper/clipper.cpp
-	${PROJECT_SOURCE_DIR}/../../../src/platform/cm_utils_linux.cpp
-
-	${PROJECT_SOURCE_DIR}/../../../addons/cmx_params/src/cm_params.cpp
-	${PROJECT_SOURCE_DIR}/../../../addons/cmx_params/src/tinyxml2/tinyxml2.cpp
-		
-	${PROJECT_SOURCE_DIR}/../../../addons/cmx_imgui_app/src/cm_imgui_app.cpp
-	${PROJECT_SOURCE_DIR}/../../../addons/cmx_imgui_app/src/cm_imgui.cpp
-	${PROJECT_SOURCE_DIR}/../../../addons/cmx_imgui_app/src/imgui.cpp
 )
 
 target_link_libraries(basic_example
+colormotor
 rt
 m
 dl
