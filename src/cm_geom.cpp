@@ -317,10 +317,10 @@ int pointIn( const V2& p , const Contour & ctr )
 
 M33 rectTransform( const Box &src, const Box&dst, float padding )
 {
-    float srcw = src.width()+padding*2;
-    float srch = src.height()+padding*2;
-    float dstw = dst.width();
-    float dsth = dst.height();
+    float srcw = src.width();
+    float srch = src.height();
+    float dstw = dst.width()-padding*2;
+    float dsth = dst.height()-padding*2;
     float ratio = std::min(dstw/srcw, dsth/srch);
     return trans2d((V2)dst.center()) * scaling2d(V2(ratio,ratio)) * trans2d((V2)-src.center());
 }
