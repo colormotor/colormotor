@@ -221,18 +221,18 @@ fileFlags(0),
 msecs(msecs)
 {
   //http://man7.org/tlpi/code/online/diff/inotify/demo_inotify.c.html
-     
-     struct inotify_event *event;
- 
-     fd = inotify_init();                 /* Create inotify instance */
-     if (fd == -1)
-         assert(0);
 
-  numFiles =  1;
-  
-  int wd = inotify_add_watch(fd, path.c_str(), IN_MODIFY ); //IN_ALL_EVENTS);
+    struct inotify_event *event;
+
+    fd = inotify_init();                 /* Create inotify instance */
+    if (fd == -1)
+        assert(0);
+
+    int wd = inotify_add_watch(fd, path.c_str(), IN_ALL_EVENTS ); //IN_ALL_EVENTS);
+
     Wd.push_back(wd);
 
+    printf("Watching file: %s\n", path.c_str());
     //paths.push_back(path);
 
     running = true;
@@ -243,9 +243,9 @@ FileWatcher::~FileWatcher()
 {
     stop();
     for( int i = 0; i < Wd.size(); i++ )
-       inotify_rm_watch( fd, Wd[i] );
-   close(fd);
-     printf("Closed file watcher\n");
+        inotify_rm_watch( fd, Wd[i] );
+    close(fd);
+    printf("Closed file watcher\n");
 }
 
 bool FileWatcher::hasFileChanged()
@@ -258,7 +258,7 @@ bool FileWatcher::hasFileChanged()
 static void             /* Display information from inotify_event structure */
  displayInotifyEvent(FileWatcher * watcher, struct inotify_event *i)
  {
-    /*
+    
      printf("    wd =%2d; ", i->wd);
      if (i->cookie > 0)
          printf("cookie =%4d; ", i->cookie);
@@ -283,10 +283,12 @@ static void             /* Display information from inotify_event structure */
      if (i->mask & IN_UNMOUNT)       printf("IN_UNMOUNT ");
      printf("\n");
     
-*/
+
 
     if( i->len < 1 )
         return;
+
+    printf("caz\n");
 
     std::string name = i->name;
     if( getFileExt(name) == "py" && getFilenameFromPath(name) != "tmp.py" )
@@ -315,26 +317,34 @@ void FileWatcher::run()
   char *p;
   struct inotify_event *event;
   char buf[EVENT_BUF_LEN] __attribute__ ((aligned(8)));
-    printf("Starting file watcher\n");
+  printf("Starting file watcher\n");
 
   while( running )
   {
+        printf("Polling\n");
+        //std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
         //mutex.lock();
         struct pollfd pfd = { fd, POLLIN, 0 };
-        int ret = poll(&pfd, 1, 50);  // timeout of 50ms
+        int ret = poll(&pfd, 1, 1050);  // timeout of 50ms
         if (ret < 0) {
             fprintf(stderr, "poll failed: %s\n", strerror(errno));
         } else if (ret == 0) {
+            printf("nothing from poll\n");
             continue;
         }
 
-    int numRead = read(fd, buf, EVENT_BUF_LEN);
-        
+        int numRead = read(fd, buf, EVENT_BUF_LEN);
+    
         if( numRead == 0 )
     {
+        printf("nothing to read\n");
       continue;
     }
-
+    else
+    {
+        printf("stuff\n");
+    }
     for (p = buf; p < buf + numRead; ) {
              event = (struct inotify_event *) p;
              displayInotifyEvent(this, event);
@@ -346,6 +356,8 @@ void FileWatcher::run()
 
     //Thread::sleep(msecs);
   }
+
+  printf("Exit loop\n");
 }
 
 
