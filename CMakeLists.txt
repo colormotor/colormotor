@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(colormotor)
-
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
+project(colormotor)
 
 add_definitions(-g)
 # make it c++11 compatible
