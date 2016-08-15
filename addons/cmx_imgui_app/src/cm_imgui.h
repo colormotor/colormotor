@@ -110,9 +110,16 @@ namespace cm
     class Keyboard
     {
     public:
-        static bool down(int key_index) { return ImGui::IsKeyDown(ImGui::GetIO().KeyMap[key_index]); }
-        static bool pressed(int key_index, bool repeat ) { return ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[key_index], repeat); }
-        static bool released(int key_index) { return ImGui::IsKeyReleased(ImGui::GetIO().KeyMap[key_index]); }  
+        static int getKeyIndex( int key_index )
+        {
+            if( key_index < ImGuiKey_COUNT )
+                return ImGui::GetIO().KeyMap[key_index];
+            return key_index;
+        }
+        
+        static bool down(int key_index) { return ImGui::IsKeyDown(getKeyIndex(key_index)); }
+        static bool pressed(int key_index, bool repeat=true ) { return ImGui::IsKeyPressed(getKeyIndex(key_index), repeat); }
+        static bool released(int key_index) { return ImGui::IsKeyReleased(getKeyIndex(key_index)); }
     };
 
 }
