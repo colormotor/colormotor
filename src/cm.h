@@ -164,6 +164,27 @@ template <typename T>
 bool    feq( T a, T b, T eps = 1e-10 )
 { return (fabs(b-a) < eps); }
 
+/// Clamp in between lo and hi
+template <typename T1, typename T2, typename T3>
+T1   clamp( T1 in, T2 lo, T3 hi )
+{
+    if(in < lo) return lo; if(in > hi) return hi; return in;
+}
+
+/// return value wrapped in a b range
+template <typename T>
+T   wrap( T val, T a, T b )
+{
+    T range = b-a;
+    
+    while( val > b )
+        val-=range;
+    while( val < a )
+        val+=range;
+        
+    return val;
+}
+
 
 // Extensions on armadillo fixed vector types,
 // Quite bloated, but allows to use vector element accessors (x,y,z)
