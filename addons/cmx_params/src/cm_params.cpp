@@ -1417,6 +1417,14 @@ void ParamList::addListener( ParamListener * l )
 		getParam(i)->addListener(l);
 }
 	
+bool ParamList::isDirty()
+{
+	bool res = false;
+	for( int i = 0; i < getNumParams(); i++ )
+		res |= getParam(i)->isDirty();
+	return res;
+}
+	
 ParamList* ParamList::clone( bool keepAddresses )
 {
 	ParamList * d = new ParamList();

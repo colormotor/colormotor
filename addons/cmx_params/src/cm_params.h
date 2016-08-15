@@ -49,7 +49,7 @@ namespace cm
 /// Trigger, a class that checks if a value has changed.
 template <class Type> struct Trigger
 {
-	Trigger() { oldVal = val = 0; }
+	Trigger( Type v=0 ) { oldVal = val = v; }
 	
 	/// Will return true if the value has changed
 	bool isTriggered()
@@ -342,6 +342,8 @@ public:
 
 	void addListener( ParamListener * l );
 	
+	bool isDirty();
+
 	const std::string &getName() const { return name; }
 	void setName( const std::string & name ) { this->name = name; }
 
