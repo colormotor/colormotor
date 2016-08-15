@@ -127,19 +127,33 @@ std::string getCurrentDirectory()
 
 ///////////////////////////////////////////////////////////////////////
 
-void	getFilesInFolder( std::vector <std::string> &files, const char * path)
+std::string joinPath( std::string a, std::string b )
 {
+	if( a[a.length()-1] != '/' )
+		a = a+"/";
+	if( b[0] == '/' )
+		b = b.substr(1, std::string::npos);
+	return a+b;
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
+std::vector <std::string> getFilesInFolder( const std::string& path)
+{
+	std::vector <std::string> files;
 	struct dirent *de=NULL;
 	DIR *d=NULL;
 
 	std::string p = path;
-	p+="/";
+	if(p[p.length()-1] != '/')
+		p+="/";
 	
-	d=opendir(path);
+	d=opendir(path.c_str());
 	if(d == NULL)
 	{
 		debugPrint("Couldn't open directory");
-		return;
+		return files;
 	}
 
 	// Loop while not NULL
@@ -159,6 +173,7 @@ void	getFilesInFolder( std::vector <std::string> &files, const char * path)
 	}
 	
 	closedir(d);
+	return files;
 }
 
 ///////////////////////////////////////////////////////////////////////

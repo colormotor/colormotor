@@ -58,8 +58,11 @@ std::string getFileExt(  const std::string & fileName );
 
 bool	fileExists( const std::string & fileName );
 
+/// Joins paths in a and b
+std::string joinPath( std::string a, std::string b );
+
 /// List files in folder @ path
-void	getFilesInFolder( std::vector <std::string> &files, const char * path);
+std::vector <std::string> getFilesInFolder( const std::string& path);
 
 /// Get current working dir
 std::string getCurrentDirectory();
