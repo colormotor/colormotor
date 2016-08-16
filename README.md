@@ -10,7 +10,6 @@ Colormotor includes [Python bindings](https://github.com/colormotor/colormotor/t
 
 ## Dependencies
 The framework depends on:
-
 - [OpenCV](http://opencv.org)
 - [Armadillo](http://arma.sourceforge.net)
 
@@ -24,7 +23,10 @@ The frameworkd relies on some of the [Clang language extensions](http://clang.ll
 sudo apt-get update
 sudo apt-get install clang
 ```
-
+You will also need GLEW and GLFW3 that can be installed with
+```
+sudo apt-get install libglew-dev libglfw3-dev
+```
 ## Building
 ### Linking the libraray
 Navigate to the *colormotor* repository directory and then
