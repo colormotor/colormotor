@@ -47,13 +47,58 @@ static void WaitForCleanup(void)
         gtk_main_iteration();
 }
 
-bool openFolderDialog( std::string & str, const char *title )
+/// Dialog for opening file
+bool    openFolderDialog( std::string & path,  const char *title  )
 {
-    printf("openFolderDialog not implemented on LINUX!!");
-    return false;
+  static std::string currentOpenPath="none";
+
+  bool result = false;
+  char * outPath;
+
+  GtkWidget *dialog;
+
+    if ( !gtk_init_check( NULL, NULL ) )
+    {
+        return false;
+    }
+
+    dialog = gtk_file_chooser_dialog_new( title,
+                                          NULL,
+                                          GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                          "_Cancel", GTK_RESPONSE_CANCEL,
+                                          "_Open", GTK_RESPONSE_ACCEPT,
+                                          NULL );
+
+    /* Set the default path */
+    if(currentOpenPath != "none")
+      SetDefaultPath(dialog, currentOpenPath.c_str());
+  else
+    SetDefaultPath(dialog, getCurrentDirectory().c_str());
+
+    result = false;
+    if ( gtk_dialog_run( GTK_DIALOG(dialog) ) == GTK_RESPONSE_ACCEPT )
+    {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename( GTK_FILE_CHOOSER(dialog) );
+
+        path = filename;
+        
+        g_free( filename );
+
+        currentOpenPath = getDirectoryFromPath(path);
+        
+        result = true;
+    }
+
+    WaitForCleanup();
+    gtk_widget_destroy(dialog);
+    WaitForCleanup();
+
+    return result;
 }
 
-/// \todo String!
+
 /// Dialog for opening file
 bool		openFileDialog( std::string & path,  const char*  type, int maxsize  )
 {
