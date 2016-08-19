@@ -108,13 +108,25 @@ elseif(UNIX)
 	find_package(OpenGL REQUIRED)
 	find_package(GLEW REQUIRED)
 	pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
-	pkg_search_module(PYTHON REQUIRED python>=2.6)
+	#pkg_search_module(PYTHON REQUIRED python>=2.6)
+	# Nifty trick from http://stackoverflow.com/questions/24174394/cmake-is-not-able-to-find-python-libraries
+
+	execute_process(COMMAND python -c "import sys; from distutils.sysconfig import get_python_inc; sys.stdout.write(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS)
+
+	execute_process(COMMAND python -c "import sys; import distutils.sysconfig as sysconfig; sys.stdout.write(sysconfig.get_config_var('LIBDIR'))" OUTPUT_VARIABLE PYTHON_LIBRARY_DIRS)
+
+	execute_process(COMMAND python -c "import sys; import distutils.sysconfig as sysconfig; sys.stdout.write(sysconfig.get_config_var('LDLIBRARY'))" OUTPUT_VARIABLE PYTHON_LIBRARIES)
+
+	message('Python lib dir')
+	message(${PYTHON_LIBRARY_DIRS})
+	message('Python lib')
+	message(${PYTHON_LIBRARY_DIRS}/${PYTHON_LIBRARIES})
 
 	include_directories(
 		${GTK2_INCLUDE_DIRS}
 		${ARMADILLO_INCLUDE_DIRS}
 		${PYTHON_INCLUDE_DIRS}
-		/usr/local/lib/python2.7/dist-packages/numpy/core/include/
+		${PYTHON_LIBRARY_DIRS}/python2.7/dist-packages/numpy/core/include/
 	)
 
 	link_directories(
@@ -127,7 +139,7 @@ elseif(UNIX)
 	)
 
 	# Mess
-
+	# Using PYTHON LIB DIR FOR ANACONDA COMPAT
 	target_link_libraries(pycm
 	rt
 	m
@@ -145,12 +157,15 @@ elseif(UNIX)
 	Xau
 	Xdmcp
 	glfw
+	${PYTHON_LIBRARY_DIRS}/libopencv_core.so
+	${PYTHON_LIBRARY_DIRS}/libopencv_imgproc.so
+	${PYTHON_LIBRARY_DIRS}/libopencv_legacy.so
+	${PYTHON_LIBRARY_DIRS}/libopencv_highgui.so
 	${OPENGL_LIBRARIES}
 	${GTK2_LIBRARIES}
 	${ARMADILLO_LIBRARIES}
-	${OpenCV_LIBRARIES}
 	${GLEW_LIBRARIES}
-	${PYTHON_LIBRARIES}
+	${PYTHON_LIBRARY_DIRS}/${PYTHON_LIBRARIES}
 	)
 
 	add_custom_command(
