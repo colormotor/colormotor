@@ -5,6 +5,8 @@
 
 #include "colormotor.h"
 #include "cm_params.h"
+// Safe defines
+typedef cm::V2 ForceV2;
 
 #define SWIG_FILE_WITH_INIT
 #include "cm_imgui.h"
@@ -63,10 +65,10 @@
 %insert("python") %{
     def __iter__(self):
     	for i in range(self.size()):
-    		yield self.points.col(i)
+    		yield self.getPoint(int(i))
 
     def __getitem__(self, i):
-    	return self.points.col(i)
+    	return self.getPoint(int(i))
 
     def __len__(self):
     	return self.size()
