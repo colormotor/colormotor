@@ -273,7 +273,7 @@ msecs(msecs)
     if (fd == -1)
         assert(0);
 
-    int wd = inotify_add_watch(fd, path.c_str(), IN_ALL_EVENTS ); //IN_ALL_EVENTS);
+    int wd = inotify_add_watch(fd, path.c_str(), IN_MODIFY ); //IN_ALL_EVENTS);
 
     Wd.push_back(wd);
 
@@ -327,16 +327,10 @@ static void             /* Display information from inotify_event structure */
      if (i->mask & IN_Q_OVERFLOW)    printf("IN_Q_OVERFLOW ");
      if (i->mask & IN_UNMOUNT)       printf("IN_UNMOUNT ");
      printf("\n");
-    
-
-
-    if( i->len < 1 )
-        return;
-
-    printf("caz\n");
+  
 
     std::string name = i->name;
-    if( getFileExt(name) == "py" && getFilenameFromPath(name) != "tmp.py" )
+    if(watcher->fileFlags != 1) //getFileExt(name) == "py" && getFilenameFromPath(name) != "tmp.py" )
     {
         printf("Modified file: %s\n", i->name);
         watcher->fileFlags = 1;
@@ -366,38 +360,37 @@ void FileWatcher::run()
 
   while( running )
   {
-        printf("Polling\n");
         //std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
         //mutex.lock();
         struct pollfd pfd = { fd, POLLIN, 0 };
-        int ret = poll(&pfd, 1, 1050);  // timeout of 50ms
+        int ret = poll(&pfd, 1, 50);  // timeout of 50ms
         if (ret < 0) {
             fprintf(stderr, "poll failed: %s\n", strerror(errno));
         } else if (ret == 0) {
-            printf("nothing from poll\n");
+            //printf("nothing from poll\n");
             continue;
         }
 
         int numRead = read(fd, buf, EVENT_BUF_LEN);
     
         if( numRead == 0 )
-    {
-        printf("nothing to read\n");
-      continue;
-    }
-    else
-    {
-        printf("stuff\n");
-    }
-    for (p = buf; p < buf + numRead; ) {
-             event = (struct inotify_event *) p;
-             displayInotifyEvent(this, event);
-         //fileFlags = 1;
-             p += EVENT_SIZE + event->len;
-         }
-         //mutex.unlock();
-         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        {
+            printf("nothing to read\n");
+          continue;
+        }
+        else
+        {
+            printf("stuff\n");
+        }
+        for (p = buf; p < buf + numRead; ) 
+        {
+            event = (struct inotify_event *) p;
+            displayInotifyEvent(this, event);
+            p += EVENT_SIZE + event->len;
+        }
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     //Thread::sleep(msecs);
   }
