@@ -39,5 +39,71 @@ double squareDistanceToSegment( const V2& p, const V2& a, const V2& b );
 double distanceToLine( const V2& p, const V2& a, const V2& b );
     
 M33 rectTransform( const Box &src, const Box&dst, float padding=0.0 );
-    
+  
+/// Line intersection utils
+/*
+%typemap(in, numinputs=0) ForceV2* intersection (ForceV2 temp)
+{
+ $1 = &temp;
+}
+
+%typemap(argout) ForceV2* intersection
+{
+ 	  $result= SWIG_Python_AppendOutput( $result, SWIG_NewPointerObj(new arma::vec(*($1)), $1_descriptor, 0) );
+}
+
+int lineIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineSegmentIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+	
+//template <typename double> double median( const std::vector<double> & vals );
+int segmentLineIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int segmentIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineRayIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int rayLineIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int rayIntersection( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineIntersectionRange( ForceV2* intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2,
+					  float aRangeMin,
+					  float aRangeMax,
+					  float bRangeMin,
+					  float bRangeMax
+					   );
+*/
 }
