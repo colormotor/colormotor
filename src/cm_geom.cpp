@@ -258,7 +258,7 @@ double angleBetween( const V2& a, const V2& b)
     return ::atan2( a[0]*b[1] - a[1]*b[0], a[0]*b[0] + a[1]*b[1] );
 }
 
-double triangleArea( const V2& a, const V2& b, const V2 & c )
+double triangleArea( const V2& a, const V2& b, const V2& c )
 {
     V2 da = a-b;
     V2 db = c-b;
@@ -324,6 +324,133 @@ M33 rectTransform( const Box &src, const Box&dst, float padding )
     float ratio = std::min(dstw/srcw, dsth/srch);
     return trans2d((V2)dst.center()) * scaling2d(V2(ratio,ratio)) * trans2d((V2)-src.center());
 }
+
+
+int lineIntersection( V2 * intersection,  V2 * uv, 
+					  const V2& a1, 
+					  const V2& a2, 
+					  const V2& b1, 
+					  const V2& b2, 
+					  bool aIsSegment, bool bIsSegment )
+{
+	const double EPS = 0.00001;
+	double denom  = (b2.y-b1.y) * (a2.x-a1.x) - (b2.x-b1.x) * (a2.y-a1.y);
+	double numera = (b2.x-b1.x) * (a1.y-b1.y) - (b2.y-b1.y) * (a1.x-b1.x);
+	double numerb = (a2.x-a1.x) * (a1.y-b1.y) - (a2.y-a1.y) * (a1.x-b1.x);
+   
+	if (fabs(denom) < EPS) 
+	{
+		intersection->x = 0;
+		intersection->y = 0;
+		return 0;
+	}
+
+	uv->x = numera / denom;
+	uv->y = numerb / denom;
+
+	intersection->x = a1.x + uv->x * (a2.x - a1.x);
+	intersection->y = a1.y + uv->x * (a2.y - a1.y);
+
+   bool isa = true;
+   if( aIsSegment && (uv->x  < 0 || uv->x  > 1) )
+		isa = false;
+   bool isb = true;
+   if( bIsSegment && (uv->y < 0 || uv->y  > 1) )
+		isb = false;
+
+	return isa&&isb;
+}
+
+	  
+int lineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv;
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,false);
+					  }
+					  
+int lineSegmentIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv;
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,true);
+					  }
+			
+	
+//template <typename double> double median( const std::vector<double> & vals );
+int segmentLineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv;
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,true,false);
+					}
+	
+int segmentIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv;
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,true,true);
+					}
+
+int lineRayIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv(0,0);
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,false) && uv.y > 0;
+					  }
+
+int rayLineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv(0,0);
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,false) && uv.x > 0;
+					  }
+
+int rayIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 )
+					  {
+						V2 uv(0,0);
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,false) && uv.x > 0 && uv.y > 0;
+					  }
+
+int lineIntersectionRange( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2,
+					  float aRangeMin,
+					  float aRangeMax,
+					  float bRangeMin,
+					  float bRangeMax
+					   )
+					  {
+						V2 uv(0,0);
+						return lineIntersection(intersection,&uv,a1,a2,b1,b2,false,false) 
+								&& uv.x > aRangeMin && uv.x < aRangeMax 
+								&& uv.y > bRangeMin && uv.y < bRangeMax ;
+					  }
+
 
 /*
 void saveHpgl( const std::string& path, const Box& srcBox=Box(0, 0, 512, 512), const Box& dstBox = Box(-3000, -3000, 6000, 6000 ) )

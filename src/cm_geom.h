@@ -66,4 +66,66 @@ double distanceToLine( const V2& p, const V2& a, const V2& b );
     
 M33 rectTransform( const Box &src, const Box&dst, float padding=0.0 );
     
+/// Line intersection utils
+int lineIntersection( V2 * intersection,  V2 * uv, 
+					  const V2& a1, 
+					  const V2& a2, 
+					  const V2& b1, 
+					  const V2& b2, 
+					  bool aIsSegment = true, bool bIsSegment = true );
+
+int lineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineSegmentIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+	
+//template <typename double> double median( const std::vector<double> & vals );
+int segmentLineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int segmentIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineRayIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int rayLineIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int rayIntersection( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2 );
+
+int lineIntersectionRange( V2 * intersection, 
+					  const  V2& a1, 
+					  const  V2& a2, 
+					  const  V2& b1, 
+					  const  V2& b2,
+					  float aRangeMin,
+					  float aRangeMax,
+					  float bRangeMin,
+					  float bRangeMax
+					   );
+
 }
