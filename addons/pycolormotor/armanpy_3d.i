@@ -49,6 +49,7 @@
                 PyErr_WarnEx( PyExc_RuntimeWarning,
                     "Argument converted (copied) to FORTRAN-contiguous array.", 1 );
             }
+
             return array;
         } else {
             array = obj_to_array_no_conversion( input, NumpyType<eT>::val );
@@ -210,19 +211,25 @@
         int is_new_object=0;
         if( armanpy_allow_conversion_flag )
         {
-            array = obj_to_array_fortran_allow_conversion( input, ArmaTypeInfo< ARMA_MAT_TYPE >::type, &is_new_object );
+            array = obj_to_array_fortran_allow_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type, &is_new_object );
             if(armanpy_warn_on_conversion_flag && is_new_object)
                 printf("armanpy_cube_byvalue_typemaps 3d conv\n");
+
+			if( !array ) SWIG_fail;
+	        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), true );
+
         }
         else
         {
-            array = obj_to_array_no_conversion( input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
+            array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
+			if( !array ) SWIG_fail;
+	        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false );
+
         }
 
-        if( !array ) SWIG_fail;
-        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), is_new_object );
-        
+                
         if(is_new_object)
         {
             Py_DECREF(array);
@@ -281,27 +288,33 @@
         ( const ARMA_MAT_TYPE * ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
-
         int is_new_object=0;
         if( armanpy_allow_conversion_flag )
         {
             array = obj_to_array_fortran_allow_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type, &is_new_object );
             if(armanpy_warn_on_conversion_flag && is_new_object)
                 printf("armanpy_cube_const_ref_typemaps 3d conv\n");
+
+			if( !array ) SWIG_fail;
+	        $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), true );
+
+			if(is_new_object)
+       		{
+            	Py_DECREF(array);
+        	}
         }
         else
         {
             array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
+			if( !array ) SWIG_fail;
+	        $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false );
         }
 
-        if( !array ) SWIG_fail;
-        $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), is_new_object );
         
-        if(is_new_object)
-        {
-            Py_DECREF(array);
-        }
+        
+        
     }
 
     %typemap( argout )
@@ -402,7 +415,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 %define %armanpy_cube_return_by_value_typemaps( ARMA_MAT_TYPE )
-    %typemap( out )
+    %typemap( out, fragment="armanpy_cube_typemaps" )
         ( ARMA_MAT_TYPE )
     {
       PyObject* array = armanpy_cube_copy_to_numpy< ARMA_MAT_TYPE >( &$1 );
@@ -432,7 +445,7 @@
 %armanpy_cube_return_by_value_typemaps( arma::cx_fcube )
 
 %define %armanpy_cube_return_by_reference_typemaps( ARMA_MAT_TYPE )
-    %typemap( out )
+    %typemap( out, fragment="armanpy_cube_typemaps" )
         ( const ARMA_MAT_TYPE & ),
         (       ARMA_MAT_TYPE & )
     {
