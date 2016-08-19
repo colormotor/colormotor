@@ -23,7 +23,7 @@ std::string getFileExt(  const std::string & fileName );
 bool	fileExists( const std::string & fileName );
 
 /// List files in folder @ path
-void	getFilesInFolder( std::vector <std::string> &files, const char * path);
+std::vector <std::string> getFilesInFolder( const char * path);
 
 /// Get current working dir
 std::string getCurrentDirectory();
