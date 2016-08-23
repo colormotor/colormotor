@@ -2,7 +2,14 @@
 
 namespace cm
 {
-    
+
+void randomSeed( float seed )
+{
+    //drand48(seed);
+    //srand(seed);
+    arma::arma_rng::set_seed(seed);
+}
+
 // from http://www.atnf.csiro.au/computing/software/gipsy/sub/bessel.c
 static double bessi0( double x )
 /*------------------------------------------------------------*/
