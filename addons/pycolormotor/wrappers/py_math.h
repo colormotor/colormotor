@@ -1,5 +1,8 @@
 namespace cm
 {
+
+void randomSeed( float seed );
+
 arma::mat velocity( const arma::mat& X_, float dt);
 arma::mat acceleration( const arma::mat& X, float dt );
 arma::mat jerk( const arma::mat& X, float dt );
