@@ -43,7 +43,6 @@ typedef cm::V2 ForceV2;
 %include "wrappers/py_geom.h"
 %include "wrappers/py_ui.h"
 
-
 %extend cm::Shape
 {
 %insert("python") %{

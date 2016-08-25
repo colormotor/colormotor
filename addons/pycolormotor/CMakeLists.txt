@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
+if(APPLE)
+	set(CMAKE_MACOSX_RPATH 0)
+endif()
+
 project(pycm)
 
 
@@ -13,7 +17,6 @@ add_definitions(-DSWIG_TYPE_TABLE=colormotor)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/modules)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/modules)
-
 
 set(src
 	${PROJECT_SOURCE_DIR}/cm_wrap.cxx

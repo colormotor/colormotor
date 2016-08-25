@@ -3,10 +3,10 @@
 namespace cm
 {
 
+void foo(){}
+
 void randomSeed( float seed )
 {
-    //drand48(seed);
-    //srand(seed);
     arma::arma_rng::set_seed(seed);
 }
 

@@ -5,6 +5,7 @@ namespace cm
 {
 
 void randomSeed( float seed );
+void foo();
 
 //arma::vec pdfGauss( const arma::mat &X, const arma::vec& mu, const arma::mat& Sigma );
 arma::vec pdfVonMises( const arma::vec& theta, double mu, double sigma );
