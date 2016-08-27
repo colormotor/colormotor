@@ -14,6 +14,8 @@ namespace cm
 struct Box
 {
 public:
+	Box(const Box& box);
+
     Box()
 	{
         minmax = arma::zeros(2,2);
@@ -103,6 +105,8 @@ Contour()
 	    points = mat;
 	}
     
+    Contour(const Contour& mom);
+	
     void clear() { points =  arma::zeros(1,1); }
     
     bool empty() const { return points.n_rows == 1; }
@@ -176,6 +180,8 @@ struct Shape
 	{
 	    contours.push_back(ctr);
 	}
+    
+    Shape(const Shape& mom);
     
     void clear() { contours.clear(); }
     
