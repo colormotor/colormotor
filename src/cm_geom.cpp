@@ -27,7 +27,7 @@ namespace cm
 ClipperLib::IntPoint convertToIntPoint( const arma::vec & p, const Box& rect )
 {
     arma::vec v = p-arma::vec({rect.l(),rect.t()});
-	v /= arma::vec({rect.width(),rect.height()});
+    v /= std::max(rect.width(), rect.height());
 	v *= RANGE;
     return ClipperLib::IntPoint(v[0], v[1]);
 }
@@ -36,7 +36,7 @@ arma::vec convertToVec( const ClipperLib::IntPoint & p, const Box& rect )
 {
 	arma::vec v({p.X,p.Y});
 	v /= RANGE;
-	v *= arma::vec({rect.width(),rect.height()});
+	v *= std::max(rect.width(), rect.height());
 	v += arma::vec({rect.l(),rect.t()});
 	return v;
 }
