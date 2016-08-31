@@ -210,10 +210,10 @@ namespace cm
 		// add arrow code
 		P(_file,"%s\n",arrowCode);
 
-		fileRect.l() = x0;
-		fileRect.t() = y0;
-		fileRect.r() = x1;
-		fileRect.b() = y1;
+		fileRect.l(x0);
+		fileRect.t(y0);
+		fileRect.r(x1);
+		fileRect.b(y1);
 	}
 	
 	/////////////////////////////////////////////////////

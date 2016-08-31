@@ -1114,6 +1114,7 @@ void draw( const arma::mat& P, bool closed, int from, int to )
 			for( int i = from; i < to; i++ )
 			{
 			    glVertex2f(P.at(0,i), P.at(1,i)); //  )P[i][0], P[i][1] );
+ 				EPS_ADDP(V2(P.at(0,i), P.at(1,i)));
 			}
 			break;
 		}
@@ -1122,6 +1123,7 @@ void draw( const arma::mat& P, bool closed, int from, int to )
 			for( int i = from; i < to; i++ )
 			{
 				glVertex3f(P.at(0, i), P.at(1, i), P.at(2, i));//P[i][0], P[i][1], P[i][2] );
+ 				EPS_ADDP(V2(P.at(0, i), P.at(1, i)));
 			}
 		break;
 		}
