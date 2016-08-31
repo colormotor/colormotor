@@ -99,16 +99,18 @@ public:
 	}
 
 
+    arma::vec ltrb() const { return arma::vec({l(), t(), r(), b()}); }
+
+    void l( double v ) { minmax(0,0)=v; }
+    void t( double v ) { minmax(1,0)=v; }
+    void r( double v ) { minmax(0,1)=v; }
+    void b( double v ) { minmax(1,1)=v; }
+
     double l() const { return minmax(0,0); }
     double t() const { return minmax(1,0); }
     double r() const { return minmax(0,1); }
     double b() const { return minmax(1,1); }
-    
-    double& l() { return minmax(0,0); }
-    double& t() { return minmax(1,0); }
-    double& r() { return minmax(0,1); }
-    double& b() { return minmax(1,1); }
-    
+
     int dimension() const { return minmax.n_rows; }
 
     double width() const { return fabs( minmax(0,1) - minmax(0,0) ); }
