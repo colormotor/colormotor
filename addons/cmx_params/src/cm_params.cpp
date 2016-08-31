@@ -938,7 +938,12 @@ void ParamList::release()
 	params.clear();
 	paramMap.clear();
 	paramsThatHaveChanged.clear();
+	for( int i = 0; i < children.size(); i++ )
+	{
+		children[i]->release();
+	}
 	children.clear();
+	current = this;
 }
 
 void ParamList::addParam( Param * param )
