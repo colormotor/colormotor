@@ -24,21 +24,53 @@ namespace cm
 
 #define RANGE	0xFFFFFFFFFF
 
-ClipperLib::IntPoint convertToIntPoint( const arma::vec & p, const Box& rect )
+double scaleFactor( const Box& rect, double range )
+{
+	return (1. / std::max(rect.width(), rect.height())) * range;
+}
+
+ClipperLib::IntPoint convertToIntPoint( const arma::vec & p, const Box& rect, double range )
 {
     arma::vec v = p-arma::vec({rect.l(),rect.t()});
-    v /= std::max(rect.width(), rect.height());
-	v *= RANGE;
+	v *= scaleFactor(rect, range);
     return ClipperLib::IntPoint(v[0], v[1]);
 }
 
-arma::vec convertToVec( const ClipperLib::IntPoint & p, const Box& rect )
+arma::vec convertToVec( const ClipperLib::IntPoint & p, const Box& rect, double range )
 {
 	arma::vec v({p.X,p.Y});
-	v /= RANGE;
-	v *= std::max(rect.width(), rect.height());
+	v /= scaleFactor(rect, range);
 	v += arma::vec({rect.l(),rect.t()});
 	return v;
+}
+
+void shapeToPolygons( ClipperLib::Paths& poly, const Box& r, const Shape& shape, double range=RANGE )
+{
+	poly.resize(shape.size());
+	
+	for( int i = 0; i < shape.size(); i++ )
+	{
+		const Contour & p = shape.getContour(i);
+		for( int j = 0; j < p.size(); j++ )
+			poly[i].push_back(convertToIntPoint(p.getPoint(j), r, range));
+	}	
+}
+
+void polygonsToShape( Shape& shape, const Box& r, const ClipperLib::Paths& poly, double range=RANGE )
+{
+	shape.clear();
+	for( int i = 0; i < poly.size(); i++ )
+	{
+		const ClipperLib::Path &P = poly[i];
+		Contour C;
+		for( int j = 0; j < P.size(); j++ )
+		{
+			const ClipperLib::IntPoint & p = P[j];
+			C.addPoint(convertToVec(p, r, range));
+		}
+		C.closed = true;
+		shape.add(C);
+	}
 }
 
 void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset )
@@ -46,52 +78,27 @@ void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset 
 	Box r = a.boundingBox();
 	r.include(b.boundingBox());	
 	
-	ClipperLib::Polygons pa;
-	ClipperLib::Polygons pb;
-	ClipperLib::Polygons sol;
+	ClipperLib::Paths pa;
+	ClipperLib::Paths pb;
+	ClipperLib::Paths sol;
 	
-	pa.resize(a.size());
-	pb.resize(b.size());
-	
-	for( int i = 0; i < a.size(); i++ )
-	{
-		const Contour & p = a.getContour(i);
-		for( int j = 0; j < p.size(); j++ )
-			pa[i].push_back(convertToIntPoint(p.getPoint(j),r));
-	}
-	for( int i = 0; i < b.size(); i++ )
-	{
-		const Contour & p = b.getContour(i);
-		for( int j = 0; j < p.size(); j++ )
-			pb[i].push_back(convertToIntPoint(p.getPoint(j),r));
-	}
+	shapeToPolygons(pa, r, a);
+	shapeToPolygons(pb, r, b);
 	
 	ClipperLib::Clipper c;
 	
 	// expand ( or shrink? ) polys, this can be useful when making an union of hardly intersecting shapes
-	if(false)// fabs( offset ) > 0.0 )
-	{
-		ClipperLib::OffsetPolygons(pa,pa,offset);
-		ClipperLib::OffsetPolygons(pb,pb,offset);
-	}
+	// if(false)// fabs( offset ) > 0.0 )
+	// {
+	// 	ClipperLib::OffsetPolygons(pa, pa, offset);
+	// 	ClipperLib::OffsetPolygons(pb, pb, offset);
+	// }
 	
-	c.AddPolygons(pa, ClipperLib::ptSubject);
-	c.AddPolygons(pb, ClipperLib::ptClip);
+	c.AddPaths(pa, ClipperLib::ptSubject, true);
+	c.AddPaths(pb, ClipperLib::ptClip, true);
 	c.Execute((ClipperLib::ClipType)type, sol, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
 	
-	result.clear();
-	for( int i = 0; i < sol.size(); i++ )
-	{
-		const ClipperLib::Polygon &poly = sol[i];
-		Contour path;
-		for( int j = 0; j < sol[i].size(); j++ )
-		{
-			const ClipperLib::IntPoint & p = poly[j];
-			path.addPoint(convertToVec(p,r));
-		}
-		path.closed = true;
-		result.add(path);
-	}
+	polygonsToShape(result, r, sol);
 }
 
 
@@ -106,7 +113,7 @@ const Shape & PolyClipper::apply( int type, const Contour & a, const Contour & b
 
 const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b )
 {
-	int conv[] = {
+	ClipperLib::ClipType conv[] = {
 	ClipperLib::ctDifference,
 	ClipperLib::ctIntersection,
 	ClipperLib::ctUnion,
@@ -118,18 +125,18 @@ const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b )
 	if( b.size() == 0 )
 		result = Shape(a);
 	else
-		op(conv[type],a,b);
+		op(conv[type], a, b);
 	
 	return result;
 }
 
-const Shape& PolyClipper::merge( Shape & a, const Shape & b, double offset )
+const Shape& PolyClipper::merge( const Shape & a, const Shape & b, double offset )
 {
 	op(ClipperLib::ctUnion,a,b,offset);
 	return result;
 }
 	
-const Shape& PolyClipper::merge( Shape & shape, double offset  )
+const Shape& PolyClipper::merge( const Shape & shape, double offset  )
 {
 	if( shape.size() == 0)
 	{
@@ -156,7 +163,33 @@ const Shape& PolyClipper::merge( Shape & shape, double offset  )
 	return result;
 }
 
+const Shape& PolyClipper::offset( const Shape & shape, double offset, int joinType, double miterLimit )
+{
+	ClipperLib::JoinType conv[] = {
+	ClipperLib::jtSquare,
+	ClipperLib::jtMiter,
+	ClipperLib::jtRound
+	};
 	
+	ClipperLib::Paths in;
+	ClipperLib::Paths out;
+    
+    Box r = shape.boundingBox();
+    double range = std::max(r.width(), r.height())*2.;
+	offset *= scaleFactor(r, range);
+
+    shapeToPolygons(in, r, shape, range);
+	SimplifyPolygons(in, ClipperLib::pftNonZero); // TODO handle different fill rules
+
+	ClipperLib::ClipperOffset c(miterLimit);
+	c.AddPaths(in, conv[joinType], ClipperLib::etClosedPolygon);
+	c.Execute(out, offset);
+	
+	// convert back
+	polygonsToShape(result, r, out, range);
+	
+	return result;
+}
 	
 Shape shapeUnion( const Shape & a, const Shape & b )
 {
@@ -185,6 +218,12 @@ Shape shapeXor( const Shape & a, const Shape & b )
 	clip.apply(CLIP_XOR,a,b);
 	return clip.result;
 
+}
+
+Shape shapeOffset( const Shape& shape, double offset, int joinType, double miterLimit )
+{
+	PolyClipper clip;
+	return clip.offset(shape, offset, joinType, miterLimit);
 }
 
 double distance( const arma::vec& a, const arma::vec&b )

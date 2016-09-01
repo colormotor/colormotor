@@ -12,6 +12,13 @@ enum
 	CLIP_XOR
 };
 
+enum
+{
+	JOIN_SQUARE=0,
+	JOIN_MITER,
+	JOIN_ROUND
+};
+
 class PolyClipper
 {	
 public:
@@ -19,8 +26,11 @@ public:
 	const Shape& apply( int type, const Contour & a, const Contour & b );
 	
 	// would have liked to call this union... maybe Uppercase func names are better at the end...
-	const Shape& merge( Shape & a, const Shape & b, double offset = 2.0 );
-	const Shape& merge( Shape & shape, double offset = 2.0 );
+	const Shape& merge( const Shape & a, const Shape & b, double offset=2.0 );
+	const Shape& merge( const Shape & shape, double offset = 2.0 );
+
+	const Shape& offset( const Shape & a, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+
 	Shape result;
 protected:
 	void op( int type, const Shape & a, const Shape & b, double offset = 0.0 );
@@ -30,6 +40,8 @@ Shape shapeUnion( const Shape & a, const Shape & b );
 Shape shapeDifference( const Shape & a, const Shape & b );
 Shape shapeIntersection( const Shape & a, const Shape & b );
 Shape shapeXor( const Shape & a, const Shape & b );
+Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+
 
 arma::vec chordLengths( const Contour & P );
 arma::vec cumChordLengths( const Contour & P );

@@ -6,6 +6,15 @@ Shape shapeDifference( const Shape & a, const Shape & b );
 Shape shapeIntersection( const Shape & a, const Shape & b );
 Shape shapeXor( const Shape & a, const Shape & b );
 
+enum
+{
+	JOIN_SQUARE=0,
+	JOIN_MITER,
+	JOIN_ROUND
+};
+
+Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+
 arma::vec chordLengths( const Contour & P );
 arma::vec cumChordLengths( const Contour & P );
 double chordLength( const Contour & P );
