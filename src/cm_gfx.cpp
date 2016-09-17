@@ -3757,8 +3757,10 @@ Image::Image( const arma::uchar_cube &src )
 	std::vector<cv::Mat_<unsigned char>> channels;
     for (size_t c = 0; c < src.n_slices; ++c)
     {
-        auto *data = const_cast<unsigned char*>(src.slice(c).memptr());
-        channels.push_back({int(src.n_cols), int(src.n_rows), data});
+    	arma::Mat<unsigned char> slice = src.slice(c); 
+    	slice = slice.t();
+        auto *data = const_cast<unsigned char*>(slice.memptr()); //src.slice(c).memptr());
+        channels.push_back({int(src.n_rows), int(src.n_cols), data});
     }
  
     cv::merge(channels, mat);
@@ -3768,13 +3770,16 @@ Image::Image( const arma::uchar_cube &src )
 arma::uchar_cube Image::toArma() const
 {
 	// Type conv if necessary
-    const cv::Mat * addr = &mat;
+	cv::Mat transposed;
+	cv::transpose(mat, transposed);
+    const cv::Mat * addr = &transposed;
+
     cv::Mat tmp;
     if((mat.type()&CV_MAT_DEPTH_MASK) != CV_8U)
     {
         double min, max;
-        cv::minMaxLoc(mat, &min, &max);
-        tmp = mat;
+        cv::minMaxLoc(transposed, &min, &max);
+        tmp = transposed;
         tmp -= min;
         tmp.convertTo(tmp,CV_8U, 255.0/(max-min),-255.0/min);
         addr = &tmp;
@@ -3782,7 +3787,7 @@ arma::uchar_cube Image::toArma() const
     
     const cv::Mat& src = *addr;
     std::vector<cv::Mat_<unsigned char>> channels;
-    arma::uchar_cube dst(src.cols, src.rows, src.channels());
+    arma::uchar_cube dst(mat.rows, mat.cols, src.channels());
     for (int c = 0; c < src.channels(); ++c)
         channels.push_back({src.rows, src.cols, dst.slice(c).memptr()});
     cv::split(src, channels);
