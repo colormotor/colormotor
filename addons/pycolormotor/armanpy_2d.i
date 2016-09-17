@@ -150,12 +150,27 @@
     {
         typedef typename MatT::elem_type eT;
         npy_intp dims[2] = { npy_intp(m->n_rows), npy_intp(m->n_cols) };
-        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< MatT >::numdim, dims, ArmaTypeInfo< MatT >::type, true);
-        if ( !array || !array_is_fortran( array ) ) {
+        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< MatT >::numdim, dims, ArmaTypeInfo< MatT >::type, false);
+        
+        if ( !array ) { //} || !array_is_fortran( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 2-dimensional return array failed" );
             return NULL;
         }
-        std::copy( m->begin(), m->end(), reinterpret_cast<eT*>(array_data(array)) );
+
+        if(! array_is_fortran(array) )
+        {
+            // copy fortran
+            eT* buf = reinterpret_cast<eT*>(array_data(array));
+            int n_rows = m->n_rows;
+            int n_cols = m->n_cols;
+            for( int i = 0; i < n_rows; i++ )
+                for( int j = 0; j < n_cols; j++ )
+                    buf[i*n_cols + j] = m->operator()(i, j);
+        }
+        else
+        {
+            std::copy( m->begin(), m->end(), reinterpret_cast<eT*>(array_data(array)) );
+        }
         return array;
      }
 
@@ -166,7 +181,7 @@
     {
         typedef typename MatT::elem_type eT;
         npy_intp dims[2] = { 1, 1 };
-        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(2, dims, NumpyType<eT>::val, true);
+        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(2, dims, NumpyType<eT>::val, false);
         if ( !ary || !array_is_fortran(ary) ) { return NULL; }
 
         array_dimensions(ary)[0] = m->n_rows;

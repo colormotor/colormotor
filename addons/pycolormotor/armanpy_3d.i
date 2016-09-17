@@ -143,12 +143,31 @@
     {
         typedef typename MatT::elem_type eT;
         npy_intp dims[3] = { npy_intp(m->n_rows), npy_intp(m->n_cols), npy_intp(m->n_slices) };
-        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< MatT >::numdim, dims, ArmaTypeInfo< MatT >::type, true);
-        if ( !array || !array_is_fortran( array ) ) {
+        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< MatT >::numdim, dims, ArmaTypeInfo< MatT >::type, false);
+
+        if ( !array ) { // || !array_is_fortran( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 3-dimensional return array failed" );
             return NULL;
         }
-        std::copy( m->begin(), m->end(), reinterpret_cast<eT*>(array_data(array)) );
+
+        if( !array_is_fortran(array) )
+        {
+            // copy fortran
+            eT* buf = reinterpret_cast<eT*>(array_data(array));
+            int n_rows = m->n_rows;
+            int n_cols = m->n_cols;
+            int n_slices = m->n_slices;
+
+            for( int i = 0; i < n_rows; i++ )
+                for( int j = 0; j < n_cols; j++ )
+                    for( int k = 0; k < n_slices; k++ )
+                        buf[i*(n_cols*n_slices) + j*n_slices + k] = m->operator()(i, j, k);
+        }
+        else
+        {
+            std::copy( m->begin(), m->end(), reinterpret_cast<eT*>(array_data(array)) );
+        }
+
         return array;
      }
 
@@ -217,7 +236,7 @@
 
 			if( !array ) SWIG_fail;
 	        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), true );
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), true, false );
 
         }
         else
@@ -225,7 +244,7 @@
             array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
 			if( !array ) SWIG_fail;
 	        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false );
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false, true );
 
         }
 
