@@ -622,7 +622,9 @@ public:
 
 	int width() const { return mat.cols; }
 	int height() const { return mat.rows; }
-	
+	// Number of bytes for each row
+	int step() const { return mat.step; }
+
 	void bind( int sampler = 0 );
 	void unbind();
 
@@ -823,6 +825,12 @@ struct Mesh
         }
 	}
     
+    void normal( const arma::vec& n )
+    {
+    	for( int i = 0; i < 3; i++ )
+            vertices.push_back((float)n[i]);
+    }
+
     void color( const V4& clr )
     {
         colors.push_back(_float4(clr.x, clr.y, clr.z, clr.w));
@@ -833,10 +841,64 @@ struct Mesh
         uvs.push_back(_float2(coords.x, coords.y));
     }
     
+    arma::mat getNormals() const 
+    {
+    	int size = normals.size()/3;
+    	arma::mat N = arma::zeros(3, size);
+    	for( int i=0; i < size; i++ )
+    	{
+    		int j = i*3;
+    		N.col(i) = arma::vec({normals[j], normals[j+1], normals[j+2]});
+    	}
+    	return N;
+    }
+
+    arma::mat getVertices() const 
+    {
+    	int size = vertices.size()/3;
+    	arma::mat V = arma::zeros(3, size);
+    	for( int i=0; i < size; i++ )
+    	{
+    		int j = i*3;
+    		V.col(i) = arma::vec({vertices[j], vertices[j+1], vertices[j+2]});
+    	}
+    	return V;
+    }
+
+    arma::mat getColors() const 
+    {
+    	int size = colors.size();
+    	arma::mat V = arma::zeros(4, size);
+    	for( int i=0; i < size; i++ )
+    	{
+    		V.col(i) = (arma::vec)V4(colors[i].x,
+    							     colors[i].y,
+    							     colors[i].z,
+    							     colors[i].w );
+    	}
+    	return V;
+    }
+
+    arma::mat getUvs() const 
+    {
+    	int size = uvs.size();
+    	arma::mat V = arma::zeros(2, size);
+    	for( int i=0; i < size; i++ )
+    	{
+    		V.col(i) = (arma::vec)V2(uvs[i].x, uvs[i].y);
+    	}
+    	return V;
+    }
+
+    const std::vector<unsigned int> getIndices() const { return indices; }
+
+    int numColors() const { return colors.size(); }
+    int numUvs() const { return uvs.size(); }
+    int numNormals() const { return normals.size()/3; }
     int numVertices() const { return vertices.size()/3; }
     int numIndices() const { return indices.size(); }
     
-    
+    std::vector <float> normals;
     std::vector <float> vertices;
     std::vector <float4> colors;
     std::vector <float2> uvs;
@@ -851,6 +913,12 @@ typedef GLvoid (*_GLUfuncptr)(void);
 #endif
 #endif
 
+enum
+{
+WINDING_ODD = GLU_TESS_WINDING_ODD,
+WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
+};
+
 struct Tessellator
 {
     struct XYZ
@@ -862,15 +930,11 @@ struct Tessellator
 	double x, y, z;
     };
 
-    enum
-    {
-	WINDING_ODD = GLU_TESS_WINDING_ODD,
-	WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
-    };
+    
     
     Tessellator() {}
     
-    Tessellator( const Shape& shape, int winding=Tessellator::WINDING_ODD )
+    Tessellator( const Shape& shape, int winding=WINDING_ODD )
 	{
 	    tess = gluNewTess();
 
@@ -945,6 +1009,9 @@ struct Tessellator
     GLUtesselator * tess;
     std::vector<XYZ> verts;
 };
+
+Mesh toMesh( const Shape& shape, int winding=WINDING_ODD );
+Mesh toMesh( const Contour& shape, int winding=WINDING_ODD );
 
 namespace gfx
 {
@@ -1145,10 +1212,10 @@ void draw( const arma::mat& P, bool closed, int from=-1, int to=-1 );
 void draw( const Mesh& mesh );
 
 /// Fill a contour
-void fill( const Contour& shape, int winding=Tessellator::WINDING_ODD );
+void fill( const Contour& shape, int winding=WINDING_ODD );
 
 /// Fill a shape
-void fill( const Shape& shape, int winding=Tessellator::WINDING_ODD );
+void fill( const Shape& shape, int winding=WINDING_ODD );
 
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( Image& img, float x, float y, float w=0., float h=0. );
