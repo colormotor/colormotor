@@ -7,6 +7,7 @@
 //
 
 #include "cm_imgui.h"
+#include "imgui_internal.h"
 
 
 namespace cm
@@ -193,8 +194,10 @@ void imgui( ParamList& plist, float cursorPos  )
     // in cm_imgui_app
     extern ImFont * iconFont;
     ImGui::PushFont(iconFont);
+    ImGui::PushID("btns");
     ImGui::SameLine(ImGui::GetWindowWidth()-100);
-    if(ImGui::Button("l")) //, ImVec2(100,2)))
+
+    if(ImGui::ButtonEx("l", ImVec2(0,0), ImGuiButtonFlags_PressedOnClick)) // Hack default onRelease with Button does not seem to work
     {
         std::string path;
         if(openFileDialog(path,"xml"))
@@ -202,12 +205,13 @@ void imgui( ParamList& plist, float cursorPos  )
     }
     //ImGui::NextColumn();
     ImGui::SameLine();
-    if(ImGui::Button("s"))//, ImVec2(100,20)))
+    if(ImGui::ButtonEx("s",ImVec2(0,0), ImGuiButtonFlags_PressedOnClick))//, ImVec2(100,20)))
     {
         std::string path;
         if(saveFileDialog(path,"xml"))
             plist.saveXml(path.c_str());
     }
+    ImGui::PopID();
     ImGui::PopFont();
     //ImGui::PopItemWidth();
     
