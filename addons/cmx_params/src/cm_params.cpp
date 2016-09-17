@@ -1269,14 +1269,14 @@ Param * ParamList::find( const std::string& name_ )
 				return params[i];
 		}
         
-
+		/*
         // TODO figure this out properly
         for( int i = 0; i < getNumChildren(); i++ )
         {
             Param * p = children[i]->find(name);
             if(p)
                 return p;
-        }
+        }*/
 	}
 	else
 	{
