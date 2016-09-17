@@ -61,8 +61,8 @@ arma::vec trans33( const arma::mat& m );
 // Projective/camera transformations
 M44 perspective(double fov, double aspect, double znear, double zfar, bool wFriendly=false);
 M44 frustum( double left, double right, double bottom, double top, double near, double far );
-M44 orthoOffCenter(double l, double r, double b, double t , double zn, double zf );
-M44 ortho( double w, double h, double znear, double zfar );
+M44 ortho(double l, double r, double b, double t , double zn, double zf );
+M44 ortho( double w, double h, double znear=-1., double zfar=1. );
 M44 pointAt(const V3 & pos, const V3 & target, const V3 & up );
 M44 lookAt(const V3 & pos, const V3 & target, const V3 & up );
 

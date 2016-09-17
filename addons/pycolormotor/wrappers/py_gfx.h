@@ -701,17 +701,19 @@ typedef GLvoid (*_GLUfuncptr)(void);
 #endif
 #endif
 
+enum
+{
+WINDING_ODD = GLU_TESS_WINDING_ODD,
+WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
+};
+
 struct Tessellator
 {
 	Tessellator() {}
-    
-    enum
-    {
-	WINDING_ODD = GLU_TESS_WINDING_ODD,
-	WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
-    };
-    
 };
+
+Mesh toMesh( const Shape& shape, int winding=WINDING_ODD );
+Mesh toMesh( const Contour& shape, int winding=WINDING_ODD );
 
 namespace gfx
 {
@@ -907,10 +909,10 @@ void draw( const arma::mat& P, bool closed, int from=-1, int to=-1 );
 void draw( const Mesh& mesh );
 
 /// Fill a contour
-void fill( const Contour& shape, int winding=Tessellator::WINDING_ODD );
+void fill( const Contour& shape, int winding=WINDING_ODD );
 
 /// Fill a shape
-void fill( const Shape& shape, int winding=Tessellator::WINDING_ODD );
+void fill( const Shape& shape, int winding=WINDING_ODD );
 
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( Image& img, float x, float y, float w=0., float h=0. );
