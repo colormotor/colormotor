@@ -359,23 +359,25 @@ M44 frustum( double left, double right, double bottom, double top, double near, 
     return m;
 }
     
-M44 orthoOffCenter(double l, double r, double b, double t , double zn, double zf )
+
+M44 ortho(double l, double r, double b, double t, double n, double f )
 {
     M44 m = arma::eye(4,4);
     
-    m(0,0) = 2/(r-l);
-    m(1,1) = 2/(t-b);
-    m(2,2) =  1/(zn-zf);
-    m(0,3) = (l+r)/(l-r);
-    m(1,3) = (t+b)/(b-t);
-    m(2,3) = zn/(zn-zf);
+    m(0,0) = 2./(r-l);
+    m(1,1) = 2./(t-b);
+    m(2,2) = -2./(f-n);
+    
+    m(0,3) = -(r+l)/(r-l);
+    m(1,3) = -(t+b)/(t-b);
+    m(2,3) = -(f+n)/(f-n);
     
     return m;
 }
 
 M44 ortho( double w, double h, double znear, double zfar )
 {
-    return orthoOffCenter( -w/2, w/2, -h/2, h/2, znear, zfar );
+    return ortho(0., w, h, 0., znear, zfar );
 }
     
 M44 pointAt(const V3 & pos, const V3 & target, const V3 & up )
