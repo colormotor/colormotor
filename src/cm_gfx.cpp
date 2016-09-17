@@ -18,6 +18,17 @@ namespace cm
 #include "deps/stb_image.h"
 #include "deps/stb_image_write.h"
 
+Mesh toMesh( const Shape& shape, int winding )
+{
+	Tessellator tess = Tessellator(shape, winding);
+	return tess.mesh;
+}
+
+Mesh toMesh( const Contour& shape, int winding )
+{
+	Tessellator tess = Tessellator(shape, winding);
+	return tess.mesh;
+}
 
 namespace gfx
 {
@@ -1073,7 +1084,6 @@ void	endVertices()
 	#endif
 }
 
-
 void draw( const Contour& C )
 {
 	draw(C.points, C.closed);
@@ -1205,6 +1215,12 @@ void draw( const Mesh& mesh )
 {
 	glVertexPointer( 3, GL_FLOAT, 0,  &(mesh.vertices[0]) );
     
+    if(mesh.normals.size())
+    {
+        glNormalPointer( GL_FLOAT, 0, &(mesh.normals[0]) );
+        glEnableClientState( GL_NORMAL_ARRAY );
+    }
+
     if(mesh.colors.size())
     {
         glColorPointer( 4, GL_FLOAT, sizeof(float4), &(mesh.colors[0]) );
