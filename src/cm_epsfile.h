@@ -40,7 +40,9 @@ namespace cm
         void        pushMatrix();
         void        popMatrix();
         void        setMatrix( const M33& m );
-        
+        void 		applyMatrix( const M33& m );
+		void 		identity();
+
 		void		shape( const Shape& s );
 		void		shape( const Contour & c );		
 		void 		fillStroke();
@@ -178,6 +180,7 @@ namespace cm
         M33& mat() { return mats.back(); }
         
         std::vector<M33> mats;
+        float lineWidth=0.5;
 	};
 
 }	

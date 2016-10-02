@@ -112,17 +112,35 @@ namespace cm
 	
     void EpsFile::pushMatrix()
     {
-        mats.push_back(arma::eye(3,3));
+    	gsave();
+    	mats.push_back(mats.back());
     }
     
     void EpsFile::popMatrix()
     {
+    	grestore();
         mats.pop_back();
     }
-    
+	
+	void EpsFile::applyMatrix( const M33& m )
+	{
+		P(_file,"/mat { %g %g %g %g %g %g 6 array astore } def\n",
+    		m.col(0)(0), m.col(0)(1), m.col(1)(0), m.col(1)(1), m.col(2)(0), m.col(2)(1) );
+		P(_file, "mat concat\n");
+
+		mats.back() = mats.back() * m;
+	}   
+
+	void EpsFile::identity()
+	{
+		P(_file, "matrix setmatrix\n");
+		mats.back() = arma::eye(3,3);
+	}
+
     void EpsFile::setMatrix( const M33& m )
     {
-        mats.back() = m;
+    	identity();
+    	applyMatrix(m);
     }
     
     
@@ -214,6 +232,12 @@ namespace cm
 		fileRect.t(y0);
 		fileRect.r(x1);
 		fileRect.b(y1);
+
+		M33 flipmat = arma::eye(3,3);
+		flipmat = flipmat*trans2d(fileRect.center());
+		flipmat = flipmat*scaling2d(1., -1.);
+		flipmat = flipmat*trans2d(-fileRect.center());
+		applyMatrix(flipmat);
 	}
 	
 	/////////////////////////////////////////////////////
@@ -239,7 +263,8 @@ namespace cm
 	{
 		if(!_file)
 			return;
-		
+		lineWidth = w;
+		w = w / arma::det(mats.back());
 		P(_file,"%.5f setlinewidth\n",w);
 	}
 	
@@ -268,7 +293,7 @@ namespace cm
 		//gsave();
 		//translate(pos.x,pos.y);
 		newpath();
-        V2 pos = mul(mat(), pos_); //(mat() * V3(pos_,1.0)).xy();
+        V2 pos = pos_; //(mat() * V3(pos_,1.0)).xy();
 		P(_file,"%.5f %.5f %.5f %.5f %.5f arc\n",makex( pos.x*SCALE ),
 												 makey( pos.y*SCALE ),
 												 radius*SCALE,
@@ -317,7 +342,7 @@ namespace cm
     {
         if(!_file)
             return;
-        V2 pos = mul(mat(), pos_); // V2 pos = (mat() * V3(pos_,1.0)).xy();
+        V2 pos = pos_; // V2 pos = (mat() * V3(pos_,1.0)).xy();
         P(_file,"%.5f %.5f moveto\n", makex(pos.x*SCALE) , makey(pos.y*SCALE) );
     }
     
@@ -333,7 +358,7 @@ namespace cm
     {
         if(!_file)
             return;
-        V2 pos = mul(mat(), pos_); //V2 pos = (mat() * V3(pos_,1.0)).xy();
+        V2 pos = pos_; //V2 pos = (mat() * V3(pos_,1.0)).xy();
         P(_file,"%.5f %.5f lineto\n", makex(pos.x*SCALE) , makey(pos.y*SCALE) );
     }
 
@@ -353,7 +378,7 @@ namespace cm
 	{
         if(!_file)
             return;
-        V2 pos = mul(mat(), pos_); //V2 pos = (mat() * V3(pos_,1.0)).xy();
+        V2 pos = pos_; //V2 pos = (mat() * V3(pos_,1.0)).xy();
         P(_file,"%.5f %.5f arrowto\n", makex(pos.x*SCALE), makey(pos.y*SCALE) );
 	}
     
@@ -368,7 +393,7 @@ namespace cm
 		
         if(!_file)
             return;
-        V2 pos = mul(mat(), pos_); //V2 pos = (mat() * V3(pos_,1.0)).xy();
+        V2 pos = pos_; //V2 pos = (mat() * V3(pos_,1.0)).xy();
         P(_file,"%.5f %.5f rlineto\n", makex(pos.x*SCALE), makey(pos.y*SCALE) );
 
 	}
@@ -379,7 +404,7 @@ namespace cm
 	{
 		if(!_file)
 			return;
-		
+		setlinewidth(lineWidth);
 		P(_file,"stroke\n");
 	}
 	
@@ -443,8 +468,9 @@ namespace cm
 	{
 		if(!_file)
 			return;
-		
-		P(_file,"%g %g translate\n", makex(x*SCALE), makey(y*SCALE) );
+		M33 m = trans2d(x, y);
+		applyMatrix(m);
+		//P(_file,"%g %g translate\n", makex(x*SCALE), makey(y*SCALE) );
 	}
 	
 	/////////////////////////////////////////////////////
@@ -453,7 +479,9 @@ namespace cm
 		if(!_file)
 			return;
 		
-		P(_file,"%g %g scale\n",x,y);
+		M33 m = scaling2d(x, y);
+		applyMatrix(m);
+		//P(_file,"%g %g scale\n",x,y);
 	}
 	
 	
@@ -462,8 +490,9 @@ namespace cm
 	{
 		if(!_file)
 			return;
-		
-		P(_file,"%g rotate\n",ang);
+		M33 m = rot2d(radians(ang));
+		applyMatrix(m);
+		//P(_file,"%g rotate\n",ang);
 	}
 	
 	
@@ -674,6 +703,6 @@ namespace cm
 
 	float EpsFile::makey( float y ) const 
 	{
-		return fileRect.b() - y;
+		return y;
 	}
 }
