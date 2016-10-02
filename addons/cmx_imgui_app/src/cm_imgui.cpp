@@ -225,7 +225,7 @@ void imgui( ParamList& plist, float cursorPos  )
     //if(!)
     //ImGui::OpenNextNode(true);
     //if(!ImGui::TreeNode(plist.getName().c_str()))
-    
+    static char tmpStr[1024];
     for( int i = 0; i < plist.getNumParams(); i++ )
     {
         Param * p = plist.getParam(i);
@@ -276,6 +276,15 @@ void imgui( ParamList& plist, float cursorPos  )
                 p->dirty = stringCombo(p->getName(),(int*)p->getAddress(), p->getSelectionNames(), p->getNumElements() );
                 break;
                 
+            case PARAM_STRING:
+            {
+                strcpy(tmpStr, p->getString());
+                p->dirty = ImGui::InputText(p->getName(), tmpStr, 50); // HACK!
+                if(p->dirty)
+                    p->setString(tmpStr);
+                break;
+            }
+
             case PARAM_CSTRING:
                 p->dirty = ImGui::InputText(p->getName(),(char*)p->getAddress(), 50); // HACK!
                 break;
