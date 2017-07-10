@@ -60,7 +60,7 @@ class ServerThread(Thread):
                     self.server.must_restart = True
                     pass
                 
-            time.sleep(0.5)
+            #time.sleep(0.5)
         print 'exiting thread'
 
 class OSCServer:
