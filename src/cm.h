@@ -186,8 +186,11 @@ T   wrap( T val, T a, T b )
 }
 
 
-// Extensions on armadillo fixed vector types,
-// Quite bloated, but allows to use vector element accessors (x,y,z)
+/// Extensions on armadillo fixed vector types,
+/// Quite bloated, but allows to use vector element accessors (x,y,z)
+//@{
+
+/// 2 Vector wrapper
 class V2 : public arma::vec2
 {
 public:
@@ -250,7 +253,7 @@ public:
 };
     
 
-    
+/// 3 Vector wrapper
 class V3 : public arma::vec3
 {
 public:
@@ -331,7 +334,7 @@ public:
     double &z;
 };
 
-
+/// 4 Vector wrapper
 class V4 : public arma::vec4
 {
 public:
@@ -411,7 +414,7 @@ public:
     double &z;
     double &w;
 };
-    
+
 typedef arma::mat22 M22;
 typedef arma::mat33 M33;
 typedef arma::mat44 M44;
@@ -441,6 +444,8 @@ CM_INLINE V2 perp( const V2& v ) { return V2(-v.y, v.x); }
 CM_INLINE arma::vec lerp( const arma::vec& a, const arma::vec& b, double t ) { return a + (b-a)*t; }
 CM_INLINE V3 cross( const V3& a, const V3& b ) { return (V3)arma::cross(a,b); }
     
+//@}
+
 }
 
 // Defs 
@@ -513,7 +518,7 @@ CM_INLINE float	roundf( float x) { return floorf((x) + 0.5f); }
 /// Bernoulli distribtion, basically a coin flip with a fancy name
 CM_INLINE bool bernoulli( float p=0.5 ) { if(frand() < p) return true; return false; }
     
-// Till homebrew armadillo supports regspace!
+/// Till homebrew armadillo supports regspace!
 CM_INLINE arma::vec regspace( double a, double inc, double b )
 {
 	int n = 1 + std::floor(fabs(a-b) / inc);
@@ -543,7 +548,8 @@ int argmax( const T& x )
     x.max(ind);
     return ind;
 }
-    
+
+/// Vector arctangent 2
 CM_INLINE arma::vec atan2( const arma::vec& y, const arma::vec& x )
 {
     arma::vec theta = arma::zeros(y.size());
@@ -679,6 +685,7 @@ public:
     
 }
 
+// Necessary for conversions
 //namespace arma
 //{
 template<>
