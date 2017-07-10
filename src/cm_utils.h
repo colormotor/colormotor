@@ -56,6 +56,7 @@ std::string	getPathWithoutExt(  const std::string &  fileName );
 /// Get file extension
 std::string getFileExt(  const std::string & fileName );
 
+/// Return wether a file exists
 bool	fileExists( const std::string & fileName );
 
 /// Joins paths in a and b
@@ -67,17 +68,23 @@ std::vector <std::string> getFilesInFolder( const std::string& path);
 /// Get current working dir
 std::string getCurrentDirectory();
 
+/// Get size of file
 size_t getFileSize( FILE * f );
 
 /// Untested
 std::string  getExecutablePath();
 
+/// Create hex dump string of a byte buffer
 std::string hexDump( unsigned char * buffer, int size, int valuesPerLine=10 );
+/// Create hex dump string of a word buffer
 std::string hexDump( unsigned short * buffer, int size, int valuesPerLine=10 );
+/// Create hex dump string of a dword buffer
 std::string hexDump( unsigned int * buffer, int size, int valuesPerLine=10 );
+
 /// Create a unsigned char array containing the data in path. 
 std::string binarize( const std::string & path, const std::string & name );
 
+/// Read line from file
 bool readLine( std::string & s, FILE * file );
 
 /// (Wrapper arounf strtok) Splits a string into tokens delimited by characters in delimiters.
@@ -104,7 +111,7 @@ bool saveFileDialog( std::string & path, const char * type, int maxsize = 2048  
 
 ///////////////////////////////////////////////////////
 // File watcher (gross for the moment)
-
+/// Class to watch modifications to a file
 class FileWatcher
 {
 public:
