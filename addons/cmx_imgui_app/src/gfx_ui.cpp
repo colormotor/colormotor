@@ -80,6 +80,20 @@ namespace ui
     {
         ImGui::End();
     }
+
+    static ImVec4 txtColor = ImVec4(0.5,0.5,0.5,1.0);
+    void textColor( ImVec4 clr )
+    {
+        txtColor = clr;
+    }
+
+    void text( ImVec2 pos, const std::string& str )
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, txtColor);
+        ImGui::SetCursorPos(pos);
+        ImGui::Text(str.c_str());
+        ImGui::PopStyleColor();
+    }
     
     static ImRect rectFromCircle( const ImVec2& p, float r )
     {
@@ -88,6 +102,8 @@ namespace ui
     }
     
     bool modified() { return mod; }
+    bool modifierShift() { return ImGui::GetIO().KeyShift; }
+    bool modifierAlt() { ImGui::GetIO().KeyAlt; }
     
     static ImU32 getColor( bool hovered, bool selected )
     {
@@ -187,9 +203,27 @@ namespace ui
     {
         return ImVec2(pos.x + cos(theta)*length, pos.y + sin(theta)*length);
     }
-                                  
-    float handle( int index, float ang, const ImVec2& pos, float length, bool selected )
+
+
+    static float norm( const ImVec2& v )
     {
+        return ::sqrt( v.x*v.x + v.y*v.y );
+    }
+
+    static float length( const ImVec2& a, const ImVec2& b )
+    {
+        return ::sqrt( (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) );
+    }
+
+    static float angleBetween( const ImVec2& a, const ImVec2& b )
+    {
+        return ::atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
+    }
+
+
+    ImVec2 lengthHandle( int index, ImVec2 thetaLen, float startTheta, const ImVec2& pos, const ImVec2& minThetaLen, const ImVec2& maxThetaLen, bool selected )
+    {
+        using namespace ui;
         mod = false;
         
         std::stringstream idstr;
@@ -197,19 +231,27 @@ namespace ui
         
         ImGuiWindow* window = ImGui::GetCurrentWindow();
         if (window->SkipItems)
-            return ang;
+            return thetaLen;
         
         ImGuiContext& g = *GImGui;
         const ImGuiStyle& style = g.Style;
         const ImGuiID id = window->GetID(idstr.str().c_str());
         const float w = ImGui::CalcItemWidth();
         
+        ImVec2 vbase = ImVec2(::cos(startTheta), ::sin(startTheta));
+        
         bool res = false;
         if(g.ActiveId == id)
         {
             if (g.IO.MouseDown[0])
             {
-                ang = ::atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
+                ImVec2 vmouse = ImVec2(ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y);
+                thetaLen.x = (float)angleBetween(vbase, vmouse); //::atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
+                
+                if(maxThetaLen.x != 0)
+                    thetaLen.x = std::max( std::min(thetaLen.x, maxThetaLen.x), minThetaLen.x);
+                
+                thetaLen.y = std::max( std::min( length(ImGui::GetMousePos(), pos), maxThetaLen.y ), minThetaLen.y );
                 res=mod=true;
             }
             else
@@ -219,12 +261,12 @@ namespace ui
         }
         
         // Specify object
-        ImVec2 hp = handlePos(pos, ang, length);
-        ImRect rect = rectFromCircle(hp, config.draggerSize);
+        ImVec2 hp = handlePos(pos, thetaLen.x+startTheta, thetaLen.y);
+        ImRect rect = rectFromCircle(hp, config.draggerSize*0.8);
         
         ImGui::ItemSize(rect);
         if(!ImGui::ItemAdd(rect, &id))
-            return false;
+            return thetaLen;
         
         // Check hovered
         const bool hovered = ImGui::IsHovered(rect, id);
@@ -244,7 +286,14 @@ namespace ui
         drawDragger(window, rect, clr);
         //window->DrawList->AddRectFilled(rect.Min, rect.Max, clr, config.rounding); //, rounding);
         
-        return ang;
+        return thetaLen;
+    }
+
+    float handle( int index, float ang, const ImVec2& pos, float length, float startTheta, float minTheta, float maxTheta, bool selected )
+    {
+        ImVec2 thetaLen=ImVec2(ang, length);
+        thetaLen = lengthHandle(index, thetaLen, startTheta, pos, ImVec2(minTheta, length), ImVec2(maxTheta, length), selected);
+        return thetaLen.x;
     }
     
     static ImVec2 operator *( float s, const ImVec2 &v ) { return ImVec2( v.x * s, v.y * s ); }
@@ -293,23 +342,42 @@ namespace ui
         // position
         t.pos = dragger(0, t.pos, selected, config.draggerSize ); pmod = modified();
         
+        bool shift = ImGui::GetIO().KeyShift;
+        bool alt = ImGui::GetIO().KeyAlt;
+
         // x axis
         px = t.pos + t.x;
         px = dragger(1, px, false, config.draggerSize*0.7 ); xmod = modified();
+        
+        ImVec2 tx = px - t.pos;
+        float rx = norm(tx) / norm(t.x);
+
         if(xmod)
         {
             t.x = px - t.pos;
             t.y = forceOrtho(t.y, t.x, ImGui::GetIO().KeyAlt);
-            
+            if(shift)
+                t.y = t.y * rx;
+            if(alt)
+                t.y = (t.y / norm(t.y))*norm(tx);
         }
         
         // y axis
         py = t.pos + t.y;
         py = dragger(2, py, false, config.draggerSize*0.7 ); ymod = modified();
+
+        ImVec2 ty = py - t.pos;
+        float ry = norm(ty) / norm(t.y);
+
         if(ymod)
         {
             t.y = py - t.pos;
             t.x = forceOrtho(t.x, t.y, ImGui::GetIO().KeyAlt);
+
+            if(shift)
+                t.x = t.x * ry;
+            if(alt)
+                t.x = (t.x / norm(t.x))*norm(t.y);
         }
         
         window->DrawList->AddLine(t.pos, px, config.lineColor);

@@ -104,8 +104,14 @@ namespace ui
     void begin( const std::string& name="gfx_ui" );
     void end();
     
+    void textColor( ImVec4 clr );
+    void text( ImVec2 pos, const std::string& str );
+
     /// Will return true if the previous widget call has caught an interaction
     bool modified();
+    
+    bool modifierShift();
+    bool modifierAlt();
     
     /// Dragger widget
     ImVec2 dragger( int index, ImVec2 pos, bool selected=false, float size=-1. );
@@ -116,9 +122,12 @@ namespace ui
     /// Draw a line from a to b
     void line( const ImVec2& a, const ImVec2& b );
 
+    /// Angle and length handle widget
+    ImVec2 lengthHandle( int index, ImVec2 thetaLen, float startTheta, const ImVec2& pos, const ImVec2& minThetaLen, const ImVec2& maxThetaLen, bool selected=false );
+
     /// Angle handle widget
-    float handle( int index, float ang, const ImVec2& pos, float length, bool selected=false );
-    
+    float handle( int index, float ang, const ImVec2& pos, float length, float startTheta=0.0f, float minTheta=0.0f, float maxTheta=0.0f, bool selected=false );
+
     /// Simple affine transform widget (two axes, centered)
     Trans2d affineSimple( int index, Trans2d m, bool selected=false );
     
