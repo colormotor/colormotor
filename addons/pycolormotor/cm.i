@@ -35,6 +35,8 @@ typedef cm::V2 ForceV2;
 %template(FloatVector) std::vector< float >;
 %template(VecVector) std::vector<arma::vec>;
 %template(MatVector) std::vector<arma::mat>;
+%template(StringVector) std::vector<std::string>;
+%template(ConstCharVector) std::vector<const char*>;
 
 %include "wrappers/py_cm.h"
 %include "wrappers/py_utils.h"

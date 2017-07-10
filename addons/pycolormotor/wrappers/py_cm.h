@@ -40,6 +40,7 @@ public:
 	void setString( const std::string& val, bool bInformListeners=true );
 	void setInt( int val, bool bInformListeners=true );
 	
+	bool isDirty() { bool o=dirty; dirty=false; return o; }
 	
 	float getFloat() const;
 	bool  getBool() const;

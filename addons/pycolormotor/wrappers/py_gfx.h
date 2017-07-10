@@ -1015,20 +1015,20 @@ void deleteAllShaders();
     
 int loadShader( const std::string& vs, const std::string& ps );
 int reloadShader( int id, const std::string& vs, const std::string& ps );
-bool setTexture( const std::string& handle, Texture& tex, int sampler );
+bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();
 
-bool setInt( const std::string& handle, int v );
+bool setShaderInt( const std::string& handle, int v );
 //bool setBool( const std::string& handle, bool v );
-bool setFloat( const std::string& handle, float v );
-bool setFloat2( const std::string& handle, const V2& v );
-bool setFloat3( const std::string& handle, const V3& v );
-bool setFloat4( const std::string& handle, const V4& v );
-bool setM44( const std::string& handle, const M44& v );
+bool setShaderFloat( const std::string& handle, float v );
+bool setShaderFloat2( const std::string& handle, const V2& v );
+bool setShaderFloat3( const std::string& handle, const V3& v );
+bool setShaderFloat4( const std::string& handle, const V4& v );
+bool setShaderM44( const std::string& handle, const M44& v );
 //bool setM33( const std::string& handle, const M33& v );
 //bool setM44Array( const std::string& handle, const std::vector<M44>& v );
-bool setFloatArray( const std::string& handle, float*v, int n);
+bool setShaderFloatArray( const std::string& handle, float*v, int n);
 
 ///
 // Colors
