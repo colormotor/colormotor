@@ -1440,16 +1440,27 @@ void drawLine(  const arma::vec&  a,  const arma::vec&  b )
 	vertex(a);
 	vertex(b);
 	endVertices();
+
+	#ifdef GFX_TO_EPS
+	if( renderingToEps )
+	{
+		drawingEpsPath=true;
+		currentEpsPath.clear();
+		EPS_ADDP(a);
+		EPS_ADDP(b);
+		eps.strokeShape(currentEpsPath, currentColor);
+		drawingEpsPath=false;
+
+	}
+	#endif
+
 }
 
 void drawLine( float x0, float y0, float x1, float y1)
 {
-	beginVertices(LINELIST);
-	vertex(x0,y0);
-	vertex(x1,y1);
-	endVertices();
+	drawLine(arma::vec({x0,y0}), arma::vec({x1,y1}));
+	
 }
-
 
 void drawArrow( const V2&a, const V2&b, float size )
 {
@@ -4706,17 +4717,13 @@ static int getUniformLocation( const std::string& handle )
 	return glGetUniformLocation( curProgram, handle.c_str() );
 }
 
-bool setTexture( const std::string& handle, Texture& tex, int sampler )
+bool setTexture( const std::string& handle, int sampler )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
 		return false;
 		
 	glUniform1i(id,sampler);
-	
-	tex.bind(sampler);
-	shaderTextures.push_back(&tex);
-    
     return true;
 }
 
@@ -4736,7 +4743,7 @@ void unbindShader()
 	curProgram = -1;
 }
 
-bool setInt( const std::string& handle, int v )
+bool setShaderInt( const std::string& handle, int v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4746,7 +4753,7 @@ bool setInt( const std::string& handle, int v )
 	return true;
 }
 
-bool setFloat( const std::string& handle, float v )
+bool setShaderFloat( const std::string& handle, float v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4756,7 +4763,7 @@ bool setFloat( const std::string& handle, float v )
 	return true;
 }
 
-bool setFloat2( const std::string& handle, const V2& v )
+bool setShaderFloat2( const std::string& handle, const V2& v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4765,7 +4772,7 @@ bool setFloat2( const std::string& handle, const V2& v )
 	return true;
 }
 
-bool setFloat3( const std::string& handle, const V3& v )
+bool setShaderFloat3( const std::string& handle, const V3& v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4774,7 +4781,7 @@ bool setFloat3( const std::string& handle, const V3& v )
 	return true;
 }
 
-bool setFloat4( const std::string& handle, const V4& v )
+bool setShaderFloat4( const std::string& handle, const V4& v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4783,7 +4790,7 @@ bool setFloat4( const std::string& handle, const V4& v )
 	return true;
 }
 
-bool setM44( const std::string& handle, const M44& v )
+bool setShaderM44( const std::string& handle, const M44& v )
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)
@@ -4813,7 +4820,7 @@ bool setM44( const std::string& handle, const M44& v )
 // 	return setM44Array(handle, (const float*)&v[0], v.size());
 // }
 
-bool setFloatArray( const std::string& handle, float*v, int n)
+bool setShaderFloatArray( const std::string& handle, float*v, int n)
 {
 	int id = getUniformLocation(handle);
 	if(id == -1)

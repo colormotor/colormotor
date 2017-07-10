@@ -917,7 +917,7 @@ namespace gfx
 
 }
 
-    
+/// Mesh
 struct Mesh
 {
     Mesh()
@@ -1036,6 +1036,7 @@ WINDING_ODD = GLU_TESS_WINDING_ODD,
 WINDING_NONZERO = GLU_TESS_WINDING_NONZERO
 };
 
+/// Contour and shape tessellator
 struct Tessellator
 {
     struct XYZ
@@ -1141,39 +1142,41 @@ void 	beginEps( const std::string & path, const Box & rect );
 void 	endEps();
 bool 	isRenderingToEps();
 
-/// Frame-buffer operations/states
+/// Clear frame and depth buffers
 void clear( float r, float g, float b, float a, bool depth=true, float depthClear=1.0f );
-
+/// Clear frame and depth buffers
 void clear( const V4& clr, bool depth=true, float depthClear=1.0f );
-
+/// Clear depth buffer
 void clearDepth( float depthClear );
-
+/// Clear stencil buffer
 void clearStencil( int stencilClear );
-
+/// Enable color write
 void enableColorWrite( bool r, bool g, bool b, bool a );
-
+/// Enable blending
 void enableBlend( bool flag );
-
+/// Set blending mode
+/// One of BLENDMODE flags
 void setBlendMode( int mode );
-
+/// Set fill mode 
+/// One of FILLMODE flags
 void setFillMode( int mode );
-
+/// Set culling mode, one of CULL flags
 void setCullMode( int cull );
-
+/// Toggle writing to depth buffer
 void enableDepthWrite( bool flag );
-
+/// Toggle reading to depth buffer
 void enableDepthRead( bool flag );
-
+/// Toggle depth buffer
 void enableDepthBuffer( bool flag );
-
+/// Set depth testing func
 void setDepthFunc( int func );
-
+/// Toggle stencil buffer write 
 void enableStencilWrite( bool flag );
-
+/// Toggle stencil buffer read
 void enableStencilRead( bool flag );
-
+/// Toggle stencil buffer 
 void enableStencilBuffer( bool flag );
-	 	
+/// Toggle stencil buffer function 
 void setStencilFunc( int func, int ref, unsigned int mask );
 
 void setStencilOp( int fail, int zfail, int zpass );
@@ -1182,78 +1185,92 @@ void setStencilOp( int failFront, int zfailFront, int zpassFront,
 			      int failBack, int zfailBack, int zpassBack );
 
 void setPointSize( float s );
-
+/// Enable point sprites
 void enablePointSprites( bool flag, int textureIndex );
-
+/// Toggle anti-aliasing
 void enableAntiAliasing( bool aa );
-
+/// Set line width
 void lineWidth( float w );
 
 /// Stiplled line
 /// with factor = 0 line stipple is disabled.
 void lineStipple( int factor, unsigned short pattern=0xAAAA );
 
+/// Bind texture handle
 void bindTexture( int id, int sampler=0 );
+/// Unbind texture handle
 void unbindTexture( int sampler=0 );
+/// Set active texture unit
 void activeTexture( int sampler );
     
-// Projections/view/transformations
-
-/// Set current viewport. Note: y0 is at bottom of screen.
+////////////////////////////////////////////////// 
+/// Projections/view/transformations
+//@{
+/// Push viewport on stack
 void pushViewport();
+/// Pop viewport from stack
 void popViewport();
+/// Set current viewport. Note: y0 is at bottom of screen.
 void setViewport( int x, int y, int w, int h );
 
 /// Sets identity to projection and model-view matrices
 void setIdentityTransform();
-
+/// Sets perspective projection (as in MESA standard)
 void setPerspectiveProjection(float fovy, float aspect, float zNear, float zFar);
-
+/// Set projection matrix by specifying view frustum 
 void setFrustum( float left, float right, float bottom, float top, float near, float far );
-
+/// Set orthographic projection
 void setOrtho(float x,float y,float w, float h, float zNear = -1.0, float zFar = 1.0);
-
+/// Set orthographic projection with origin at (0,0)
 void setOrtho( float w, float h );
 
-/// Mesa 3d Implementation
+/// Look-at view matrix, Mesa 3d Implementation
 void lookAt(GLfloat eyex, GLfloat eyey, GLfloat eyez,
 		   GLfloat centerx, GLfloat centery, GLfloat centerz,
 		   GLfloat upx, GLfloat upy, GLfloat upz);
 
-/// Sets OF like 2d/3d view
+/// Sets view and projection matrix, imitating a orthographic projection on z=0
 void set2DView( float w, float h, int rotate );
-
+/// Set projection transform
 void setProjectionMatrix( const M44& mat );
+/// Set model view transform
 void setModelViewMatrix( const arma::mat& mat );
+/// Multiply current transform
 void applyMatrix( const arma::mat& mat );
-
+/// Get current projection matrix
 M44 getProjectionMatrix();
+/// Get current model-view matrix
 M44 getModelViewMatrix();
+/// Get current viewport
 V4 getViewport();
     
 /// Set current (mdoel-view) matrix to identity
 void identity();
 
+/// Translate model-view
 void translate( const arma::vec& v );
+/// Translate model-view
 void translate( float x, float y , float z = 0.0 );
-
+/// Rotate model-view
 void rotate( float x, float y, float z  );
+/// 2d rotate model-view (around z axis)
 void rotate( float z );
-
+/// scale model-view
 void scale( float x, float y, float z = 1.0 );
+/// uniform scale model-view
 void scale( float s );
 
 /// Push a matrix to the stack
 void pushMatrix( const arma::mat& m );
-
 /// Push new transformation to matrix stack 
 void pushMatrix();
-
 /// pop matrix stack
 void popMatrix();
+//@}
 
-
-// Drawing utilities
+//////////////////////////////////////////////////
+/// Drawing utilities
+//@{
 /// Specify a vertex, given a 2d or 3d vertex
 void vertex( const arma::vec& v  );
     
@@ -1286,71 +1303,75 @@ void endVertices();
 
 /// Draw a 2d quad providing texture coordinates (u,v)
 void drawUVQuad( float x  , float y  , float w , float h, float maxU=0.0f, float maxV=1.0f, bool flip=true );
-
 /// Draw a 2d quad
 void drawQuad( float x  , float y  , float w , float h );
 
-/////////////////////////////////////// *** ADAPTED FROM LIBCINDER
+/// Fill a circle
+/// *** ADAPTED FROM LIBCINDER
 void fillCircle( const V2& center, float radius, int numSegments = 0);
+/// Draw a circle outline
+/// *** ADAPTED FROM LIBCINDER
 void drawCircle( const V2& center, float radius, int numSegments = 0 );
 
+/// Draw triangle
 void drawTriangle( const V2& a, const V2& b, const V2& c );
+/// Fill a triangle
 void fillTriangle( const V2& a, const V2& b, const V2& c );
 
-
+/// Draw a rectangle
 void drawRect( const Box& rect );
+/// Fill a rectangle
 void fillRect( const Box& rect );
+/// Draw a rectangle
 void drawRect( float x, float y, float w, float h );
+/// Fill a rectangle
 void fillRect( float x, float y, float w, float h );
 
 /// Draw a line between a and b
 void drawLine( const arma::vec& a, const arma::vec& b );
+/// Draw a line
 void drawLine( float x0, float y0, float x1, float y);
-
 /// Draw an arrow
 void drawArrow( const V2& a, const V2& b, float size );
-
 /// Draw a 2d X marker at pos
 void drawXMarker( const V2& pos, float size );
 
 /// Draw a contour
 void draw( const Contour& C );
-
 /// Draw part of a contour
 void draw( const Contour& C, int from, int to );
-
 /// Draw a contour
 void draw( const Shape& S );
-
 /// Draw 2d/3d columns of a matrix
 void draw( const arma::mat& P, bool closed, int from=-1, int to=-1 );
-
 /// Draw a mesh
 void draw( const Mesh& mesh );
 
 /// Fill a contour
 void fill( const Contour& shape, int winding=WINDING_ODD );
-
 /// Fill a shape
 void fill( const Shape& shape, int winding=WINDING_ODD );
 
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( Image& img, float x, float y, float w=0., float h=0. );
-
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( const arma::uchar_cube& img, float x, float y, float w=0., float h=0. );
 
-/// draw a set of primitives (2d/3d)
+/// draw a set of primitives (2d/3d), @prim specifies primitive type (PRIMITIVE)
 void drawPrimitives( const arma::mat & P, int prim, int offset=0, int inc = 1 );
+/// draw a set of primitives (2d/3d), @prim specifies primitive type (PRIMITIVE)
 void drawPrimitives( const std::vector<V3> & P, int prim, int offset=0, int inc = 1 );
+/// draw a set of primitives (2d/3d), @prim specifies primitive type (PRIMITIVE)
 void drawPrimitives( const std::vector<V2> & P, int prim, int offset=0, int inc = 1 );
     
 /// Draw a 3d box, given min and max coords
 void drawWireBox( const arma::vec& min, const arma::vec& max );
 
+/// Draw a cuboid 
 void drawCube( const V3& center, const V3&size );
+/// draw a wireframe cuboid
 void drawWireCube( const V3& center, const V3&size );
-
+/// Draw a sphere
 void drawSphere( const V3& center, float radius, int segments=100);
 
 /// Draw 3d axes defined by a 4x4 matrix
@@ -1364,9 +1385,12 @@ void drawGauss2d( const arma::vec& mu, const arma::mat& Sigma, const arma::vec& 
 /// Draw 3d multivariate gaussian
 void drawGauss3d( const arma::vec& mu, const arma::mat& Sigma, const arma::vec& clr=arma::vec({1.0,0.5,0.0,0.3}), float stdDevScale=3., bool wireFrame=false, int subd=30 );
 
+//@}
+
+
 //////////////////////////////////////
-// Shader interface
-    
+/// Shader interface (needs further testing)
+//@{
 void removeShader( int id );
 void deleteShaderProgram( int id );
 void deleteAllShaders();
@@ -1374,24 +1398,24 @@ void deleteAllShaders();
 int loadShader( const std::string& vs, const std::string& ps );
 int reloadShader( int id, const std::string& vs, const std::string& ps );
 std::string shaderString( const std::string& path );
-bool setTexture( const std::string& handle, Texture& tex, int sampler );
+bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();
 
-bool setInt( const std::string& handle, int v );
-bool setBool( const std::string& handle, bool v );
-bool setFloat( const std::string& handle, float v );
-bool setFloat2( const std::string& handle, const V2& v );
-bool setFloat3( const std::string& handle, const V3& v );
-bool setFloat4( const std::string& handle, const V4& v );
-bool setM44( const std::string& handle, const M44& v );
+bool setShaderInt( const std::string& handle, int v );
+bool setShaderBool( const std::string& handle, bool v );
+bool setShaderFloat( const std::string& handle, float v );
+bool setShaderFloat2( const std::string& handle, const V2& v );
+bool setShaderFloat3( const std::string& handle, const V3& v );
+bool setShaderFloat4( const std::string& handle, const V4& v );
+bool setShaderM44( const std::string& handle, const M44& v );
 //bool setM33( const std::string& handle, const M33& v );
 //bool setM44Array( const std::string& handle, const std::vector<M44>& v );
-bool setFloatArray( const std::string& handle, float*v, int n);
+bool setShaderFloatArray( const std::string& handle, float*v, int n);
 
 ///
 // Colors
-
+//@}
 
 } // end gfx
 
