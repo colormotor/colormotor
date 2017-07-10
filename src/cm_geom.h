@@ -63,22 +63,30 @@ arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* meth
     
 /// Uniformly sample a contour at distance s
 Contour uniformSample( const Contour & P, float s );
-    
+   
+/// Angle between two vectors
 double angleBetween( const V2& a, const V2& b);
     
+/// Signed triangle area
 double triangleArea( const V2& a, const V2& b, const V2 & c );
     
+/// Closest point on segment (a,b) to point 'p' 
 V2 closestPointOnSegment( const V2& p, const V2& a, const V2& b );
-    
+
+/// Distance of point 'p' to segment (a,b)
 double distanceToSegment( const V2& p, const V2& a, const V2& b );
     
+/// Square distance of point 'p' to segment (a,b)
 double squareDistanceToSegment( const V2& p, const V2& a, const V2& b );
     
+/// Distance of point 'p' to line passing through (a,b)
 double distanceToLine( const V2& p, const V2& a, const V2& b );
     
+/// Transformation from rect 'src' to 'dst' with padding
 M33 rectTransform( const Box &src, const Box&dst, float padding=0.0 );
     
 /// Line intersection utils
+//@{
 int lineIntersection( V2 * intersection,  V2 * uv, 
 					  const V2& a1, 
 					  const V2& a2, 
@@ -139,5 +147,6 @@ int lineIntersectionRange( V2 * intersection,
 					  float bRangeMin,
 					  float bRangeMax
 					   );
+//@}
 
 }
