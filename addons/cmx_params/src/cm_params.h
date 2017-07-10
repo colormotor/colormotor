@@ -160,9 +160,9 @@ public:
 	void initString( const std::string& name, std::string * addr );
 	void initCString( const std::string& name, char * addr );
 
-
 	// note. this could be better done by handling arrays of values...
 	void initSelection(  const std::string& name, std::string* names, int * addr, int numSelections );
+	void initSelection(  const std::string& name, const std::vector<std::string>& names, int * addr );
 	
 	////////////////////////////////////////////
 	// setters
@@ -202,7 +202,7 @@ public:
     bool isDirty() { bool o=dirty; dirty=false; return o; }
     
 	// selector param specific
-	std::string * getSelectionNames() const { return _selectionNames; }
+	const std::vector<std::string> & getSelectionNames() const { return _selectionNames; }
 	
 	/// Is parameter an Array
 	bool isArray() const { return _numElements > 1; }
@@ -270,7 +270,7 @@ protected:
 	int _numElements;
 	
 	// just for selector param
-	std::string * _selectionNames;
+	std::vector<std::string> _selectionNames;
 	
 	PARAM_TYPE _type;
     
@@ -320,7 +320,8 @@ public:
 	Param* addCString( const std::string& name, char * address );
 	Param* addString( const std::string& name, std::string * address );
 	Param* addSelection( const std::string& name, std::string * names, int * addr, int numSelections );
-
+	Param* addSelection( const std::string& name, const std::vector<std::string>& names, int * addr );
+	
 	void addSpacer();
 	void addSeparator();
 	
@@ -328,6 +329,7 @@ public:
 	Param*  addBool( const std::string& name, bool value );
 	Param*  addInt( const std::string& name, int value );
 	Param*  addString( const std::string& name, const std::string & value );
+	Param* 	addSelection( const std::string& name, const std::vector<std::string>& names, int val );
 
 	bool setString( const std::string &name, const std::string & v, bool inform = true );
 	bool setFloat( const std::string& name, float v, bool inform = true );

@@ -397,13 +397,33 @@ void Param::initString( const std::string& name, std::string * addr )
 
 void Param::initSelection(  const std::string& name, std::string * names, int * addr, int numSelections )
 {
+	std::vector<std::string> selNames;
+	for( int i = 0; i < numSelections; i++ )
+		selNames.push_back(names[i]);
+	initSelection(name, selNames, addr);
+}
+
+void Param::initSelection(  const std::string& name, const std::vector<std::string>& names, int * addr )
+{
 	_selectionNames = names;
 	//_numSelections = numSelections;
-	_numElements = numSelections;
+	_numElements = names.size();
 	_addr = addr;
+
+	if(!_addr)
+	{
+		_data = new char[sizeof(int)];
+		_addr = _data;
+		setInt(0);
+	}
+    else
+    {
+        _default = *addr;
+    }
+    
 	_type = PARAM_SELECTION;
 	_name = name;
-	_default = *addr;
+	
 }
 
 void Param::initFloatArray( const std::string& name, float * addr, int numElements, float min , float max  )
@@ -1098,6 +1118,14 @@ Param* ParamList::addSelection( const std::string& name, std::string * names, in
 	return p;
 }
 
+Param* ParamList::addSelection( const std::string& name, const std::vector<std::string>& names, int * addr )
+{
+	Param * p = new Param();
+	p->initSelection(name,names,addr);
+	addParam(p);
+	return p;
+}
+
 void ParamList::addSeparator()
 {
 	addSpacer();
@@ -1128,6 +1156,15 @@ Param*  ParamList::addString( const std::string& name, const std::string & value
 {
 	Param * p = addString(name,(std::string*)0);
 	p->setString(value);
+	return p;
+}
+
+Param* ParamList::addSelection( const std::string& name, const std::vector<std::string>& names, int val )
+{
+	Param * p = new Param();
+	p->initSelection(name,names,(int*)0);
+	addParam(p);
+	p->setInt(val);
 	return p;
 }
 
