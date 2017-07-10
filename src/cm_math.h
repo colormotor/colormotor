@@ -67,15 +67,18 @@ arma::vec y33( const arma::mat& m );
 arma::vec trans33( const arma::mat& m );
 //@}
 
-// Projective/camera transformations
+/// Projective/camera transformations
+//@{
 M44 perspective(double fov, double aspect, double znear, double zfar, bool wFriendly=false);
 M44 frustum( double left, double right, double bottom, double top, double near, double far );
 M44 ortho( double l, double r, double b, double t , double zn, double zf );
 M44 ortho( double w, double h, double znear=-1., double zfar=1. );
 M44 pointAt(const V3 & pos, const V3 & target, const V3 & up );
 M44 lookAt(const V3 & pos, const V3 & target, const V3 & up );
+//@}
 
-// Quaternions
+/// Quaternions
+//@{
 V4 quatMul( const V4&a, const V4& b );
 V4 quat( const M44& m, double eps=1e-10 );
 M44 m44( const V4& q_ );
@@ -88,11 +91,13 @@ V4 quatSetAngle( const V4& q, double theta);
 double quatAngle( const V4& q );
 V4 quatConjugate( const V4& q );
 V4 slerp( const V4& a, const V4& b, double t, double minAngle=0.001 );
+//@}
 
+/// Simple Newton Raphson solver
 template <typename T, typename FuncT, typename DFuncT >
 float newtonRaphson( FuncT f, DFuncT df, T a, T b, int maxiter=130, T tol=1.0e-5 );
 
-// Other utils
+
 CM_INLINE float csc( float x ) { return 1.0/sin(x); }
 CM_INLINE float ctg( float x ) { return 1.0/tan(x); }
 

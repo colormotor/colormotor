@@ -10,17 +10,17 @@ void randomSeed( float seed )
     arma::arma_rng::set_seed(seed);
 }
 
-// from http://www.atnf.csiro.au/computing/software/gipsy/sub/bessel.c
+
+/// Evaluate modified Bessel function In(x) and n=0
+/// from http://www.atnf.csiro.au/computing/software/gipsy/sub/bessel.c
 static double bessi0( double x )
-/*------------------------------------------------------------*/
-/* PURPOSE: Evaluate modified Bessel function In(x) and n=0.  */
-/*------------------------------------------------------------*/
 {
     double ax,ans;
     double y;
     
     
-    if ((ax=fabs(x)) < 3.75) {
+    if ((ax=fabs(x)) < 3.75) 
+    {
         y=x/3.75,y=y*y;
         ans=1.0+y*(3.5156229+y*(3.0899424+y*(1.2067492
                                              +y*(0.2659732+y*(0.360768e-1+y*0.45813e-2)))));
@@ -33,7 +33,6 @@ static double bessi0( double x )
     }
     return ans;
 }
-
 
 arma::vec pdfVonMises( const arma::vec& theta, double mu, double sigma )
 {
@@ -53,7 +52,6 @@ arma::vec pdfGauss( const arma::mat& X, const arma::colvec& Mu, const arma::mat&
     arma::vec prob = arma::sum((Data*Lambda) % Data, 1);
     return arma::exp(-prob*0.5) / sqrt( pow(2*PI, nbVar) * fabs(arma::det(Sigma)) + std::numeric_limits<double>::lowest());
 }
-
 
 void eigs_descend( arma::vec & d_out, arma::mat & V_out, const arma::mat & X )
 {
@@ -184,7 +182,6 @@ arma::mat scaling3d( double s, bool affine )
 {
 	return scaling3d( arma::vec({s, s, s}), affine );
 }
-
 
 arma::mat scaling3d( double x, double y, double z, bool affine )
 {
@@ -417,185 +414,185 @@ M44 lookAt(const V3 & pos, const V3 & target, const V3 & up )
 
     
     
-    V4 quatMul( const V4&a, const V4& b )
-    {
-        V4 o;
-        o.x = a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y;
-        o.y = a.w*b.y - a.x*b.z + a.y*b.w + a.z*b.x;
-        o.z = a.w*b.z + a.x*b.y - a.y*b.x + a.z*b.w;
-        o.w = a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z;
-        return o;
+V4 quatMul( const V4&a, const V4& b )
+{
+    V4 o;
+    o.x = a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y;
+    o.y = a.w*b.y - a.x*b.z + a.y*b.w + a.z*b.x;
+    o.z = a.w*b.z + a.x*b.y - a.y*b.x + a.z*b.w;
+    o.w = a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z;
+    return o;
+}
+
+
+V4 quat( const M44& m, double eps )
+{
+    V4 o;
+    // Adapted from G3d engine (http://g3d.cs.williams.edu/g3d/G3D10/G3D.lib/source/Quat.cpp)
+    static const int plus1mod3[] = {1, 2, 0};
+    
+    // Find the index of the largest diagonal component
+    // These ? operations hopefully compile to conditional
+    // move instructions instead of branches.
+    int i = (m(1,1) > m(0,0)) ? 1 : 0;
+    i = (m(2,2) > m(i,i)) ? 2 : i;
+    
+    // Find the indices of the other elements
+    int j = plus1mod3[i];
+    int k = plus1mod3[j];
+    
+    double nc2 = ((m(j,j) + m(k,k)) - m(i,i)) - 1.0;
+    o[i] =  nc2;
+    o[3] =  (m(j,k) - m(k,j));
+    o[j] = -(m(i,j) + m(j,i));
+    o[k] = -(m(i,k) + m(k,i));
+    
+    // We now have the correct result with the wrong magnitude, so normalize it:
+    double s = arma::norm(o);
+    if (s > eps) {
+        s = 1.0 / s;
+        o.x *= s;
+        o.y *= s;
+        o.z *= s;
+        o.w *= s;
+    } else {
+        // nearly zero so make identity
+        o.x = 0.0f;
+        o.y = 0.0f;
+        o.z = 0.0f;
+        o.w = 1.0f;
     }
     
+    return o;
+}
+
+M44 m44( const V4& q_ )
+{
+    V4 q = normalize(q_);
     
-    V4 quat( const M44& m, double eps )
+    double xx = 2.0f * q.x * q.x;
+    double xy = 2.0f * q.x * q.y;
+    double xz = 2.0f * q.x * q.z;
+    double xw = 2.0f * q.x * q.w;
+    
+    double yy = 2.0f * q.y * q.y;
+    double yz = 2.0f * q.y * q.z;
+    double yw = 2.0f * q.y * q.w;
+    
+    double zz = 2.0f * q.z * q.z;
+    double zw = 2.0f * q.z * q.w;
+    
+    M44 m = arma::eye(4,4);
+    m.col(0) = V4( 1.0f - yy - zz, xy + zw, xz - yw, 0.);
+    m.col(1) = V4( xy - zw, 1.0 - xx - zz, yz + xw, 0.);
+    m.col(2) = V4( xz + yw, yz - xw, 1.0 - xx - yy, 0.);
+    return m;
+}
+
+V4 quatAxisAngle( const V3& axis, double angle )
+{
+    V4 o;
+    double hang = angle * 0.5f;
+    double sa = sin(hang); // /2?
+    o.x = axis.x * sa;
+    o.y = axis.y * sa;
+    o.z = axis.z * sa;
+    o.w = cos(hang);
+    return o;
+}
+
+V4 quatIdentity()
+{
+    return V4(0,0,0,1);
+}
+
+V3 quatAxis( const V4& q, double eps )
+{
+    double scale = sin( acos( q.w ) );
+    
+    if ( fabs(scale) < eps )
+        return V3(0,0,0);
+    else
+        return  (V3)(V3(q.x,q.y,q.z) / scale);
+}
+
+/// from matrix TQuaternion FAQ
+V4 quatEuler( double x, double y, double z )
+{
+    V4 qx(V3(1,0,0),x);
+    V4 qy(V3(0,1,0),y);
+    V4 qz(V3(0,0,1),z);
+    
+    V4 qt = quatMul(qx, qy);
+    return quatMul(qt, qz);
+}
+
+V4 quatEuler( const V3& v )
+{
+    return quatEuler(v.x,v.y,v.z);
+}
+
+
+// in radians
+V4 quatSetAngle( const V4& q, double theta)
+{
+    V3 v = quatAxis(q);
+    V4 o;
+    o.w = cos(theta/2.0);
+    v *= sin(theta/2.0);
+    o.x = v.x;
+    o.y = v.y;
+    o.z = v.z;
+    return o;
+}
+
+double quatAngle( const V4& q )
+{
+    return 2.0 * acos(q.w);
+}
+
+V4 quatConjugate( const V4& q )
+{
+    return V4(-q.x,-q.y,-q.z,q.w);
+}
+
+V4 slerp( const V4& a, const V4& b, double t, double minAngle )
+{
+    if (t <= 0.0)
+        return  a;
+    if (t >= 1.0)
+        return b;
+    
+    // angle between rotations
+    double cosphi = dot(a,b);
+    
+    V4 qa = a;
+    
+    if (cosphi < 0)
     {
-        V4 o;
-        // Adapted from G3d engine (http://g3d.cs.williams.edu/g3d/G3D10/G3D.lib/source/Quat.cpp)
-        static const int plus1mod3[] = {1, 2, 0};
-        
-        // Find the index of the largest diagonal component
-        // These ? operations hopefully compile to conditional
-        // move instructions instead of branches.
-        int i = (m(1,1) > m(0,0)) ? 1 : 0;
-        i = (m(2,2) > m(i,i)) ? 2 : i;
-        
-        // Find the indices of the other elements
-        int j = plus1mod3[i];
-        int k = plus1mod3[j];
-        
-        double nc2 = ((m(j,j) + m(k,k)) - m(i,i)) - 1.0;
-        o[i] =  nc2;
-        o[3] =  (m(j,k) - m(k,j));
-        o[j] = -(m(i,j) + m(j,i));
-        o[k] = -(m(i,k) + m(k,i));
-        
-        // We now have the correct result with the wrong magnitude, so normalize it:
-        double s = arma::norm(o);
-        if (s > eps) {
-            s = 1.0 / s;
-            o.x *= s;
-            o.y *= s;
-            o.z *= s;
-            o.w *= s;
-        } else {
-            // nearly zero so make identity
-            o.x = 0.0f;
-            o.y = 0.0f;
-            o.z = 0.0f;
-            o.w = 1.0f;
-        }
-        
-        return o;
+        // Change the sign and fix the dot product; we need to
+        // loop the other way to get the shortest path
+        qa = -qa;
+        cosphi = -cosphi;
     }
     
-    M44 m44( const V4& q_ )
+    if(cosphi < -1.0)
+        cosphi = -1.0;
+    if(cosphi > 1.0)
+        cosphi = 1.0;
+    
+    double phi = acos(cosphi);
+    
+    if (phi >= minAngle)
     {
-        V4 q = normalize(q_);
-        
-        double xx = 2.0f * q.x * q.x;
-        double xy = 2.0f * q.x * q.y;
-        double xz = 2.0f * q.x * q.z;
-        double xw = 2.0f * q.x * q.w;
-        
-        double yy = 2.0f * q.y * q.y;
-        double yz = 2.0f * q.y * q.z;
-        double yw = 2.0f * q.y * q.w;
-        
-        double zz = 2.0f * q.z * q.z;
-        double zw = 2.0f * q.z * q.w;
-        
-        M44 m = arma::eye(4,4);
-        m.col(0) = V4( 1.0f - yy - zz, xy + zw, xz - yw, 0.);
-        m.col(1) = V4( xy - zw, 1.0 - xx - zz, yz + xw, 0.);
-        m.col(2) = V4( xz + yw, yz - xw, 1.0 - xx - yy, 0.);
-        return m;
+        double s0 = sin((1.0 - t) * phi);
+        double s1 = sin(t * phi);
+        //return arma::vec({3,2,3,5});
+        return  V4(( qa*s0 + b*s1 ) / sin(phi));
     }
     
-    V4 quatAxisAngle( const V3& axis, double angle )
-    {
-        V4 o;
-        double hang = angle * 0.5f;
-        double sa = sin(hang); // /2?
-        o.x = axis.x * sa;
-        o.y = axis.y * sa;
-        o.z = axis.z * sa;
-        o.w = cos(hang);
-        return o;
-    }
-    
-    V4 quatIdentity()
-    {
-        return V4(0,0,0,1);
-    }
-    
-    V3 quatAxis( const V4& q, double eps )
-    {
-        double scale = sin( acos( q.w ) );
-        
-        if ( fabs(scale) < eps )
-            return V3(0,0,0);
-        else
-            return  (V3)(V3(q.x,q.y,q.z) / scale);
-    }
-    
-    /// from matrix TQuaternion FAQ
-    V4 quatEuler( double x, double y, double z )
-    {
-        V4 qx(V3(1,0,0),x);
-        V4 qy(V3(0,1,0),y);
-        V4 qz(V3(0,0,1),z);
-        
-        V4 qt = quatMul(qx, qy);
-        return quatMul(qt, qz);
-    }
-    
-    V4 quatEuler( const V3& v )
-    {
-        return quatEuler(v.x,v.y,v.z);
-    }
-    
-    
-    // in radians
-    V4 quatSetAngle( const V4& q, double theta)
-    {
-        V3 v = quatAxis(q);
-        V4 o;
-        o.w = cos(theta/2.0);
-        v *= sin(theta/2.0);
-        o.x = v.x;
-        o.y = v.y;
-        o.z = v.z;
-        return o;
-    }
-    
-    double quatAngle( const V4& q )
-    {
-        return 2.0 * acos(q.w);
-    }
-    
-    V4 quatConjugate( const V4& q )
-    {
-        return V4(-q.x,-q.y,-q.z,q.w);
-    }
-    
-    V4 slerp( const V4& a, const V4& b, double t, double minAngle )
-    {
-        if (t <= 0.0)
-            return  a;
-        if (t >= 1.0)
-            return b;
-        
-        // angle between rotations
-        double cosphi = dot(a,b);
-        
-        V4 qa = a;
-        
-        if (cosphi < 0)
-        {
-            // Change the sign and fix the dot product; we need to
-            // loop the other way to get the shortest path
-            qa = -qa;
-            cosphi = -cosphi;
-        }
-        
-        if(cosphi < -1.0)
-            cosphi = -1.0;
-        if(cosphi > 1.0)
-            cosphi = 1.0;
-        
-        double phi = acos(cosphi);
-        
-        if (phi >= minAngle)
-        {
-            double s0 = sin((1.0 - t) * phi);
-            double s1 = sin(t * phi);
-            //return arma::vec({3,2,3,5});
-            return  V4(( qa*s0 + b*s1 ) / sin(phi));
-        }
-        
-        // For small angles, linear interpolate
-        return  lerp(qa,b,t);
-    }
+    // For small angles, linear interpolate
+    return  lerp(qa,b,t);
+}
     
 }
