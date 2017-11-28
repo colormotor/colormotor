@@ -111,6 +111,10 @@ elseif(UNIX)
 	find_package(OpenGL REQUIRED)
 	find_package(GLEW REQUIRED)
 	pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
+
+	set(GLFWLIB_SEARCH_PATH /usr/lib/x86_64-linux-gnu/)
+	find_library(GLFW_LIB glfw PATHS ${GLFWLIB_SEARCH_PATH})
+
 	#pkg_search_module(PYTHON REQUIRED python>=2.6)
 	# Nifty trick from http://stackoverflow.com/questions/24174394/cmake-is-not-able-to-find-python-libraries
 
@@ -144,21 +148,6 @@ elseif(UNIX)
 	# Mess
 	# Using PYTHON LIB DIR FOR ANACONDA COMPAT
 	target_link_libraries(pycm
-	rt
-	m
-	dl
-	Xrandr
-	Xinerama
-	Xxf86vm
-	Xcursor
-	Xext
-	Xrender
-	Xfixes
-	X11
-	pthread
-	xcb
-	Xau
-	Xdmcp
 	glfw
 	${PYTHON_LIBRARY_DIRS}/libopencv_core.so
 	${PYTHON_LIBRARY_DIRS}/libopencv_imgproc.so
@@ -169,6 +158,8 @@ elseif(UNIX)
 	${ARMADILLO_LIBRARIES}
 	${GLEW_LIBRARIES}
 	${PYTHON_LIBRARY_DIRS}/${PYTHON_LIBRARIES}
+			pthread
+			${GLFW_LIB}
 	)
 
 	add_custom_command(

@@ -16,13 +16,13 @@ Trans2d(const arma::mat& f) \
 { \
     x.x=f(0,0);  x.y=f(1,0); \
     y.x=f(0,1);  y.y=f(1,1); \
-    pos.x=f(0,2);  pos.y=f(1,2); \ 
+    pos.x=f(0,2);  pos.y=f(1,2); \
 } \
 operator arma::mat() const { \
     arma::mat f = arma::eye(3,3); \
     f.col(0) = cm::V3(x.x, x.y, 0.0); \
     f.col(1) = cm::V3(y.x, y.y, 0.0); \
-    f.col(2) = cm::V3(pos.x, pos.y, 1.); \ 
+    f.col(2) = cm::V3(pos.x, pos.y, 1.); \
     return f; \
 } 
 

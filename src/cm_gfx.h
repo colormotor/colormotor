@@ -17,6 +17,14 @@
 ********************************************************************/
 
 #pragma once
+
+
+#include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#if CV_MAJOR_VERSION < 3
+#include "opencv2/core/opengl_interop.hpp"
+#endif
+
 #include "cm.h"
 
 // GL includes
@@ -46,9 +54,6 @@
 #include <math.h>
 #include "cm_math.h"
 
-#include "opencv2/opencv.hpp"
-#include "opencv2/core/opengl_interop.hpp"
-#include "opencv2/highgui/highgui.hpp"
 
 #define CM_GLERROR		cm::gfx::getGLError()
 

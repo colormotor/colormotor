@@ -98,9 +98,13 @@ elseif(UNIX)
 	find_package(GLEW REQUIRED)
 	pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
 
+	set(GLFWLIB_SEARCH_PATH /usr/lib/x86_64-linux-gnu/)
+	find_library(GLFW_LIB glfw PATHS ${GLFWLIB_SEARCH_PATH})
+
 	include_directories(
-		${GTK2_INCLUDE_DIRS}
-		${ARMADILLO_INCLUDE_DIRS}
+			${GTK2_INCLUDE_DIRS}
+			${ARMADILLO_INCLUDE_DIRS}
+			${OpenCV_INCLUDE_DIRS}
 	)
 
 	link_directories(
@@ -114,27 +118,12 @@ elseif(UNIX)
 	# Mess
 
 	target_link_libraries(colormotor
-	rt
-	m
-	dl
-	Xrandr
-	Xinerama
-	Xxf86vm
-	Xcursor
-	Xext
-	Xrender
-	Xfixes
-	X11
-	pthread
-	xcb
-	Xau
-	Xdmcp
-	glfw
-	${OPENGL_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ARMADILLO_LIBRARIES}
-	${OpenCV_LIBRARIES}
-	${GLEW_LIBRARIES}
+			${GLFW_LIB}
+			${OPENGL_LIBRARIES}
+			${GTK2_LIBRARIES}
+			${ARMADILLO_LIBRARIES}
+			${OpenCV_LIBRARIES}
+			${GLEW_LIBRARIES}
 	)
 endif()
 
