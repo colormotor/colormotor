@@ -4328,6 +4328,7 @@ void Image::grabFrameBuffer()
 	glGetIntegerv( GL_VIEWPORT, vp );
 	int vw = vp[2];
 	int vh = vp[3];
+	int vy = vp[1];
 
 	// from http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat/9098883#9098883
 	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -4347,7 +4348,7 @@ void Image::grabFrameBuffer()
 		assert(false);
 	}
 	
-	int y = vh-height();
+	int y = (vy+vh)-height();
 
 	glReadPixels(0, y, width(), height(), glFormat, GL_UNSIGNED_BYTE, mat.data);
 	mirror(false, true);
