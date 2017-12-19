@@ -265,21 +265,19 @@ std::string  getExecutablePath()
 }
 
 // Gross filewatcher
-
-/* A simple routine to return a string for a set of flags. */
-static char *flagstring(int flags)
+static const char *flagstring(int flags)
 {
     static char ret[512];
-    char *ors = "";
+    std::string ors = "";
 	
     ret[0]='\0'; // clear the string.
-    if (flags & NOTE_DELETE) {strcat(ret,ors);strcat(ret,"NOTE_DELETE");ors="|";}
-    if (flags & NOTE_WRITE) {strcat(ret,ors);strcat(ret,"NOTE_WRITE");ors="|";}
-    if (flags & NOTE_EXTEND) {strcat(ret,ors);strcat(ret,"NOTE_EXTEND");ors="|";}
-    if (flags & NOTE_ATTRIB) {strcat(ret,ors);strcat(ret,"NOTE_ATTRIB");ors="|";}
-    if (flags & NOTE_LINK) {strcat(ret,ors);strcat(ret,"NOTE_LINK");ors="|";}
-    if (flags & NOTE_RENAME) {strcat(ret,ors);strcat(ret,"NOTE_RENAME");ors="|";}
-    if (flags & NOTE_REVOKE) {strcat(ret,ors);strcat(ret,"NOTE_REVOKE");ors="|";}
+    if (flags & NOTE_DELETE) {strcat(ret,ors.c_str());strcat(ret,"NOTE_DELETE");ors="|";}
+    if (flags & NOTE_WRITE) {strcat(ret,ors.c_str());strcat(ret,"NOTE_WRITE");ors="|";}
+    if (flags & NOTE_EXTEND) {strcat(ret,ors.c_str());strcat(ret,"NOTE_EXTEND");ors="|";}
+    if (flags & NOTE_ATTRIB) {strcat(ret,ors.c_str());strcat(ret,"NOTE_ATTRIB");ors="|";}
+    if (flags & NOTE_LINK) {strcat(ret,ors.c_str());strcat(ret,"NOTE_LINK");ors="|";}
+    if (flags & NOTE_RENAME) {strcat(ret,ors.c_str());strcat(ret,"NOTE_RENAME");ors="|";}
+    if (flags & NOTE_REVOKE) {strcat(ret,ors.c_str());strcat(ret,"NOTE_REVOKE");ors="|";}
 	
     return ret;
 }
