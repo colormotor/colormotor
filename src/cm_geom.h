@@ -12,6 +12,11 @@ enum
 	CLIP_XOR
 };
 
+enum 
+{ 
+	CLIP_EVENODD, CLIP_NONZERO, CLIP_POSITIVE, CLIP_NEGATIVE 
+};
+
 enum
 {
 	JOIN_SQUARE=0,
@@ -22,25 +27,25 @@ enum
 class PolyClipper
 {	
 public:
-	const Shape& apply( int type, const Shape & a, const Shape & b );
-	const Shape& apply( int type, const Contour & a, const Contour & b );
+	const Shape& apply( int type, const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+	const Shape& apply( int type, const Contour & a, const Contour & b, int fillType=CLIP_NONZERO );
 	
 	// would have liked to call this union... maybe Uppercase func names are better at the end...
-	const Shape& merge( const Shape & a, const Shape & b, double offset=2.0 );
-	const Shape& merge( const Shape & shape, double offset = 2.0 );
+	const Shape& merge( const Shape & a, const Shape & b, double offset=2.0, int fillType=CLIP_NONZERO );
+	const Shape& merge( const Shape & shape, double offset = 2.0, int fillType=CLIP_NONZERO );
 
-	const Shape& offset( const Shape & a, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+	const Shape& offset( const Shape & a, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
 	Shape result;
 protected:
-	void op( int type, const Shape & a, const Shape & b, double offset = 0.0 );
+	void op( int type, const Shape & a, const Shape & b, double offset = 0.0, int fillType=CLIP_NONZERO );
 };
 
-Shape shapeUnion( const Shape & a, const Shape & b );
-Shape shapeDifference( const Shape & a, const Shape & b );
-Shape shapeIntersection( const Shape & a, const Shape & b );
-Shape shapeXor( const Shape & a, const Shape & b );
-Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+Shape shapeUnion( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeDifference( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeIntersection( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeXor( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
 
 arma::vec chordLengths( const Contour & P );

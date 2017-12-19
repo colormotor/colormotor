@@ -73,7 +73,7 @@ void polygonsToShape( Shape& shape, const Box& r, const ClipperLib::Paths& poly,
 	}
 }
 
-void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset )
+void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset, int fillType )
 {	
 	Box r = a.boundingBox();
 	r.include(b.boundingBox());	
@@ -96,22 +96,22 @@ void PolyClipper::op( int type, const Shape & a, const Shape & b, double offset 
 	
 	c.AddPaths(pa, ClipperLib::ptSubject, true);
 	c.AddPaths(pb, ClipperLib::ptClip, true);
-	c.Execute((ClipperLib::ClipType)type, sol, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+	c.Execute((ClipperLib::ClipType)type, sol, (ClipperLib::PolyFillType)fillType, (ClipperLib::PolyFillType)fillType);
 	
 	polygonsToShape(result, r, sol);
 }
 
 
-const Shape & PolyClipper::apply( int type, const Contour & a, const Contour & b )
+const Shape & PolyClipper::apply( int type, const Contour & a, const Contour & b, int fillType )
 {
 	Shape sa;
 	sa.add(a);
 	Shape sb;
 	sb.add(b);
-	return apply(type,sa,sb);
+	return apply(type, sa, sb, fillType);
 }
 
-const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b )
+const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b, int fillType )
 {
 	ClipperLib::ClipType conv[] = {
 	ClipperLib::ctDifference,
@@ -125,18 +125,18 @@ const Shape & PolyClipper::apply( int type, const Shape & a, const Shape & b )
 	if( b.size() == 0 )
 		result = Shape(a);
 	else
-		op(conv[type], a, b);
+		op(conv[type], a, b, 0., fillType);
 	
 	return result;
 }
 
-const Shape& PolyClipper::merge( const Shape & a, const Shape & b, double offset )
+const Shape& PolyClipper::merge( const Shape & a, const Shape & b, double offset, int fillType )
 {
-	op(ClipperLib::ctUnion,a,b,offset);
+	op(ClipperLib::ctUnion, a, b, offset, fillType);
 	return result;
 }
 	
-const Shape& PolyClipper::merge( const Shape & shape, double offset  )
+const Shape& PolyClipper::merge( const Shape & shape, double offset, int fillType  )
 {
 	if( shape.size() == 0)
 	{
@@ -157,13 +157,13 @@ const Shape& PolyClipper::merge( const Shape & shape, double offset  )
 	{
 		
 		b = Shape(shape[i]);
-		a = merge( a,b,offset );
+		a = merge( a, b, offset, fillType );
 	}
 	
 	return result;
 }
 
-const Shape& PolyClipper::offset( const Shape & shape, double offset, int joinType, double miterLimit )
+const Shape& PolyClipper::offset( const Shape & shape, double offset, int joinType, double miterLimit, int fillType )
 {
 	ClipperLib::JoinType conv[] = {
 	ClipperLib::jtSquare,
@@ -179,7 +179,7 @@ const Shape& PolyClipper::offset( const Shape & shape, double offset, int joinTy
 	offset *= scaleFactor(r, range);
 
     shapeToPolygons(in, r, shape, range);
-	SimplifyPolygons(in, ClipperLib::pftNonZero); // TODO handle different fill rules
+	SimplifyPolygons(in, (ClipperLib::PolyFillType)fillType ); // TODO handle different fill rules
 
 	ClipperLib::ClipperOffset c(miterLimit);
 	c.AddPaths(in, conv[joinType], ClipperLib::etClosedPolygon);
@@ -191,39 +191,39 @@ const Shape& PolyClipper::offset( const Shape & shape, double offset, int joinTy
 	return result;
 }
 	
-Shape shapeUnion( const Shape & a, const Shape & b )
+Shape shapeUnion( const Shape & a, const Shape & b, int fillType )
 {
 	PolyClipper clip;
-	clip.apply(CLIP_UNION,a,b);
+	clip.apply(CLIP_UNION, a, b, fillType);
 	return clip.result;
 }
 
-Shape shapeDifference( const Shape & a, const Shape & b )
+Shape shapeDifference( const Shape & a, const Shape & b, int fillType )
 {
 	PolyClipper clip;
-	clip.apply(CLIP_DIFFERENCE,a,b);
+	clip.apply(CLIP_DIFFERENCE, a, b, fillType);
 	return clip.result;
 }
 
-Shape shapeIntersection( const Shape & a, const Shape & b )
+Shape shapeIntersection( const Shape & a, const Shape & b, int fillType )
 {
 	PolyClipper clip;
-	clip.apply(CLIP_INTERSECTION,a,b);
+	clip.apply(CLIP_INTERSECTION, a, b, fillType);
 	return clip.result;
 }
 
-Shape shapeXor( const Shape & a, const Shape & b )
+Shape shapeXor( const Shape & a, const Shape & b, int fillType )
 {
 	PolyClipper clip;
-	clip.apply(CLIP_XOR,a,b);
+	clip.apply(CLIP_XOR, a, b, fillType);
 	return clip.result;
 
 }
 
-Shape shapeOffset( const Shape& shape, double offset, int joinType, double miterLimit )
+Shape shapeOffset( const Shape& shape, double offset, int joinType, double miterLimit, int fillType )
 {
 	PolyClipper clip;
-	return clip.offset(shape, offset, joinType, miterLimit);
+	return clip.offset(shape, offset, joinType, miterLimit, fillType);
 }
 
 double distance( const arma::vec& a, const arma::vec&b )

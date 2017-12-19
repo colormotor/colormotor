@@ -1,10 +1,15 @@
 namespace cm
 {
 
-Shape shapeUnion( const Shape & a, const Shape & b );
-Shape shapeDifference( const Shape & a, const Shape & b );
-Shape shapeIntersection( const Shape & a, const Shape & b );
-Shape shapeXor( const Shape & a, const Shape & b );
+Shape shapeUnion( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeDifference( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeIntersection( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+Shape shapeXor( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
+
+enum 
+{ 
+	CLIP_EVENODD, CLIP_NONZERO, CLIP_POSITIVE, CLIP_NEGATIVE 
+};
 
 enum
 {
@@ -13,7 +18,7 @@ enum
 	JOIN_ROUND
 };
 
-Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1. );
+Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
 arma::vec chordLengths( const Contour & P );
 arma::vec cumChordLengths( const Contour & P );
