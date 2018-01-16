@@ -226,6 +226,52 @@ Shape shapeOffset( const Shape& shape, double offset, int joinType, double miter
 	return clip.offset(shape, offset, joinType, miterLimit, fillType);
 }
 
+static std::vector<arma::mat> conv( const Shape& shape )
+{
+	std::vector<arma::mat> res;
+	for( int i=0; i < shape.size(); i++ )
+	{
+		res.push_back(shape[i].points);
+	}
+	return res;
+}
+
+static Shape conv( const std::vector<arma::mat>& vec )
+{
+	Shape res;
+	for( int i=0; i < vec.size(); i++ )
+	{
+		res.add(Contour(vec[i], true));
+	}
+	return res;
+}
+
+std::vector<arma::mat> shapeUnion( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType )
+{
+	return conv( shapeUnion(conv(a), conv(b), fillType ) );
+}
+
+std::vector<arma::mat> shapeDifference( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType )
+{
+	return conv( shapeUnion(conv(a), conv(b), fillType ) );
+}
+
+std::vector<arma::mat> shapeIntersection( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType )
+{
+	return conv( shapeUnion(conv(a), conv(b), fillType ) );
+}
+
+std::vector<arma::mat> shapeXor( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType )
+{
+	return conv( shapeUnion(conv(a), conv(b), fillType ) );
+}
+
+std::vector<arma::mat> shapeOffset( const std::vector<arma::mat>& shape, double offset, int joinType, double miterLimit, int fillType )
+{
+	return conv( shapeOffset(conv(shape), offset, joinType, miterLimit, fillType ) );
+}
+
+
 double distance( const arma::vec& a, const arma::vec&b )
 {
 	return norm(a-b);

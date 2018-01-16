@@ -1349,6 +1349,8 @@ void draw( const Contour& C, int from, int to );
 void draw( const Shape& S );
 /// Draw 2d/3d columns of a matrix
 void draw( const arma::mat& P, bool closed, int from=-1, int to=-1 );
+/// Draw a list of contours
+void draw( const std::vector<arma::mat>& S, bool closed );
 /// Draw a mesh
 void draw( const Mesh& mesh );
 
@@ -1356,6 +1358,10 @@ void draw( const Mesh& mesh );
 void fill( const Contour& shape, int winding=WINDING_ODD );
 /// Fill a shape
 void fill( const Shape& shape, int winding=WINDING_ODD );
+/// Fill a contour (as matrix)
+void fill( const arma::mat& P );
+/// Fill a shape (as matrix list)
+void fill( const std::vector<arma::mat>& S );
 
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( Image& img, float x, float y, float w=0., float h=0. );

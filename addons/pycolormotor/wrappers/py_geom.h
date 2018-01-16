@@ -6,6 +6,11 @@ Shape shapeDifference( const Shape & a, const Shape & b, int fillType=CLIP_NONZE
 Shape shapeIntersection( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
 Shape shapeXor( const Shape & a, const Shape & b, int fillType=CLIP_NONZERO );
 
+std::vector<arma::mat> shapeUnion( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType=CLIP_NONZERO );
+std::vector<arma::mat> shapeDifference( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType=CLIP_NONZERO );
+std::vector<arma::mat> shapeIntersection( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType=CLIP_NONZERO );
+std::vector<arma::mat> shapeXor( const std::vector<arma::mat> & a, const std::vector<arma::mat> & b, int fillType=CLIP_NONZERO );
+
 enum 
 { 
 	CLIP_EVENODD, CLIP_NONZERO, CLIP_POSITIVE, CLIP_NEGATIVE 
@@ -19,6 +24,7 @@ enum
 };
 
 Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
+std::vector<arma::mat> shapeOffset( const std::vector<arma::mat>& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
 arma::vec chordLengths( const Contour & P );
 arma::vec cumChordLengths( const Contour & P );

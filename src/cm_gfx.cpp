@@ -33,7 +33,25 @@ Mesh toMesh( const Contour& shape, int winding )
 namespace gfx
 {
 
+static std::vector<arma::mat> conv( const Shape& shape )
+{
+	std::vector<arma::mat> res;
+	for( int i=0; i < shape.size(); i++ )
+	{
+		res.push_back(shape[i].points);
+	}
+	return res;
+}
 
+static Shape conv( const std::vector<arma::mat>& vec )
+{
+	Shape res;
+	for( int i=0; i < vec.size(); i++ )
+	{
+		res.add(Contour(vec[i], true) );
+	}
+	return res;
+}
 
 bool init()
 {
@@ -1101,6 +1119,12 @@ void draw( const Shape& S )
 		draw(S[i]);
 }
 
+void draw( const std::vector<arma::mat>& S, bool closed )
+{
+	for( int i = 0; i < S.size(); i++ )
+		draw(S[i], closed);
+}
+
 void draw( const arma::mat& P, bool closed, int from, int to )
 {
 	if(!P.size())
@@ -1265,7 +1289,6 @@ void fill( const Contour& shape, int winding )
         eps.fillShape(shape, currentColor);
     }
 #endif
-    
 }
 
 	
@@ -1279,6 +1302,16 @@ void fill( const Shape& shape, int winding )
         eps.fillShape(shape, currentColor);
     }
 #endif
+}
+
+void fill( const arma::mat& P )
+{
+	fill(Contour(P, true));
+}
+
+void fill( const std::vector<arma::mat>& S )
+{
+    fill(conv(S));
 }
 
 /// Draw a texture

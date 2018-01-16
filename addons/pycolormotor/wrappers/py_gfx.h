@@ -978,6 +978,8 @@ void fill( const Contour& shape, int winding=WINDING_ODD );
 /// Fill a shape
 void fill( const Shape& shape, int winding=WINDING_ODD );
 
+
+
 /// Draw an image (note this is SLOW, but handy for opencv interop)
 void image( Image& img, float x, float y, float w=0., float h=0. );
 
