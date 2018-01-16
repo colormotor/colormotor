@@ -68,28 +68,36 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
+	set(PYTHON_BASE_DIR /Users/colormotor/miniconda2)
+	#set(PYTHON_BASE_DIR /usr/local)
+	#/usr/local/Frameworks/Python.framework/Headers
+
 	include_directories(
-		/usr/local/Frameworks/Python.framework/Headers
-		/usr/local/lib/python2.7/site-packages/numpy/core/include/
-		/usr/local/include
+		${PYTHON_BASE_DIR}/lib/python2.7/site-packages/numpy/core/include/
+		${PYTHON_BASE_DIR}/include
+		${PYTHON_BASE_DIR}/include/python2.7
 	)
+
+	#/usr/local/lib
 
 	link_directories(
-		/usr/local/Frameworks
 		${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/glfw3/lib/osx
-		/usr/local/lib
+		${PYTHON_BASE_DIR}/lib
+		/usr/local/Frameworks
 	)
 
+	#/usr/local/Frameworks/Python.framework
+
 	target_link_libraries(pycm
-		opencv_core
-		opencv_imgproc
-		opencv_legacy
-		opencv_highgui
+		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
 		armadillo
 		lapack
 		blas
 		glfw3
-		/usr/local/Frameworks/Python.framework
+		${PYTHON_BASE_DIR}/lib/libpython2.7.dylib
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"
@@ -99,7 +107,6 @@ if(APPLE)
 		"-framework IOKit"
 		"-framework AGL"
 		"-framework GLUT"
-		
 	)
 
 	add_custom_command(
