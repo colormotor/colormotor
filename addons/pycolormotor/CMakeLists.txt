@@ -68,35 +68,40 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
-	set(PYTHON_BASE_DIR /Users/colormotor/miniconda2)
+	message(Compling for apple)
+	set(PYTHON_BASE_DIR $ENV{HOME}/miniconda2)
 	#set(PYTHON_BASE_DIR /usr/local)
 	#/usr/local/Frameworks/Python.framework/Headers
+
+	message("Base dir is " ${PYTHON_BASE_DIR})
 
 	include_directories(
 		${PYTHON_BASE_DIR}/lib/python2.7/site-packages/numpy/core/include/
 		${PYTHON_BASE_DIR}/include
 		${PYTHON_BASE_DIR}/include/python2.7
+		/usr/local/include
 	)
 
 	#/usr/local/lib
 
 	link_directories(
-		${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/glfw3/lib/osx
 		${PYTHON_BASE_DIR}/lib
 		/usr/local/Frameworks
+		/usr/local/lib
 	)
 
 	#/usr/local/Frameworks/Python.framework
+	#${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
 
 	target_link_libraries(pycm
 		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
-		armadillo
+		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
 		lapack
 		blas
-		glfw3
+		glfw
 		${PYTHON_BASE_DIR}/lib/libpython2.7.dylib
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
