@@ -90,9 +90,9 @@ namespace ui
         ImGui::PopID();
     }
 
-    void text( ImVec2 pos, const std::string& str, int clr )
+    void text( ImVec2 pos, const std::string& str, ImColor clr )
     {
-        ImU32 color=clr>-1?(ImU32)clr:config.textColor;
+        ImU32 color=clr.Value.x>-1?(ImU32)clr:config.textColor;
         ImGui::PushStyleColor(ImGuiCol_Text, color);
         ImGui::SetCursorPos(pos);
         ImGui::Text(str.c_str());
@@ -198,9 +198,9 @@ namespace ui
         //window->DrawList->AddRectFilled(rect.Min, rect.Max, config.selectedColor, config.rounding); //, rounding);
     }
 
-    void line( const ImVec2& a, const ImVec2& b, int clr )
+    void line( const ImVec2& a, const ImVec2& b, ImColor clr )
     {
-        ImU32 color=clr>-1?(ImU32)clr:config.lineColor;
+        ImU32 color=clr.Value.x>-1?(ImU32)clr:config.lineColor;
         ImGui::GetCurrentWindow()->DrawList->AddLine(a, b, color);
     }
 

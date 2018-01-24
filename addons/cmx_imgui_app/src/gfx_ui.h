@@ -119,10 +119,10 @@ namespace ui
     void highlightDragger( const ImVec2& pos, float size=-1.  );
     
     /// Draw a line from a to b
-    void line( const ImVec2& a, const ImVec2& b, int clr=-1 );
+    void line( const ImVec2& a, const ImVec2& b, ImColor clr=ImColor(-1,-1,-1,1) );
 
     // Draw text string
-    void text( ImVec2 pos, const std::string& str, int clr=-1 );
+    void text( ImVec2 pos, const std::string& str, ImColor clr=ImColor(-1,-1,-1,1) );
 
     /// Angle and length handle widget
     ImVec2 lengthHandle( int index, ImVec2 thetaLen, float startTheta, const ImVec2& pos, const ImVec2& minThetaLen, const ImVec2& maxThetaLen, bool selected=false );
