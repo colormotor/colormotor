@@ -95,7 +95,6 @@ public:
 	    minmax.col(1) = arma::vec({x+w, y+h});
 	}
 
-
     Box( const arma::vec& min, const arma::vec& max )
 	{
 	    minmax = arma::zeros< arma::mat >(min.size(),2);
@@ -103,6 +102,19 @@ public:
 	    minmax.col(1) = max;
 	}
 
+	Box( const arma::mat& P )
+	{
+		for( int i = 0; i < P.n_cols; i++ )
+			includeAt(i, P.col(i));
+	}
+
+	Box( const std::vector<arma::mat> &S )
+	{
+		int k = 0;
+		for( int j = 0; j < S.size(); j++ )
+			for( int i = 0; i < S[j].n_cols; i++ )
+				includeAt(k++, S[j].col(i));
+	}
 
     arma::vec ltrb() const { return arma::vec({l(), t(), r(), b()}); }
     void ltrb( double l, double t, double r, double b ) { minmax(0,0)=l; minmax(1,0)=t; minmax(0,1)=r; minmax(1,1)=b; }
@@ -122,7 +134,6 @@ public:
     double width() const { return fabs( minmax(0,1) - minmax(0,0) ); }
     double height() const { return fabs( minmax(1,1) - minmax(1,0) ); }
     double depth() const { return fabs( minmax(2,1) - minmax(2,0)); }
-    
     
     arma::vec center() const { return (minmax.col(0) + minmax.col(1))/2; }
     void setCenter( const arma::vec& cenp );

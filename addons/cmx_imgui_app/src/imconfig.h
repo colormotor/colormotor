@@ -15,7 +15,7 @@
 //#define ImVector  MyVector
 
 //---- Define assertion handler. Defaults to calling assert().
-#define IM_ASSERT(_EXPR)  if(!(_EXPR))printf("IMGUI Error!")
+#define IM_ASSERT(_EXPR)  if(!(_EXPR)) assert(0)
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define IMGUI_API __declspec( dllexport )
@@ -35,7 +35,7 @@
 //#define IMGUI_DISABLE_TEST_WINDOWS
 
 //---- Don't define obsolete functions names
-//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 //---- Implement STB libraries in a namespace to avoid conflicts
 //#define IMGUI_STB_NAMESPACE     ImStb

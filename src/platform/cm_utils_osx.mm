@@ -372,10 +372,10 @@ void FileWatcher::run()
 		if (event_count) 
 		{
             
-//			printf("Event  occurred.  Filter %d, flags %d, filter flags %s\n",
-//				   event_data[0].filter,
-//				   event_data[0].flags,
-//				   flagstring(event_data[0].fflags));
+			printf("Event  occurred.  Filter %d, flags %d, filter flags %s\n",
+				   event_data[0].filter,
+				   event_data[0].flags,
+				   flagstring(event_data[0].fflags));
 			
 			fileFlags = event_data[0].fflags;
 		}

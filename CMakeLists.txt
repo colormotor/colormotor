@@ -58,27 +58,35 @@ add_library(colormotor STATIC
 )
 
 if(APPLE)
+	set(PYTHON_BASE_DIR $ENV{HOME}/miniconda2)
+
 	include_directories(
-		/usr/local/lib/python2.7/site-packages/numpy/core/include/
+		${PYTHON_BASE_DIR}/lib/python2.7/site-packages/numpy/core/include/
+		${PYTHON_BASE_DIR}/include
 		/usr/local/include
 	)
 
 	link_directories(
+		${PYTHON_BASE_DIR}/lib
 		/usr/local/Frameworks
-		${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/glfw3/lib/osx
 		/usr/local/lib
 	)
 
-	
+	# opencv_core
+	# opencv_imgproc
+	# opencv_highgui
+	# opencv_imgcodecs
+	# armadillo
+
 	target_link_libraries(colormotor
-		opencv_core
-		opencv_imgproc
-		opencv_legacy
-		opencv_highgui
-		armadillo
+		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
+		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
+		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
 		lapack
 		blas
-		glfw3
+		glfw
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"

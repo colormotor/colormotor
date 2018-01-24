@@ -1070,7 +1070,8 @@ void uv( const V2&v, int texIndex  )
 void	beginVertices( int prim )
 {
 	glBegin(getGLPRIMITIVETYPE(prim));
-
+	currentPrimitive = prim;
+	
 	#ifdef GFX_TO_EPS
 	if( renderingToEps )
 	{
@@ -1166,12 +1167,12 @@ void draw( const arma::mat& P, bool closed, int from, int to )
 
 	gfx::endVertices();
     
-#ifdef GFX_TO_EPS
-    if(renderingToEps)
-    {
-        eps.strokeShape(Contour(P, closed), currentColor);
-    }
-#endif
+// #ifdef GFX_TO_EPS
+//     if(renderingToEps)
+//     {
+//         eps.strokeShape(Contour(P, closed), currentColor);
+//     }
+// #endif
     
 }
 

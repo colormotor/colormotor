@@ -96,6 +96,8 @@ import numpy
 def list_to_shape(L, close=True):
     ''' Converts a list of contours (specified as 2xN matrices) to a shape'''
     S = Shape()
+    if type(L) != list:
+        L = [L]
     for c in L:
         S.add(Contour(c, close))
     return S
@@ -111,7 +113,7 @@ def shape_to_list(S):
 
 
 def shapeUnion( a, b, fillType=_cm.CLIP_NONZERO ):
-    if type(a) == list:
+    if type(a) == list or type(a) == numpy.ndarray:
         a = list_to_shape(a)
         b = list_to_shape(b)
         return shape_to_list( _cm.shapeUnion(a, b, fillType) )
@@ -119,7 +121,7 @@ def shapeUnion( a, b, fillType=_cm.CLIP_NONZERO ):
         return _cm.shapeUnion(a, b, fillType)
 
 def shapeDifference( a, b, fillType=_cm.CLIP_NONZERO ):
-    if type(a) == list:
+    if type(a) == list or type(a) == numpy.ndarray:
         a = list_to_shape(a)
         b = list_to_shape(b)
         return shape_to_list( _cm.shapeDifference(a, b, fillType) )
@@ -127,7 +129,7 @@ def shapeDifference( a, b, fillType=_cm.CLIP_NONZERO ):
         return _cm.shapeDifference(a, b, fillType)
 
 def shapeIntersection( a, b, fillType=_cm.CLIP_NONZERO ):
-    if type(a) == list:
+    if type(a) == list or type(a) == numpy.ndarray:
         a = list_to_shape(a)
         b = list_to_shape(b)
         return shape_to_list( _cm.shapeIntersection(a, b, fillType) )
@@ -135,7 +137,7 @@ def shapeIntersection( a, b, fillType=_cm.CLIP_NONZERO ):
         return _cm.shapeIntersection(a, b, fillType)
 
 def shapeXor( a, b, fillType=_cm.CLIP_NONZERO ):
-    if type(a) == list:
+    if type(a) == list or type(a) == numpy.ndarray:
         a = list_to_shape(a)
         b = list_to_shape(b)
         return shape_to_list( _cm.shapeXor(a, b, fillType) )
@@ -143,7 +145,7 @@ def shapeXor( a, b, fillType=_cm.CLIP_NONZERO ):
         return _cm.shapeXor(a, b, fillType)
 
 def shapeOffset( shape, offset, joinType=_cm.JOIN_ROUND, miterLimit=1., fillType=_cm.CLIP_NONZERO):
-    if type(shape) == list:
+    if type(shape) == list or type(shape) == numpy.ndarray:
         shape = list_to_shape(shape)
         return shape_to_list( _cm.shapeOffset(shape, offset, joinType, miterLimit, fillType) )
     else:
@@ -206,5 +208,36 @@ def color(*args):
             _cm.color(clr)
     else:
         _cm.color(*args)
+
+class line_stipple:
+    def __init__(self, factor, pattern=0xAAAA):
+        _cm.lineStipple(factor, pattern)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        _cm.lineStipple(0)
+
+class line_width:
+    def __init__(self, sz):
+        _cm.lineWidth(sz)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        _cm.lineWidth(1)
+
+class push_matrix:
+    def __init__(self, mat):
+        _cm.pushMatrix(mat)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        _cm.popMatrix()
+
 
 %}

@@ -11,10 +11,16 @@ namespace ImGui
     void BeginHighlightButton();
     void EndHighlightButton();
     void Title( const std::string & title );
+    void SetupStyle(ImVec4 col_text,
+                    ImVec4 col_main,
+                    ImVec4 col_back,
+                    ImVec4 col_area);
     void SetupStyleFromHue();
     bool IconButton(const std::string &str);
     bool IconSelectable(const std::string &str, bool active);
     bool ColorSelector(const std::string &label, cm::V4* clr);
+
+    void ImGui::ShowDemoWindow(bool* p_open);
 }
 
 namespace cm
@@ -96,6 +102,7 @@ namespace cm
             return V2(d.x, d.y);
         }
         
+        /// Returns true if App has mouse focus (and not the UI)
         static bool hasFocus()
         {
             //ImGuiIO& io = ImGui::GetIO();

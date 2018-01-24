@@ -38,6 +38,7 @@ namespace cm{
 ImFont * iconFont;
 }
 
+/*
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
 // - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
@@ -118,14 +119,98 @@ void ImGui_ImplGlfw_RenderDrawLists(ImDrawData* draw_data)
     glPopAttrib();
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
 }
+*/
+// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
+void ImGui_ImplGlfw_RenderDrawLists(ImDrawData* draw_data)
+// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
+// If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
+{
+    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
+    ImGuiIO& io = ImGui::GetIO();
+    int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+    int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+    if (fb_width == 0 || fb_height == 0)
+        return;
+    draw_data->ScaleClipRects(io.DisplayFramebufferScale);
+
+    // We are using the OpenGL fixed pipeline to make the example code simpler to read!
+    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, vertex/texcoord/color pointers, polygon fill.
+    GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+    GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
+    GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
+    GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box); 
+    glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_SCISSOR_TEST);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnable(GL_TEXTURE_2D);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
+
+    // Setup viewport, orthographic projection matrix
+    glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, -1.0f, +1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Render command lists
+    for (int n = 0; n < draw_data->CmdListsCount; n++)
+    {
+        const ImDrawList* cmd_list = draw_data->CmdLists[n];
+        const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
+        const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
+        glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos)));
+        glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, uv)));
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, col)));
+
+        for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+        {
+            const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+            if (pcmd->UserCallback)
+            {
+                pcmd->UserCallback(cmd_list, pcmd);
+            }
+            else
+            {
+                glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+                glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+                glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
+            }
+            idx_buffer += pcmd->ElemCount;
+        }
+    }
+
+    // Restore modified state
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)last_texture);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
+    glPolygonMode(GL_FRONT, last_polygon_mode[0]); glPolygonMode(GL_BACK, last_polygon_mode[1]);
+    glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
+    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+}
 
 
-static const char* ImGui_ImplGlfw_GetClipboardText()
+static const char* ImGui_ImplGlfw_GetClipboardText(void* userData)
 {
     return glfwGetClipboardString(g_Window);
 }
 
-static void ImGui_ImplGlfw_SetClipboardText(const char* text)
+static void ImGui_ImplGlfw_SetClipboardText(void* userData, const char* text)
 {
     glfwSetClipboardString(g_Window, text);
 }
@@ -151,6 +236,13 @@ void ImGui_ImplGlFw_KeyCallback(GLFWwindow*, int key, int, int action, int mods)
     io.KeyCtrl = (mods & GLFW_MOD_CONTROL) != 0;
     io.KeyShift = (mods & GLFW_MOD_SHIFT) != 0;
     io.KeyAlt = (mods & GLFW_MOD_ALT) != 0;
+
+    (void)mods; // Modifiers are not reliable across systems
+    io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
+    io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
+    io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
+    io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
+
 }
 
 void ImGui_ImplGlfw_CharCallback(GLFWwindow*, unsigned int c)
@@ -238,7 +330,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
     //io.DeltaTime = 1.0f/60.0f;                                    // Time elapsed since last frame, in seconds (in this sample app we'll override this every frame because our time step is variable)
    
     ImGuiStyle& style = ImGui::GetStyle();
-    
+    //ImGui::StyleColorsClassic();
     int theme = 2;
     switch(theme)
     {
@@ -246,7 +338,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.72f, 0.79f, 1.00f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
             style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.00f, 0.00f, 0.00f, 0.96f);
-            style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.09f);
+            style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.8f);
             style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
             style.Colors[ImGuiCol_Border]                = ImVec4(1.00f, 1.00f, 1.00f, 0.35f);
             style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.47f);
@@ -261,7 +353,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.40f, 0.40f, 0.80f, 1.00f);
             style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.49f, 0.49f, 0.62f, 0.91f);
             style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.54f, 0.53f, 0.61f, 0.91f);
-            style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.20f, 0.20f, 0.20f, 0.99f);
+            style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.20f, 0.20f, 0.20f, 0.99f);
             style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.51f, 0.90f, 0.41f, 0.76f);
             style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.70f, 0.91f, 1.00f, 0.32f);
             style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.80f, 0.65f, 1.00f);
@@ -271,9 +363,9 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Header]                = ImVec4(0.36f, 0.42f, 0.48f, 1.00f);
             style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.45f, 0.45f, 0.90f, 0.80f);
             style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.37f, 0.37f, 0.87f, 0.80f);
-            style.Colors[ImGuiCol_Column]                = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-            style.Colors[ImGuiCol_ColumnHovered]         = ImVec4(0.60f, 0.40f, 0.40f, 1.00f);
-            style.Colors[ImGuiCol_ColumnActive]          = ImVec4(0.80f, 0.50f, 0.50f, 1.00f);
+            style.Colors[ImGuiCol_Separator]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+            style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.60f, 0.40f, 0.40f, 1.00f);
+            style.Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.80f, 0.50f, 0.50f, 1.00f);
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.43f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);
@@ -291,7 +383,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.85f, 0.91f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.85f, 0.91f, 0.92f, 0.58f);
             style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.12f, 0.15f, 0.16f, 1.00f);
-            style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.20f, 0.37f, 0.39f, 0.00f);
+            style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.20f, 0.37f, 0.39f, 0.8f);
             style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
             style.Colors[ImGuiCol_Border]                = ImVec4(0.85f, 0.91f, 0.92f, 0.30f);
             style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -306,7 +398,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.19f, 0.58f, 0.63f, 0.31f);
             style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.19f, 0.58f, 0.63f, 0.78f);
             style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
-            style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.20f, 0.37f, 0.39f, 1.00f);
+            style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.20f, 0.37f, 0.39f, 1.00f);
             style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.19f, 0.58f, 0.63f, 0.80f);
             style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.19f, 0.58f, 0.63f, 0.24f);
             style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
@@ -316,9 +408,9 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Header]                = ImVec4(0.19f, 0.58f, 0.63f, 0.76f);
             style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.19f, 0.58f, 0.63f, 0.86f);
             style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
-            style.Colors[ImGuiCol_Column]                = ImVec4(0.85f, 0.91f, 0.92f, 0.32f);
-            style.Colors[ImGuiCol_ColumnHovered]         = ImVec4(0.85f, 0.91f, 0.92f, 0.78f);
-            style.Colors[ImGuiCol_ColumnActive]          = ImVec4(0.85f, 0.91f, 0.92f, 1.00f);
+            style.Colors[ImGuiCol_Separator]             = ImVec4(0.85f, 0.91f, 0.92f, 0.32f);
+            style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.85f, 0.91f, 0.92f, 0.78f);
+            style.Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.85f, 0.91f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.19f, 0.58f, 0.63f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.19f, 0.58f, 0.63f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
@@ -338,7 +430,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.92f, 0.89f, 0.85f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.92f, 0.89f, 0.85f, 0.58f);
             style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
-            style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.09f, 0.09f, 0.09f, 0.00f);
+            style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.09f, 0.09f, 0.09f, 0.8f);
             style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
             style.Colors[ImGuiCol_Border]                = ImVec4(0.92f, 0.89f, 0.85f, 0.30f);
             style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -353,7 +445,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.47f, 0.44f, 0.39f, 0.31f);
             style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.47f, 0.44f, 0.39f, 0.78f);
             style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
-            style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
+            style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
             style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.47f, 0.44f, 0.39f, 0.80f);
             style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.47f, 0.44f, 0.39f, 0.24f);
             style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
@@ -363,9 +455,9 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Header]                = ImVec4(0.47f, 0.44f, 0.39f, 0.76f);
             style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.47f, 0.44f, 0.39f, 0.86f);
             style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
-            style.Colors[ImGuiCol_Column]                = ImVec4(0.92f, 0.89f, 0.85f, 0.32f);
-            style.Colors[ImGuiCol_ColumnHovered]         = ImVec4(0.92f, 0.89f, 0.85f, 0.78f);
-            style.Colors[ImGuiCol_ColumnActive]          = ImVec4(0.92f, 0.89f, 0.85f, 1.00f);
+            style.Colors[ImGuiCol_Separator]             = ImVec4(0.92f, 0.89f, 0.85f, 0.32f);
+            style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.92f, 0.89f, 0.85f, 0.78f);
+            style.Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.92f, 0.89f, 0.85f, 1.00f);
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.47f, 0.44f, 0.39f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.47f, 0.44f, 0.39f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
@@ -385,7 +477,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.92f, 0.85f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.92f, 0.85f, 0.92f, 0.58f);
             style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
-            style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.09f, 0.09f, 0.09f, 0.00f);
+            style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.09f, 0.09f, 0.09f, 0.8f);
             style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
             style.Colors[ImGuiCol_Border]                = ImVec4(0.92f, 0.85f, 0.92f, 0.30f);
             style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -400,7 +492,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.80f, 0.00f, 0.77f, 0.31f);
             style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.80f, 0.00f, 0.77f, 0.78f);
             style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
-            style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
+            style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
             style.Colors[ImGuiCol_CheckMark]             = ImVec4(0.80f, 0.00f, 0.77f, 0.80f);
             style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.80f, 0.00f, 0.77f, 0.24f);
             style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
@@ -410,9 +502,9 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Header]                = ImVec4(0.80f, 0.00f, 0.77f, 0.76f);
             style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.80f, 0.00f, 0.77f, 0.86f);
             style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
-            style.Colors[ImGuiCol_Column]                = ImVec4(0.92f, 0.85f, 0.92f, 0.32f);
-            style.Colors[ImGuiCol_ColumnHovered]         = ImVec4(0.92f, 0.85f, 0.92f, 0.78f);
-            style.Colors[ImGuiCol_ColumnActive]          = ImVec4(0.92f, 0.85f, 0.92f, 1.00f);
+            style.Colors[ImGuiCol_Separator]             = ImVec4(0.92f, 0.85f, 0.92f, 0.32f);
+            style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.92f, 0.85f, 0.92f, 0.78f);
+            style.Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.92f, 0.85f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.80f, 0.00f, 0.77f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.80f, 0.00f, 0.77f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
@@ -431,10 +523,10 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
 
 
     style.WindowRounding = 0.0f;
-    style.WindowPadding = ImVec2(4,4);
+    //style.WindowPadding = ImVec2(4,4);
     style.ItemSpacing = ImVec2(8,5);
     style.FramePadding = ImVec2(8,2);
-    style.Alpha  = 0.95f;
+    style.Alpha  = 1.; //0.95f;
     style.ScrollbarSize = 15.0f;
     style.GrabMinSize = 9.0;
     
@@ -596,7 +688,10 @@ int imguiApp(int argc, char** argv,
     ImGui_ImplGlfw_NewFrame();
     
     if(!gfx::init())
+    {
+        ImGui::Render();
         return 0;
+    }
     
     ImVec4 clear_color = ImColor(114, 144, 154);
     
@@ -607,6 +702,8 @@ int imguiApp(int argc, char** argv,
     Mouse::_oldp = ImGui::GetMousePos();
     
     double curTime = getTickCount();
+    
+    ImGui::Render();
     
     while (!glfwWindowShouldClose(window)){
         

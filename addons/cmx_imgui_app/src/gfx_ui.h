@@ -76,6 +76,7 @@ namespace ui
             hoverColor = 0xff0000ff;
             selectedColor = 0xff0044ff;
             color=0xff666666;
+            textColor=0xff333333;
         }
 
         float rounding;
@@ -84,6 +85,7 @@ namespace ui
         ImU32 hoverColor;
         ImU32 selectedColor;
         ImU32 color;
+        ImU32 textColor;
     };
     
     extern Config config;
@@ -104,9 +106,6 @@ namespace ui
     void begin( const std::string& name="gfx_ui" );
     void end();
     
-    void textColor( ImVec4 clr );
-    void text( ImVec2 pos, const std::string& str );
-
     /// Will return true if the previous widget call has caught an interaction
     bool modified();
     
@@ -120,7 +119,10 @@ namespace ui
     void highlightDragger( const ImVec2& pos, float size=-1.  );
     
     /// Draw a line from a to b
-    void line( const ImVec2& a, const ImVec2& b );
+    void line( const ImVec2& a, const ImVec2& b, int clr=-1 );
+
+    // Draw text string
+    void text( ImVec2 pos, const std::string& str, int clr=-1 );
 
     /// Angle and length handle widget
     ImVec2 lengthHandle( int index, ImVec2 thetaLen, float startTheta, const ImVec2& pos, const ImVec2& minThetaLen, const ImVec2& maxThetaLen, bool selected=false );

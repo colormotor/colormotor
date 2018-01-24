@@ -13,8 +13,8 @@ namespace ui
     void begin( const std::string& name="ui" );
     void end();
     
-    void textColor( const arma::vec &clr );
-    void text( const arma::vec &p, const std::string& str );
+    //void textColor( const arma::vec &clr );
+    void text( const arma::vec &p, const std::string& str, int color=-1 );
 
     /// Will return true if the previous widget call has caught an interaction
     bool modified();
@@ -29,7 +29,7 @@ namespace ui
     void highlightDragger( const arma::vec &pos, float size=-1.  );
     
     /// Draw a line from a to b
-    void line( const arma::vec& a, const arma::vec& b );
+    void line( const arma::vec& a, const arma::vec& b, int color=-1 );
 
     /// Angle and length handle widget
     arma::vec lengthHandle( int index, arma::vec thetaLen, float startTheta, const arma::vec& pos, const arma::vec& minThetaLen, const arma::vec& maxThetaLen, bool selected=false );

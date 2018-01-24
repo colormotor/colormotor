@@ -16,6 +16,6 @@ dragDelta = cm.ui_dragDelta
 toolbar = cm.ui_toolbar
 demo = cm.ui_demo
 text = cm.ui_text
-textColor = cm.ui_textColor
+#textColor = cm.ui_textColor
 modifierShift = cm.ui_modifierShift
 modifierAlt = cm.ui_modifierAlt

@@ -26,26 +26,44 @@ enum
 Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 std::vector<arma::mat> shapeOffset( const std::vector<arma::mat>& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
-arma::vec chordLengths( const Contour & P );
-arma::vec cumChordLengths( const Contour & P );
-double chordLength( const Contour & P );
+arma::vec chordLengths( const arma::mat& P, bool closed=false );
+arma::vec cumChordLengths( const arma::mat& P, bool closed=false);
+double chordLength( const arma::mat& P, bool closed=false);
     
+typedef arma::mat Poly;
+typedef std::vector<arma::mat> PolyList;
+
 /// Interpolate contour points
 /// X are the distances along the contour for each point
 /// Xi are the interpolation values
-Contour interpolate( const Contour & P, const arma::vec &X, const arma::vec &Xi, const char* method="linear" );
+// arma::mat interpolate( const arma::mat& P, const arma::vec &X, const arma::vec &Xi, bool closed=false, const char* method="linear" );
     
 /// Interpolate contour points
 /// Xi are the interpolation values in the range 0 to 1
-Contour interpolate( const Contour & P, const arma::vec& Xi, const char* method="linear");
+// arma::mat interpolate( const arma::mat & P, const arma::vec& Xi, bool closed=false, const char* method="linear");
 
 /// Interpolate vector
 /// Xi are the interpolation values in the range 0 to 1
-arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* method="linear");
+// arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, bool closed=false, const char* method="linear");
 
 /// Uniformly sample a contour at distance s
-Contour uniformSample( const Contour & P, float s );
-    
+arma::mat uniformSample( const arma::mat & P, float ds, bool closed=false );
+   
+/// Save points to file of type @type, if @savePointsAsRows is true (default) the 
+/// contour will be saved transposed with respect to the armadillo matrix layout
+void save( const arma::mat& P, const std::string & path, arma::file_type type = arma::csv_ascii, bool savePointsAsRows = true );
+/// Load points from file of type @type, if @savePointsAsRows is true (default) the 
+/// contour is assumed to be saved transposed with respect to the armadillo matrix layout
+arma::mat load( const std::string & path, arma::file_type type = arma::csv_ascii, bool savePointsAsRows = true );
+
+/// Load PolyList from SVG file
+PolyList loadSvg( const std::string & f, int subd );
+
+/// transform polygon
+arma::mat transform( const arma::mat& m, const arma::mat& P );
+/// transform Polylist
+PolyList transform( const arma::mat& m, const PolyList& S );
+
 double angleBetween( const V2& a, const V2& b);
     
 double triangleArea( const V2& a, const V2& b, const V2 & c );

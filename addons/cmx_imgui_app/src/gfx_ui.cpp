@@ -56,10 +56,12 @@ namespace ui
         ImGuiContext& g = *GImGui;
         
         // maintains cross compatibility with ImGui
-        if(!g.IO.WantCaptureMouse)
+        if(!g.IO.WantCaptureMouse){
             return false;
+        }
         
-        if( g.HoveredWindow == uiWindow && g.HoveredIdPreviousFrame == 0 && g.HoveredId==0 && g.ActiveId==0 )
+        // Allow mouse interaction if over background window
+        if( g.HoveredWindow == uiWindow) // && g.HoveredIdPreviousFrame == 0 && g.HoveredId==0 && g.ActiveId==0 )
         {
             return false;
         }
@@ -70,26 +72,28 @@ namespace ui
     void begin( const std::string& name )
     {
         static bool show=true;
-        ImGui::SetNextWindowPos(ImVec2(0,0));
-        ImGui::Begin(name.c_str(),&show, ImGui::GetIO().DisplaySize, 0.0f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoBringToFrontOnFocus);
+        ImGui::PushID(name.c_str());
+        ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_Always); //, ImGuiCond_FirstUseEver);// ImGui::GetIO().DisplaySize);
+        ImGui::SetNextWindowBgAlpha(0.0); //, ImGuiCond_Always);
+        ImGui::Begin(name.c_str(), &show, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoBringToFrontOnFocus);
 
         uiWindow = ImGui::GetCurrentWindow();
+        
+        // Ok, something wrong here because ImGui::SetNextWindowBgAlpha is setting alpha=0 for all windows...
+        ImGui::SetNextWindowBgAlpha(1.0); 
     }
     
     void end()
     {
         ImGui::End();
+        ImGui::PopID();
     }
 
-    static ImVec4 txtColor = ImVec4(0.5,0.5,0.5,1.0);
-    void textColor( ImVec4 clr )
+    void text( ImVec2 pos, const std::string& str, int clr )
     {
-        txtColor = clr;
-    }
-
-    void text( ImVec2 pos, const std::string& str )
-    {
-        ImGui::PushStyleColor(ImGuiCol_Text, txtColor);
+        ImU32 color=clr>-1?(ImU32)clr:config.textColor;
+        ImGui::PushStyleColor(ImGuiCol_Text, color);
         ImGui::SetCursorPos(pos);
         ImGui::Text(str.c_str());
         ImGui::PopStyleColor();
@@ -103,7 +107,7 @@ namespace ui
     
     bool modified() { return mod; }
     bool modifierShift() { return ImGui::GetIO().KeyShift; }
-    bool modifierAlt() { ImGui::GetIO().KeyAlt; }
+    bool modifierAlt() { return ImGui::GetIO().KeyAlt; }
     
     static ImU32 getColor( bool hovered, bool selected )
     {
@@ -158,11 +162,11 @@ namespace ui
         ImRect rect = rectFromCircle(pos, size);
         
         ImGui::ItemSize(rect);
-        if(!ImGui::ItemAdd(rect, &id))
+        if(!ImGui::ItemAdd(rect, id))
             return pos;
         
         // Check hovered
-        const bool hovered = ImGui::IsHovered(rect, id);
+        const bool hovered = ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly); //rect, id);
         if (hovered)
         {
             ImGui::SetHoveredID(id);
@@ -194,9 +198,10 @@ namespace ui
         //window->DrawList->AddRectFilled(rect.Min, rect.Max, config.selectedColor, config.rounding); //, rounding);
     }
 
-    void line( const ImVec2& a, const ImVec2& b )
+    void line( const ImVec2& a, const ImVec2& b, int clr )
     {
-        ImGui::GetCurrentWindow()->DrawList->AddLine(a, b, config.lineColor);
+        ImU32 color=clr>-1?(ImU32)clr:config.lineColor;
+        ImGui::GetCurrentWindow()->DrawList->AddLine(a, b, color);
     }
 
     static ImVec2 handlePos( const ImVec2& pos, float theta, float length )
@@ -265,11 +270,11 @@ namespace ui
         ImRect rect = rectFromCircle(hp, config.draggerSize*0.8);
         
         ImGui::ItemSize(rect);
-        if(!ImGui::ItemAdd(rect, &id))
+        if(!ImGui::ItemAdd(rect, id))
             return thetaLen;
         
         // Check hovered
-        const bool hovered = ImGui::IsHovered(rect, id);
+        const bool hovered = ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly); //rect, id);
         if (hovered)
         {
             ImGui::SetHoveredID(id);
@@ -430,18 +435,25 @@ namespace ui
     int toolbar( const std::string& title, const std::string& items, int selectedItem, bool horizontal, bool showAscii )
     {
         ImVec2 size;
-        if(horizontal)
-            size = ImVec2(iconSize*items.length(), iconSize);
-        else
-            size = ImVec2(iconSize,iconSize*items.length());
+        
 
         int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
-        ImGui::PushID(title.c_str());
+        //ImGui::PushID(title.c_str());
+        //ImGui::SetNextWindowSize(size, ImGuiCond_Always);
         if(horizontal)
-            ImGui::Begin(title.c_str(), NULL, size, -1.0f, flags);
+            ImGui::Begin(title.c_str(), NULL, flags);
         else
-            ImGui::Begin("  ", NULL, size, -1.0f, flags);
+            ImGui::Begin("  ", NULL, flags);
         
+
+        ImVec2 padding = ImGui::GetStyle().FramePadding;
+        ImGuiWindow* win = ImGui::GetCurrentWindow();
+        if(horizontal)
+            size = ImVec2((iconSize+padding.x)*items.length(), iconSize + win->TitleBarHeight());
+        else
+            size = ImVec2(iconSize+padding.x*2,(iconSize+padding.y)*items.length());
+        ImGui::SetWindowSize(size, ImGuiCond_Always);
+
         ImGui::PushFont(iconFont);
     
         int sel = selectedItem;
@@ -465,7 +477,7 @@ namespace ui
         
         ImGui::PopFont();
         ImGui::End();
-        ImGui::PopID();
+        //ImGui::PopID();
         
         return sel;
     }
@@ -519,7 +531,7 @@ namespace ui
         win->DrawList->PathLineTo(arcPos);
         //win->DrawList->PathLineTo(ui::handlePos(arcPos, angle, 100.));
         
-        win->DrawList->PathFill(0x66ff0000);
+        win->DrawList->PathFillConvex(0x66ff0000);
 
         // Affine transform test
         trans = ui::affineSimple(0, trans);
@@ -529,7 +541,7 @@ namespace ui
         win->DrawList->PathLineTo(trans.pos+trans.x);
         win->DrawList->PathLineTo(trans.pos+trans.x+trans.y);
         win->DrawList->PathLineTo(trans.pos+trans.y);
-        win->DrawList->PathFill(0x66ff0000);
+        win->DrawList->PathFillConvex(0x66ff0000);
 
         // Edit polyline 
         bool dragging = false;

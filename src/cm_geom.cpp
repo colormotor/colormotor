@@ -18,6 +18,8 @@
 
 #include "cm_geom.h"
 #include "deps/clipper/clipper.hpp"
+// TODO, eventually remove SVG and geom stuff from gfx.
+#include "deps/nanosvg.h"
 
 namespace cm
 {
@@ -282,42 +284,52 @@ double distance( float a, float b )
 	return fabs(a-b);
 }
 
-arma::vec chordLengths( const Contour & P )
+#define MAKE_P_CLOSED arma::mat P=P_; \
+					  if(closed){ \
+					  	P = arma::join_horiz(P, P.col(0)); \
+					  }
+
+arma::vec chordLengths( const arma::mat & P_, bool closed )
 {
+	MAKE_P_CLOSED
+
     std::vector<double> L;
     int n = P.size();
     for( int i = 0; i < n-1; i++ )
-    	L.push_back( norm( P.points.col(i) - P.points.col(i+1) ) );
+    	L.push_back( norm( P.col(i) - P.col(i+1) ) );
     return arma::vec(L);
 }
 
-arma::vec cumChordLengths( const Contour & P )
+arma::vec cumChordLengths( const arma::mat & P, bool closed )
 {
-    arma::vec L = chordLengths(P);
+    arma::vec L = chordLengths(P, closed);
 	L = arma::join_cols<arma::vec>( arma::vec({0.0}), L );
 	return cumsum(L);
 }
 
-double chordLength( const Contour & P )
+double chordLength( const arma::mat & P, bool closed )
 {
-	arma::vec L = cumChordLengths(P);
+	arma::vec L = cumChordLengths(P, closed);
 	return L( L.n_rows-1 );
 }
 
-Contour interpolate( const Contour & P, const arma::vec &X, const arma::vec &Xi, const char* method )
+arma::mat interpolate( const arma::mat& P_, const arma::vec &X, const arma::vec &Xi, bool closed, const char* method )
 {
-	arma::mat Y = arma::zeros(P.dimension(), Xi.n_rows);
-	for( int i = 0; i < P.dimension(); i++ )
+	MAKE_P_CLOSED
+	
+	arma::mat Y = arma::zeros(P.n_rows, Xi.n_rows);
+	for( int i = 0; i < P.n_rows; i++ )
     {
         arma::vec yy;
-        arma::interp1(X, P.points.row(i), Xi, yy, method);
+        arma::interp1(X, P.row(i), Xi, yy, method);
         Y.row(i) = yy.t();
     }	
-    return Contour(Y, P.closed);
+    return Y; 
 }
 
-Contour interpolate( const Contour & P, const arma::vec& Xi, const char* method)
+arma::mat interpolate( const arma::mat& P_, const arma::vec& Xi, bool closed, const char* method)
 {
+	MAKE_P_CLOSED
     return interpolate( P, arma::linspace(0., 1., P.size()), Xi, method );
 }
     
@@ -329,15 +341,93 @@ arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* meth
 }
 
 
-Contour uniformSample( const Contour & P, float step )
+arma::mat uniformSample( const arma::mat & P_, float ds, bool closed)
 {
-    arma::vec X = cumChordLengths(P);
+	MAKE_P_CLOSED
+
+    arma::vec X = cumChordLengths(P_);
     double l = X(X.n_cols-1);
     X = X / l;
-    arma::vec Xi = regspace(0.0, step, l);
+    arma::vec Xi = regspace(0.0, ds, l);
     return interpolate( P, X, Xi );
 }
     
+void save( const arma::mat& P, const std::string & path, arma::file_type type, bool savePointsAsRows )
+{
+	arma::mat pts = P;
+	if(savePointsAsRows)
+		inplace_trans(pts);
+	pts.save(path, type);
+}
+
+
+arma::mat load( const std::string & path, arma::file_type type, bool savePointsAsRows )
+{	
+	arma::mat P;
+	P.load(path, type);
+	if(savePointsAsRows)
+		inplace_trans(P);
+	return P;
+}	
+
+PolyList loadSvg( const std::string & f, int subd )
+{
+	struct NSVGimage* image;
+	image = nsvgParseFromFile(f.c_str(), "px", 72);
+	
+	PolyList ctrs; 
+	
+	// Use...
+	for (NSVGshape* shape = image->shapes; shape != NULL; shape = shape->next) 
+	{
+	    for (NSVGpath* path = shape->paths; path != NULL; path = path->next) 
+	    {
+	    	std::vector<arma::vec> pts;
+	        for (int i = 0; i < path->npts; i += 3) 
+	        {
+	            float* p = &path->pts[i*2];
+	            pts.push_back(arma::vec({p[0],p[1]}));
+	        }
+
+			ctrs.push_back(polyFromStd(pts));
+	    }
+	}
+	// Delete
+	nsvgDelete(image);
+
+	return ctrs;
+}
+
+arma::mat transform( const arma::mat& m, const arma::mat& P )
+{
+	bool is3d = m.n_rows == 4;
+
+	arma::mat ph = P;
+
+	// convert to 3d if necessary
+	if( P.n_rows == 2 && is3d )		
+		ph.insert_rows( ph.n_rows, arma::zeros(1, ph.n_cols) );
+
+	// make coords homogeneous
+	ph.insert_rows( ph.n_rows, arma::ones(1, ph.n_cols) );
+
+	// transform
+	ph = m * ph;
+
+	// back to cartesian
+	ph = ph.rows(0, ph.n_rows-2);
+
+	return ph;
+}
+
+PolyList transform( const arma::mat& m, const PolyList& S )
+{
+	PolyList res;
+	for( int i = 0; i < S.size(); i++ )
+		res.push_back(transform(m, S[i]));
+	return res;
+}
+
 double angleBetween( const V2& a, const V2& b)
 {
     return ::atan2( a[0]*b[1] - a[1]*b[0], a[0]*b[0] + a[1]*b[1] );
