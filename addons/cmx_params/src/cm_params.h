@@ -239,8 +239,8 @@ public:
 	std::string getOscAddress() const;
 	
 	const std::string & getOptions() const { return options; }
-	Param* setOptions( const std::string & opt ) { options = opt; return this; }
-	Param* appendOption( const std::string & opt ) { options += opt; return this; }
+	Param* setOptions( const std::string & opt ) { options = opt + ";"; return this; }
+	Param* appendOption( const std::string & opt ) { options += opt + ";"; return this; }
 	bool hasOption( const std::string & opt );
 	
     Param* sameLine() { return appendOption("sameline"); }

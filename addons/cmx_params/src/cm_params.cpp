@@ -910,7 +910,7 @@ bool	Param::readXML( XMLElement * elem )
 
 bool Param::hasOption( const std::string & opt )
 {
-	return options.find( opt ) != std::string::npos;
+	return options.find( opt + ";" ) != std::string::npos;
 }
 
 void Param::setPath( const std::string & path )
