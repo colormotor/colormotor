@@ -75,10 +75,8 @@
 #define GL_MAKERGBA255(r,g,b,a) ((unsigned int)((((unsigned char)(a)&0xff)<<24)|(((unsigned char)(r)&0xff)<<16)|(((unsigned char)(g)&0xff)<<8)|((unsigned char)(b)&0xff)))
 
 
-
 namespace cm
 {
-
 /// An axis aligned box, can be 2d or 3d
 struct Box
 {
@@ -1421,8 +1419,8 @@ void removeShader( int id );
 void deleteShaderProgram( int id );
 void deleteAllShaders();
     
-int loadShader( std::string vs, std::string ps, const std::string& prepend="" );
-int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend );
+int loadShader( const std::string& vs, const std::string& ps );
+int reloadShader( int id, const std::string& vs, const std::string& ps );
 std::string shaderString( const std::string& path );
 bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );

@@ -24,16 +24,16 @@ public:
     Box( double x, double y, double w, double h  )
 	{
 	    minmax = arma::zeros(2,2);
-	    minmax.col(0) = arma::vec({x, y});
-	    minmax.col(1) = arma::vec({x+w, y+h});
+	    minmax.row(0) = arma::vec({x, y});
+	    minmax.row(1) = arma::vec({x+w, y+h});
 	}
 
 
     Box( const arma::vec& min, const arma::vec& max )
 	{
-	    minmax = arma::zeros< arma::mat >(min.size(),2);
-	    minmax.col(0) = min;
-	    minmax.col(1) = max;
+	    minmax = arma::zeros< arma::mat >(2, min.size());
+	    minmax.row(0) = min;
+	    minmax.row(1) = max;
 	}
 
 
@@ -54,14 +54,14 @@ public:
     double r() const { return minmax(0,1); }
     double b() const { return minmax(1,1); }
     
-    int dimension() const { return minmax.n_rows; }
+    int dimension() const { return minmax.n_cols; }
 
     double width() const { return fabs( minmax(0,1) - minmax(0,0) ); }
     double height() const { return fabs( minmax(1,1) - minmax(1,0) ); }
     double depth() const { return fabs( minmax(2,1) - minmax(2,0)); }
     
     
-    arma::vec center() const { return (minmax.col(0) + minmax.col(1))/2; }
+    arma::vec center() const { return (minmax.row(0) + minmax.row(1))/2; }
     void setCenter( const arma::vec& cenp );
 
     /// Get (2d) rect corners as columns in a 2x4 matrix
@@ -76,15 +76,15 @@ public:
     void include( const arma::vec &p ) { includeAt(1, p); }
     void include( const Box & b ) { include(b.min()); include(b.max()); }
     
-    arma::vec min() const { return minmax.col(0); }
-    arma::vec max() const { return minmax.col(1); }
+    arma::vec min() const { return minmax.row(0); }
+    arma::vec max() const { return minmax.row(1); }
 	 
-    // Rect is stored as min and max positions (columns) 
+    // Rect is stored as min and max positions (rows) 
     arma::mat minmax;
 };
 
 
-/// Simple contour class, stores positions as columns a matrix.
+/// Simple contour class, stores positions as rows in a matrix.
 struct Contour
 {
 Contour()
@@ -100,9 +100,9 @@ Contour()
 	:
     closed(closed)
 	{
-	    points = arma::zeros(ptList[0].size(), ptList.size());//,2);
+	    points = arma::zeros(ptList.size(), ptList[0].size());//,2);
 	    for( int i = 0; i < ptList.size(); i++ )
-		points.col(i) = ptList[i];
+			points.row(i) = ptList[i];
 	}
 
 	Contour( const arma::mat& mat, bool closed = false  )
@@ -120,19 +120,19 @@ Contour()
 
     int size() const { if(empty()) return 0; return points.n_cols; }
 
-    int dimension() const { return points.n_rows; }
+    int dimension() const { return points.n_cols; }
 
     int isValid() const { return !empty() && size() > 1; }
 
     // Accessors
-    arma::vec operator [] ( int i ) const { return points.col(i); }
-    arma::vec last() const { return points.col(size()-1); }
-    arma::vec getPoint( int i ) const { return points.col(i); }
+    arma::vec operator [] ( int i ) const { return points.row(i); }
+    arma::vec last() const { return points.row(size()-1); }
+    arma::vec getPoint( int i ) const { return points.row(i); }
     
-    //void set( int i, const V2& p ) { points.col(i) = (arma::vec)p; }
-    //void set( int i, const V3& p ) { points.col(i) = (arma::vec)p; }
+    //void set( int i, const V2& p ) { points.row(i) = (arma::vec)p; }
+    //void set( int i, const V3& p ) { points.row(i) = (arma::vec)p; }
     
-    //arma::vec& last() { return points.col(size()-1); }
+    //arma::vec& last() { return points.row(size()-1); }
 
     // return a point linearly interpolated along the contour with t[0..1]
     arma::vec interpolate( double t ) const;
@@ -171,7 +171,7 @@ Contour()
     /// Returns a transformed version of the contour
     Contour transformed( const arma::mat& m ) const;
     
-    /// note: contour points stored as columns
+    /// note: contour points stored as rows
     arma::mat points;
 
     bool closed;
@@ -540,7 +540,7 @@ public:
 
 	bool empty() const { return mat.empty(); }
 
-	int width() const { return mat.cols; }
+	int width() const { return mat.rows; }
 	int height() const { return mat.rows; }
 	
 	void bind( int sampler = 0 );
