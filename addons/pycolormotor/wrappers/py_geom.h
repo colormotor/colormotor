@@ -23,6 +23,9 @@ enum
 	JOIN_ROUND
 };
 
+Shape dpSimplify( const Shape& shape, float eps );
+Contour dpSimplify( const Contour& c, float eps );
+
 Shape shapeOffset( const Shape& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 std::vector<arma::mat> shapeOffset( const std::vector<arma::mat>& shape, double offset, int joinType=JOIN_ROUND, double miterLimit=1., int fillType=CLIP_NONZERO );
 
@@ -75,7 +78,7 @@ double distanceToSegment( const V2& p, const V2& a, const V2& b );
 double squareDistanceToSegment( const V2& p, const V2& a, const V2& b );
     
 double distanceToLine( const V2& p, const V2& a, const V2& b );
-    
+
 M33 rectTransform( const Box &src, const Box&dst, float padding=0.0 );
   
 /// Line intersection utils
