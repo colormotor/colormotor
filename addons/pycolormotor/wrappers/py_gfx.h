@@ -480,6 +480,8 @@ public:
         
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+
+	void	draw( float x = -1.0f , float y = -1.0f , float w = 2.0f , float h = 2.0f, bool yUp = false  );
 };
 
 
@@ -832,7 +834,7 @@ void lineWidth( float w );
 
 /// Stiplled line
 /// with factor = 0 line stipple is disabled.
-void lineStipple( int factor, unsigned short pattern=0xAAAA );
+void lineStipple( float factor, unsigned short pattern=0xAAAA );
 
 void bindTexture( int id, int sampler=0 );
 void unbindTexture( int sampler=0 );
@@ -843,7 +845,7 @@ void activeTexture( int sampler );
 /// Set current viewport. Note: y0 is at bottom of screen.
 void pushViewport();
 void popViewport();
-void setViewport( int x, int y, int w, int h );
+void setViewport( float x, float y, float w, float h );
 
 /// Sets identity to projection and model-view matrices
 void setIdentityTransform();
@@ -1015,8 +1017,8 @@ void removeShader( int id );
 void deleteShaderProgram( int id );
 void deleteAllShaders();
     
-int loadShader( const std::string& vs, const std::string& ps );
-int reloadShader( int id, const std::string& vs, const std::string& ps );
+int loadShader( std::string vs, std::string ps, const std::string& prepend="" );
+int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend );
 bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();
@@ -1028,6 +1030,7 @@ bool setShaderFloat2( const std::string& handle, const V2& v );
 bool setShaderFloat3( const std::string& handle, const V3& v );
 bool setShaderFloat4( const std::string& handle, const V4& v );
 bool setShaderM44( const std::string& handle, const M44& v );
+bool setShaderMatrix( const std::string& handle, const arma::mat& v );
 //bool setM33( const std::string& handle, const M33& v );
 //bool setM44Array( const std::string& handle, const std::vector<M44>& v );
 bool setShaderFloatArray( const std::string& handle, float*v, int n);

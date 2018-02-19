@@ -151,6 +151,19 @@ def shapeOffset( shape, offset, joinType=_cm.JOIN_ROUND, miterLimit=1., fillType
     else:
         return _cm.shapeOffset(shape, offset, joinType, miterLimit, fillType)
 
+def dpSimplify( shape, closed, eps):
+    if type(shape) == list:
+        shape = list_to_shape(shape, closed)
+        return shape_to_list( _cm.dpSimplify(shape, eps) )
+    if type(shape) == numpy.ndarray:
+        shape = Contour(shape, closed)
+        return _cm.dpSimplify(shape, eps).points
+    else:
+        return _cm.dpSimplify(shape, eps)
+        
+def findContours(img, approx=True, minArea=0, maxArea=1e30):
+    return shape_to_list(img.findContours(approx, minArea, maxArea))
+
 def fill(S):
     if type(S) == list:
         _cm.fill(list_to_shape(S))
