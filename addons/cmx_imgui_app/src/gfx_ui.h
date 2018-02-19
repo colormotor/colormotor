@@ -131,7 +131,7 @@ namespace ui
     float handle( int index, float ang, const ImVec2& pos, float length, float startTheta=0.0f, float minTheta=0.0f, float maxTheta=0.0f, bool selected=false );
 
     /// Simple affine transform widget (two axes, centered)
-    Trans2d affineSimple( int index, Trans2d m, bool selected=false );
+    Trans2d affineSimple( int index, Trans2d m, bool selected=false, float scale=1. );
     
     /// Creates a draggable rect for selection, see demo() for example usage
     Rect selector();

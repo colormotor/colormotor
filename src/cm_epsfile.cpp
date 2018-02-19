@@ -149,11 +149,24 @@ namespace cm
 		if(!_file)
 			return;
 		
+		for( int i = 0; i < s.size(); i++ )
+		{
+			const Contour& pa = s.getContour(i);
+
+			if(pa.points.has_nan() || pa.points.has_inf())
+			{
+				printf("Shape has NaNs or Infs\n");
+				return;
+			}
+			
+		}
+
 		newpath();
         
 		for( int i = 0; i < s.size(); i++ )
 		{
 			const Contour& pa = s.getContour(i);
+
 			for( int j = 0; j < pa.size(); j++ )
 			{
 				V2 p = pa.getPoint(j);
@@ -174,6 +187,12 @@ namespace cm
 		if(!_file)
 			return;
 		
+		if(pa.points.has_nan() || pa.points.has_inf())
+		{
+			printf("Contour has NaNs or Infs\n");
+			return;
+		}
+
 		newpath();
         
 		for( int i = 0; i < pa.size(); i++ )
@@ -265,7 +284,7 @@ namespace cm
 			return;
 		lineWidth = w;
 		w = w / arma::det(mats.back());
-		P(_file,"%.5f setlinewidth\n",w);
+		P(_file,"%.5f setlinewidth\n",fabs(w));
 	}
 	
 	/////////////////////////////////////////////////////

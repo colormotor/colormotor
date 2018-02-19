@@ -4357,13 +4357,16 @@ void Image::grabFrameBuffer()
 		assert(false);
 	}
 
+	
+	GLint dims[2];
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &dims[0]);
 	GLint vp[4];
 
 	glGetIntegerv( GL_VIEWPORT, vp );
 	int vw = vp[2];
 	int vh = vp[3];
 	int vy = vp[1];
-
+	
 	// from http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat/9098883#9098883
 	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 	glPixelStorei(GL_PACK_ALIGNMENT, (mat.step & 3) ? 1 : 4);
@@ -4384,6 +4387,8 @@ void Image::grabFrameBuffer()
 	
 	int y = (vy+vh)-height();
 
+	glFlush();
+	
 	glReadPixels(0, y, width(), height(), glFormat, GL_UNSIGNED_BYTE, mat.data);
 	mirror(false, true);
 
@@ -4430,7 +4435,7 @@ Shape Image::findContours( bool approx, float minArea, float maxArea )
     /// Find contours
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
-    cv::findContours( tmp, contours, hierarchy, CV_RETR_TREE, approx?CV_CHAIN_APPROX_SIMPLE:CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
+    cv::findContours( tmp, contours, hierarchy, CV_RETR_TREE, approx?CV_CHAIN_APPROX_TC89_KCOS:CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
     
     bool prune = false;
     if(minArea > 0.0)
@@ -4724,12 +4729,14 @@ int	linkShader( int vs, int ps )
 	return id;
 }
 
-int loadShader( const std::string& vs, const std::string& ps )
+int loadShader( std::string vs, std::string ps, const std::string& prepend )
 {
+	vs = prepend + vs;
 	int vsid = loadVertexShader(vs);
 	if(vsid < 0)
 		return -1;
 
+	ps = prepend + ps;
 	int psid = loadPixelShader(ps);
 	if(psid < 0)
 		return -1;
@@ -4737,9 +4744,9 @@ int loadShader( const std::string& vs, const std::string& ps )
 	return linkShader( vsid, psid );
 }
 
-int reloadShader( int id, const std::string& vs, const std::string& ps )
+int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend )
 {
-	int newid = loadShader(vs, ps);
+	int newid = loadShader(vs, ps, prepend);
 	if(newid==-1)
 		return id;
 
@@ -4830,9 +4837,50 @@ bool setShaderM44( const std::string& handle, const M44& v )
 	int id = getUniformLocation(handle);
 	if(id == -1)
 		return false;
-	glUniformMatrix4fv(id, 1, GL_FALSE, (const float*)&v[0]);
+	float *buf=new float[v.n_cols*v.n_rows];
+	int k = 0;
+	for( int i = 0; i < v.n_rows; i++ )
+		for( int j = 0; j < v.n_cols; j++ )
+			buf[k++] = v(i,j);
+	glUniformMatrix4fv(id, 1, GL_FALSE, buf); //(const float*)&v[0]);
+	delete [] buf;
 	return true;
 }
+
+bool setShaderMatrix( const std::string& handle, const arma::mat& v )
+{
+	int id = getUniformLocation(handle);
+	if(id == -1)
+		return false;
+
+	float *buf=new float[v.n_cols*v.n_rows];
+	int k = 0;
+	for( int i = 0; i < v.n_rows; i++ )
+		for( int j = 0; j < v.n_cols; j++ )
+			buf[k++] = v(i,j);
+		
+	if(v.n_cols==2)
+		glUniform2fv(id, v.n_rows, buf);
+	else if(v.n_cols==3)
+		glUniform3fv(id, v.n_rows, buf);
+	else if(v.n_cols==4)
+		glUniform4fv(id, v.n_rows, buf);
+	else
+		assert(0);
+
+	delete [] buf;
+}
+
+bool setShaderFloat3Array( const std::string& handle, const arma::mat& v )
+{
+
+}
+
+bool setShaderFloat4Array( const std::string& handle, const arma::mat& v )
+{
+
+}
+
 
 // TODO fixme
 // bool setM44Array( const std::string& handle, const float* data, int n )

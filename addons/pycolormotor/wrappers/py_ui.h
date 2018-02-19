@@ -43,7 +43,7 @@ namespace ui
     float handle( int index, float ang, const arma::vec& pos, float length, float startTheta=0.0f, float minTheta=0.0f, float maxTheta=0.0f, bool selected=false );
     
     /// Simple affine transform widget (two axes, centered)
-    arma::mat affineSimple( int index, const arma::mat& m, bool selected=false );
+    arma::mat affineSimple( int index, const arma::mat& m, bool selected=false, float scale=1. );
     
     /// Creates a draggable rect for selection, see demo() for example usage
     cm::Box selector();

@@ -92,13 +92,24 @@ if(APPLE)
 
 	#/usr/local/Frameworks/Python.framework
 	#${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
-
+	# ${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
+	# ${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
+	# ${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
+	# ${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
+	# ${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
+	
+	# -lopencv_core
+	# -lopencv_imgproc
+	# -lopencv_highgui
+	# -lopencv_imgcodecs
+	# -larmadillo
+	
 	target_link_libraries(pycm
 		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
 		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
-		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
+		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib	
 		lapack
 		blas
 		glfw

@@ -55,6 +55,11 @@ std::vector<arma::mat> shapeOffset( const std::vector<arma::mat>& shape, double 
 
 ////////////////////////////////////////////////////////////////
 // Other contour operations
+Shape dpSimplify( const Shape& shape, float eps );
+Contour dpSimplify( const Contour& c, float eps );
+std::vector<arma::mat> dpSimplify( const std::vector<arma::mat> & S, bool closed, float eps );
+arma::mat dpSimplify( const arma::mat& X, bool closed, float eps );
+
 
 arma::vec chordLengths( const arma::mat& P, bool closed=false );
 arma::vec cumChordLengths( const arma::mat& P, bool closed=false);
@@ -90,7 +95,7 @@ arma::mat interpolate( const arma::mat & P, const arma::vec& Xi, bool closed=fal
 
 /// Interpolate vector
 /// Xi are the interpolation values in the range 0 to 1
-arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, bool closed=false, const char* method="linear");
+arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* method="linear");
 
 /// Uniformly sample a contour at distance s
 arma::mat uniformSample( const arma::mat & P, float ds, bool closed=false );

@@ -328,7 +328,7 @@ namespace ui
     }
     
     /// Affine transform widget
-    ui::Trans2d affineSimple( int index, ui::Trans2d t, bool selected )
+    ui::Trans2d affineSimple( int index, ui::Trans2d t, bool selected, float scale )
     {
         mod = false;
         
@@ -351,15 +351,15 @@ namespace ui
         bool alt = ImGui::GetIO().KeyAlt;
 
         // x axis
-        px = t.pos + t.x;
+        px = t.pos + t.x*scale;
         px = dragger(1, px, false, config.draggerSize*0.7 ); xmod = modified();
         
-        ImVec2 tx = px - t.pos;
+        ImVec2 tx = (px - t.pos)/scale;
         float rx = norm(tx) / norm(t.x);
 
         if(xmod)
         {
-            t.x = px - t.pos;
+            t.x = (px - t.pos)/scale;
             t.y = forceOrtho(t.y, t.x, ImGui::GetIO().KeyAlt);
             if(shift)
                 t.y = t.y * rx;
@@ -368,15 +368,15 @@ namespace ui
         }
         
         // y axis
-        py = t.pos + t.y;
+        py = t.pos + t.y*scale;
         py = dragger(2, py, false, config.draggerSize*0.7 ); ymod = modified();
 
-        ImVec2 ty = py - t.pos;
+        ImVec2 ty = (py - t.pos)/scale;
         float ry = norm(ty) / norm(t.y);
 
         if(ymod)
         {
-            t.y = py - t.pos;
+            t.y = (py - t.pos)/scale;
             t.x = forceOrtho(t.x, t.y, ImGui::GetIO().KeyAlt);
 
             if(shift)

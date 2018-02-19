@@ -238,12 +238,12 @@ static std::vector<arma::mat> conv( const Shape& shape )
 	return res;
 }
 
-static Shape conv( const std::vector<arma::mat>& vec )
+static Shape conv( const std::vector<arma::mat>& vec, bool closed=true )
 {
 	Shape res;
 	for( int i=0; i < vec.size(); i++ )
 	{
-		res.add(Contour(vec[i], true));
+		res.add(Contour(vec[i], closed));
 	}
 	return res;
 }
@@ -289,12 +289,83 @@ double distance( float a, float b )
 					  	P = arma::join_horiz(P, P.col(0)); \
 					  }
 
+
+
+static arma::mat dpSimplify( const arma::mat& X, float eps )
+{
+	float dmax = 0.0;
+	int index = 0;
+	int n = X.n_cols;
+	for( int i=0; i < n; i++ )
+	{
+		float d = distanceToLine(X.col(i), X.col(0), X.col(n-1));
+		if(d > dmax)
+		{
+			index = i;
+			dmax = d;
+		}
+	}
+
+	arma::mat Y;
+	if(dmax >= eps)
+	{
+		Y = arma::join_horiz(dpSimplify(X(arma::span::all, 
+										  arma::span(0, index)), eps),
+							dpSimplify(X(arma::span::all, 
+										  arma::span(index+1, n-1)), eps));
+	}
+	else
+	{
+		Y = arma::join_horiz(X.col(0), X.col(n-1));
+	}
+
+	return Y;
+}
+
+Contour dpSimplify( const Contour& ctr, float eps )
+{
+	if(eps<=0.)
+		return ctr;
+
+	arma::mat X = ctr.points;
+	if(ctr.closed)
+		X = arma::join_horiz(X, X.col(0));
+	
+	arma::mat Y = dpSimplify(X, eps);
+
+	if(ctr.closed)
+	{
+		Y = Y(arma::span::all, arma::span(0, Y.n_cols-1));
+	}
+
+	return Contour(Y, ctr.closed);
+}
+
+Shape dpSimplify( const Shape& S, float eps )
+{
+	Shape out;
+	for( int i = 0; i < S.size(); i++ )
+		out.add( dpSimplify(S[i], eps) );
+	return out;	
+}
+
+std::vector<arma::mat> dpSimplify( const std::vector<arma::mat> & S, bool closed, float eps )
+{
+	return conv(dpSimplify(conv(S, closed), eps));
+}
+
+arma::mat dpSimplify( const arma::mat& X, bool closed, float eps )
+{
+	return dpSimplify( Contour(X, closed), eps ).points;
+}
+
+
 arma::vec chordLengths( const arma::mat & P_, bool closed )
 {
 	MAKE_P_CLOSED
 
     std::vector<double> L;
-    int n = P.size();
+    int n = P.n_cols;
     for( int i = 0; i < n-1; i++ )
     	L.push_back( norm( P.col(i) - P.col(i+1) ) );
     return arma::vec(L);
@@ -330,7 +401,8 @@ arma::mat interpolate( const arma::mat& P_, const arma::vec &X, const arma::vec 
 arma::mat interpolate( const arma::mat& P_, const arma::vec& Xi, bool closed, const char* method)
 {
 	MAKE_P_CLOSED
-    return interpolate( P, arma::linspace(0., 1., P.size()), Xi, method );
+	// force not closed since we close it here...
+    return interpolate( P, arma::linspace(0., 1., P.n_cols), Xi, false, method );
 }
     
 arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* method)
