@@ -96,10 +96,6 @@ typedef std::complex<float> complexf;
 #include <mutex>
 #endif
 
-#pragma GCC diagnostic ignored "-Wnarrowing"
-// hope this is safe....
-#pragma GCC diagnostic ignored "-Wpmf-conversions"
-
 
 
 #ifdef CM_WIN

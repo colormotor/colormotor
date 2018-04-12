@@ -20,6 +20,12 @@ demo = cm.ui_demo
 modifierShift = cm.ui_modifierShift
 modifierAlt = cm.ui_modifierAlt
 
+beginChild = cm.ui_beginChild
+endChild = cm.ui_endChild
+sliderFloat = cm.ui_sliderFloat
+button = cm.ui_button
+checkbox = cm.ui_checkbox
+
 def line(a, b, clr=[-1,-1,-1,1]):
     if len(clr)==3:
         clr = cm.ImColor(clr[0], clr[1], clr[2])

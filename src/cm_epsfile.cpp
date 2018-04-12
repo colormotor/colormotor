@@ -293,7 +293,7 @@ namespace cm
 		if(!_file)
 			return;
 		
-		P(_file,"%.5f %.5f %.5f setrgbcolor\n",r,g,b);
+		P(_file,"%.5f %.5f %.5f setrgbcolor \n",r,g,b);
 	}
 	
 	

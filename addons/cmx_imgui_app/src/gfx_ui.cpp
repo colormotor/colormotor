@@ -61,7 +61,7 @@ namespace ui
         }
         
         // Allow mouse interaction if over background window
-        if( g.HoveredWindow == uiWindow) // && g.HoveredIdPreviousFrame == 0 && g.HoveredId==0 && g.ActiveId==0 )
+        if( g.HoveredWindow == uiWindow && g.HoveredIdPreviousFrame == 0 ) // && g.HoveredId==0 && g.ActiveId==0 )
         {
             return false;
         }
@@ -251,12 +251,17 @@ namespace ui
             if (g.IO.MouseDown[0])
             {
                 ImVec2 vmouse = ImVec2(ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y);
-                thetaLen.x = (float)angleBetween(vbase, vmouse); //::atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
-                
-                if(maxThetaLen.x != 0)
-                    thetaLen.x = std::max( std::min(thetaLen.x, maxThetaLen.x), minThetaLen.x);
-                
-                thetaLen.y = std::max( std::min( length(ImGui::GetMousePos(), pos), maxThetaLen.y ), minThetaLen.y );
+
+                if(!modifierShift())
+                {
+                    thetaLen.x = (float)angleBetween(vbase, vmouse); //::atan2( ImGui::GetMousePos().y - pos.y, ImGui::GetMousePos().x - pos.x );
+                    
+                    if(maxThetaLen.x != 0)
+                        thetaLen.x = std::max( std::min(thetaLen.x, maxThetaLen.x), minThetaLen.x);
+                }
+
+                if(!modifierAlt())
+                    thetaLen.y = std::max( std::min( length(ImGui::GetMousePos(), pos), maxThetaLen.y ), minThetaLen.y );
                 res=mod=true;
             }
             else

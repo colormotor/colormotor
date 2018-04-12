@@ -1018,7 +1018,7 @@ void deleteShaderProgram( int id );
 void deleteAllShaders();
     
 int loadShader( std::string vs, std::string ps, const std::string& prepend="" );
-int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend );
+int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend="" );
 bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();

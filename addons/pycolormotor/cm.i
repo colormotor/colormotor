@@ -92,6 +92,7 @@ typedef cm::V2 ForceV2;
 %pythoncode %{
 
 import numpy
+import numbers
 
 def list_to_shape(L, close=True):
     ''' Converts a list of contours (specified as 2xN matrices) to a shape'''
@@ -218,6 +219,11 @@ def color(*args):
         if type(clr) == str:
             _cm.color(clrconv[clr])
         else:
+            if isinstance(clr, numbers.Number):
+                _cm.color(clr)
+                return
+            elif len(clr) == 3:
+                clr = list(clr) + [1.]
             _cm.color(clr)
     else:
         _cm.color(*args)

@@ -3,6 +3,8 @@ struct ImColor
     ImColor(float r, float g, float b, float a = 1.0f);
 };
 
+
+
 namespace ui
 {
 
@@ -56,5 +58,36 @@ namespace ui
     
     void demo();   
 
+
+
 %rename("%s") "";
 }
+
+%inline %{
+    bool ui_beginChild(const char * strid)
+    {
+        ImGui::BeginChild(strid);
+    }
+
+    void ui_endChild()
+    {
+        ImGui::EndChild();
+    }
+
+    float ui_sliderFloat(const char* label, float v, float min, float max)
+    {
+        ImGui::SliderFloat(label, &v, min, max);
+        return v;
+    } 
+
+    bool ui_button(const char*label)
+    {
+        return ImGui::Button(label);
+    }
+
+    bool ui_checkbox(const char*label, bool v)
+    {
+        ImGui::Checkbox(label, &v);
+        return v;
+    }
+%}

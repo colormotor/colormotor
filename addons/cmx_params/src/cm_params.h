@@ -364,7 +364,6 @@ public:
 	ParamMap paramMap; /// < TODO: use hash_map?
 	
 	std::string name;
-
 	std::vector<ParamList*> children;
 	ParamList * parent;
 

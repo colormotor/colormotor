@@ -1079,6 +1079,10 @@ void	beginVertices( int prim )
             prim == gfx::LINELOOP )
         {
             currentEpsPath.clear();
+			if(prim==gfx::LINELOOP)
+				currentEpsPath.close(true);
+			else
+				currentEpsPath.close(false);
             drawingEpsPath = true;
         }
 	}
@@ -1094,8 +1098,8 @@ void	endVertices()
     #ifdef GFX_TO_EPS
 	if( renderingToEps && drawingEpsPath )
 	{
-		if( currentPrimitive == gfx::LINELOOP )
-			currentEpsPath.close();
+		// if( currentPrimitive == gfx::LINELOOP )
+		// 	currentEpsPath.close();
 
 		eps.strokeShape(currentEpsPath, currentColor);
 		currentEpsPath.clear();
