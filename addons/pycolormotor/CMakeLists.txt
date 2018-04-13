@@ -112,7 +112,7 @@ if(APPLE)
 		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib	
 		lapack
 		blas
-		glfw
+		${PYTHON_BASE_DIR}/lib/libglfw.dylib
 		${PYTHON_BASE_DIR}/lib/libpython2.7.dylib
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
