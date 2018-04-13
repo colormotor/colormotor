@@ -207,7 +207,7 @@ namespace ImGui
     
     bool ColorSelector(const std::string &label, cm::V4* clr)
     {
-        float imclr[4] = {clr->x, clr->y, clr->z, clr->w};
+        float imclr[4] = {(float)clr->x, (float)clr->y, (float)clr->z, (float)clr->w};
         
         bool res = ColorEdit4(label.c_str(), imclr);
         *clr = cm::V4(imclr[0], imclr[1], imclr[2], imclr[3]);

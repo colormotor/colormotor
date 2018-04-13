@@ -40,7 +40,7 @@ ClipperLib::IntPoint convertToIntPoint( const arma::vec & p, const Box& rect, do
 
 arma::vec convertToVec( const ClipperLib::IntPoint & p, const Box& rect, double range )
 {
-	arma::vec v({p.X,p.Y});
+	arma::vec v({(double)p.X, (double)p.Y});
 	v /= scaleFactor(rect, range);
 	v += arma::vec({rect.l(),rect.t()});
 	return v;

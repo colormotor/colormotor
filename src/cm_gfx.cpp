@@ -923,15 +923,15 @@ void	drawWireBox( const arma::vec& min, const arma::vec& max )
 {
 	float verts[8][3] = 
 	{	
-		{ min[0],  max[1],  max[2] },
-		{ min[0],  min[1],  max[2] },
-		{ max[0],  min[1],  max[2] },
-		{ max[0],  max[1],  max[2] },
+		{ (float)min[0],  (float)max[1],  (float)max[2] },
+		{ (float)min[0],  (float)min[1],  (float)max[2] },
+		{ (float)max[0],  (float)min[1],  (float)max[2] },
+		{ (float)max[0],  (float)max[1],  (float)max[2] },
 
-		{ min[0],  max[1],  min[2] },
-		{ min[0],  min[1],  min[2] },
-		{ max[0],  min[1],  min[2] },
-		{ max[0],  max[1],  min[2] },
+		{ (float)min[0],  (float)max[1],  (float)min[2] },
+		{ (float)min[0],  (float)min[1],  (float)min[2] },
+		{ (float)max[0],  (float)min[1],  (float)min[2] },
+		{ (float)max[0],  (float)max[1],  (float)min[2] },
 	};
 
 	unsigned short inds[] = 
@@ -1603,11 +1603,12 @@ void fillTriangle( const V2& a, const V2& b, const V2& c )
 }
 	
 // Adapted from LibCinder
-void drawCubeImpl( const V3&c, const V3&size, bool drawColors )
+void drawCubeImpl( const V3&c_, const V3&size, bool drawColors )
 {
-	GLfloat sx = size[0] * 0.5f;
-	GLfloat sy = size[1] * 0.5f;
-	GLfloat sz = size[2] * 0.5f;
+	GLfloat sx = (float)size[0] * 0.5f;
+	GLfloat sy = (float)size[1] * 0.5f;
+	GLfloat sz = (float)size[2] * 0.5f;
+	float c[3] = {(float)c_[0], (float)c_[1], (float)c_[2]};
     GLfloat vertices[24*3]={c[0]+1.0f*sx,c[1]+1.0f*sy,c[2]+1.0f*sz,	c[0]+1.0f*sx,c[1]+-1.0f*sy,c[2]+1.0f*sz,	c[0]+1.0f*sx,c[1]+-1.0f*sy,c[2]+-1.0f*sz,	c[0]+1.0f*sx,c[1]+1.0f*sy,c[2]+-1.0f*sz,		// +X
 	    c[0]+1.0f*sx,c[1]+1.0f*sy,c[2]+1.0f*sz,	c[0]+1.0f*sx,c[1]+1.0f*sy,c[2]+-1.0f*sz,	c[0]+-1.0f*sx,c[1]+1.0f*sy,c[2]+-1.0f*sz,	c[0]+-1.0f*sx,c[1]+1.0f*sy,c[2]+1.0f*sz,		// +Y
 	    c[0]+1.0f*sx,c[1]+1.0f*sy,c[2]+1.0f*sz,	c[0]+-1.0f*sx,c[1]+1.0f*sy,c[2]+1.0f*sz,	c[0]+-1.0f*sx,c[1]+-1.0f*sy,c[2]+1.0f*sz,	c[0]+1.0f*sx,c[1]+-1.0f*sy,c[2]+1.0f*sz,		// +Z
