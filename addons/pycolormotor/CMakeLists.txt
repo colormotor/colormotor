@@ -69,7 +69,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
 	message(Compling for apple)
-	set(PYTHON_BASE_DIR $ENV{HOME}/anaconda3/envs/py27)
+	set(PYTHON_BASE_DIR $ENV{HOME}/miniconda2)
 	#set(PYTHON_BASE_DIR /usr/local)
 	#/usr/local/Frameworks/Python.framework/Headers
 
