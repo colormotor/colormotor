@@ -217,7 +217,7 @@ Contour()
     arma::vec last() const { return points.col(size()-1); }
     arma::vec getPoint( int i ) const { return points.col(i); }
     
-    //void set( int i, const V2& p ) { points.col(i) = (arma::vec)p; }
+    void set( int i, const V2& p ) { points.col(i) = (arma::vec)p; }
     //void set( int i, const V3& p ) { points.col(i) = (arma::vec)p; }
     
     //arma::vec& last() { return points.col(size()-1); }
@@ -1312,6 +1312,9 @@ void color( const V4& c );
 void color( float c, float a=1.0f );
 /// Specify color (r,g,b,a) 
 void color( float r, float g, float b, float a=1.0f );
+
+/// default color Matplotlib style
+arma::vec defaultColor(int i, float alpha=1.);
 
 /// Begin specifying vertices, equivalent to glBegin
 /// @prim defines the primitive type with @PRIMITIVE
