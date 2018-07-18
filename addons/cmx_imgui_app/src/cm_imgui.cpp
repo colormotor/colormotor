@@ -297,6 +297,7 @@ void imgui( ParamList& plist, float cursorPos  )
         if(p->hasOption("sameline"))
             ImGui::SameLine();
         
+        bool found = true;
         switch(p->getType())
         {
             case PARAM_FLOAT:
@@ -355,7 +356,16 @@ void imgui( ParamList& plist, float cursorPos  )
             case PARAM_COLOR:
                 p->dirty = ImGui::ColorSelector(p->getName(), (V4*)p->getAddress());
                 break;
-                
+            
+            default:
+                found = false;
+                break;
+        }
+
+        if (found && p->description.length())
+        {
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip(p->description.c_str());
         }
     }
     

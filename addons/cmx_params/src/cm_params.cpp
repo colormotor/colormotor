@@ -169,7 +169,7 @@ Param::Param()
 	oscAddress = "/";
 	
 	options = "";
-	
+	description = "";
 }
 
 Param::~Param()

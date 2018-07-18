@@ -243,6 +243,11 @@ public:
 	Param* appendOption( const std::string & opt ) { options += opt + ";"; return this; }
 	bool hasOption( const std::string & opt );
 	
+	Param* describe( const std::string& desc )
+	{
+		this->description = desc; return this;
+	}
+
     Param* sameLine() { return appendOption("sameline"); }
     Param* noGui() { return appendOption("h"); }
     
@@ -250,6 +255,8 @@ public:
 	void setPath( const std::string & path );
     
     bool dirty=false;
+	std::string description;
+
 protected:
 	std::string oscAddress;
 	std::string options;
@@ -259,6 +266,8 @@ protected:
 	std::vector <ParamListener*> listeners;
 	std::string _name;
 	std::string _path;
+	
+
 	char *_data;
 	void * _addr;
 	
