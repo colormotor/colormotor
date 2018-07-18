@@ -43,7 +43,10 @@ typedef std::complex<float> complexf;
 
 #include <unistd.h>
 
+#pragma clang diagnostic push // Ignores some warnings for armadillo mat44 etc
+#pragma clang diagnostic ignored "-Wuninitialized"
 #include "armadillo"
+#pragma clang diagnostic pop
 
 #define SAFE_DELETE( val )	if(val) { delete val; val=0; }
 #define SAFE_DELETE_ARRAY( val ) if(val) { delete [] val; val = 0; }
@@ -193,6 +196,7 @@ public:
     template <typename T2, typename eglue_type>
     V2( const arma::eGlue<V2, T2, eglue_type>& v)
     :
+    arma::vec2(),
     x(this->at(0)),
     y(this->at(1))
     {
@@ -202,6 +206,7 @@ public:
                    
     V2(const V2& v)
     :
+    arma::vec2(),
     x(this->at(0)),
     y(this->at(1))
     {
@@ -210,6 +215,7 @@ public:
     
     V2(const arma::vec& v)
     :
+    arma::vec2(),
     x(this->at(0)),
     y(this->at(1))
     {
@@ -218,6 +224,7 @@ public:
     
     V2(const arma::subview_col<double>& v)
     :
+    arma::vec2(),
     x(this->at(0)),
     y(this->at(1))
     {
@@ -227,6 +234,7 @@ public:
     
     V2()
     :
+    arma::vec2(),
     x(this->at(0)),
     y(this->at(1))
     {
@@ -255,6 +263,7 @@ class V3 : public arma::vec3
 public:
     V3(const arma::subview_col<double>& v)
     :
+    arma::vec3(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2))
@@ -266,6 +275,7 @@ public:
     template <typename T2, typename eglue_type>
     V3( const arma::eGlue<V3, T2, eglue_type>& v)
     :
+    arma::vec3(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2))
@@ -275,6 +285,7 @@ public:
     
     V3(const V3& v)
     :
+    arma::vec3(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2))
@@ -285,6 +296,7 @@ public:
     
     V3(const arma::vec& v)
     :
+    arma::vec3(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2))
@@ -294,6 +306,7 @@ public:
     
     V3()
     :
+    arma::vec3(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2))
@@ -337,6 +350,7 @@ public:
     template <typename T2, typename eglue_type>
     V4( const arma::eGlue<V4, T2, eglue_type>& v)
     :
+    arma::vec4(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2)),
@@ -348,6 +362,7 @@ public:
     
     V4(const V4& v)
     :
+    arma::vec4(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2)),
@@ -358,6 +373,7 @@ public:
     
     V4(const arma::vec& v)
     :
+    arma::vec4(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2)),
@@ -368,6 +384,7 @@ public:
     
     V4()
     :
+    arma::vec4(),
     x(this->at(0)),
     y(this->at(1)),
     z(this->at(2)),
