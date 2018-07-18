@@ -29,6 +29,12 @@ public:
 	virtual void activated() {}
 	virtual void deactivated() {}
 	
+	std::string filename() const
+	{
+        std::string fname = name;
+        std::replace( fname.begin(), fname.end(), ' ', '_');
+		return fname;
+	}
 
     std::string name;
 	bool active;
