@@ -1202,6 +1202,11 @@ void setStencilOp( int fail, int zfail, int zpass );
 void setStencilOp( int failFront, int zfailFront, int zpassFront,
 			      int failBack, int zfailBack, int zpassBack );
 
+void beginMask(bool draw=false);
+void endMask();
+void beginMasked(bool inverted=false);
+void endMasked();
+
 void setPointSize( float s );
 /// Enable point sprites
 void enablePointSprites( bool flag, int textureIndex );

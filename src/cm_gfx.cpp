@@ -581,6 +581,41 @@ void	setStencilOp( int failFront, int zfailFront, int zpassFront,
 	glStencilOpSeparate( GL_BACK, stencilOps[failBack], stencilOps[zfailBack], stencilOps[zpassBack] );
 }
 
+void beginMask(bool draw)
+{
+	glStencilMask(0xFF); 
+	glEnable(GL_STENCIL_TEST);  
+	glClearStencil(0);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);  
+	glStencilFunc(GL_ALWAYS, 1, 0xFF); 
+	if (!draw)
+		glColorMask(false, false, false, false);
+}
+
+void endMask()
+{
+	glStencilMask(0x00);
+	glDisable(GL_STENCIL_TEST);  
+	glColorMask(true, true, true, true);
+}
+
+void beginMasked(bool inverted)
+{
+	glEnable(GL_STENCIL_TEST);  
+	glStencilMask(0x00); 
+	if (inverted)
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	else
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+}
+
+void endMasked()
+{
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0x00); 
+}
+
 
 void	setPointSize( float s )
 {
