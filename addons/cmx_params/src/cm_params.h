@@ -242,7 +242,8 @@ public:
 	Param* setOptions( const std::string & opt ) { options = opt + ";"; return this; }
 	Param* appendOption( const std::string & opt ) { options += opt + ";"; return this; }
 	bool hasOption( const std::string & opt );
-	
+	bool hasOptions() const { return options.length() != 0; }
+
 	Param* describe( const std::string& desc )
 	{
 		this->description = desc; return this;
@@ -312,7 +313,9 @@ public:
 	ParamList * getChild( int i ) { return children[i]; }
 	ParamList * getParent() { return parent; }
 
-	void newChild( const std::string & name );
+	ParamList* newChild( const std::string & name, const std::string& options="child" );
+	ParamList* newChild(ParamList* parent_, const std::string & name, const std::string& options_="child" );
+
 	void setCurrent( const std::string & name );
 	void resetCurrent();
 	
@@ -358,6 +361,12 @@ public:
 	const std::string &getName() const { return name; }
 	void setName( const std::string & name ) { this->name = name; }
 
+	const std::string & getOptions() const { return options; }
+	ParamList* setOptions( const std::string & opt ) { options = opt + ";"; return this; }
+	ParamList* appendOption( const std::string & opt ) { options += opt + ";"; return this; }
+	bool hasOption( const std::string & opt );
+	bool hasOptions() const { return options.length() != 0; }
+
 	// TODO addSpacer
 	bool remove( Param * v );
 	Param * find(const std::string& name );
@@ -378,6 +387,8 @@ public:
 
 
 	ParamList * current;
+
+	std::string options;
 };
 
 }

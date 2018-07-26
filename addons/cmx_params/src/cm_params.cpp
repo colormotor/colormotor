@@ -924,13 +924,15 @@ ParamList::ParamList( const std::string & name )
 :
 name(name),
 current(this),
-parent(0)
+parent(0),
+options("")
 {
 }
 
 ParamList::ParamList( const ParamList & mom )
 :
-name(mom.name)
+name(mom.name),
+options(mom.options)
 {
 	release();
 	for( int i = 0; i < mom.getNumParams(); i++ )
@@ -1005,11 +1007,22 @@ void ParamList::addChild( ParamList * params )
 	params->parent = this; 
 }
 
-void ParamList::newChild( const std::string & name )
+ParamList* ParamList::newChild( const std::string & name, const std::string& options_ )
 {
 	ParamList * plist = new ParamList(name);
 	addChild(plist);
 	current = plist;
+	plist->setOptions(options_);
+	return plist;
+}
+
+ParamList* ParamList::newChild(ParamList* parent_, const std::string & name, const std::string& options_ )
+{
+	ParamList * plist = new ParamList(name);
+	parent_->addChild(plist);
+	current = plist;
+	plist->setOptions(options_);
+	return plist;
 }
 
 void ParamList::setCurrent( const std::string & name )
@@ -1485,7 +1498,10 @@ ParamList* ParamList::clone( bool keepAddresses )
 	return d;
 }
 
-
+bool ParamList::hasOption( const std::string & opt )
+{
+	return options.find( opt + ";" ) != std::string::npos;
+}
 
 }
 
