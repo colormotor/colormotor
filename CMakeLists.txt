@@ -58,35 +58,28 @@ add_library(colormotor STATIC
 )
 
 if(APPLE)
-	set(PYTHON_BASE_DIR $ENV{HOME}/miniconda2)
+	# Change this to your anaconda path, wander if there is an automatic way to handle this
+	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda2)
 
 	include_directories(
-		${PYTHON_BASE_DIR}/lib/python2.7/site-packages/numpy/core/include/
-		${PYTHON_BASE_DIR}/include
-		/usr/local/include
-	)
+		${BASE_SEARCH_DIR}/lib/python2.7/site-packages/numpy/core/include/
+		${BASE_SEARCH_DIR}/include
+	 )
 
 	link_directories(
-		${PYTHON_BASE_DIR}/lib
+		${BASE_SEARCH_DIR}/lib
 		/usr/local/Frameworks
-		/usr/local/lib
 	)
 
-	# opencv_core
-	# opencv_imgproc
-	# opencv_highgui
-	# opencv_imgcodecs
-	# armadillo
-
 	target_link_libraries(colormotor
-		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
-		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
-		lapack
+		opencv_core
+		opencv_imgproc
+		opencv_highgui
+		opencv_imgcodecs
+		armadillo
+		LAPACK
 		blas
-		${PYTHON_BASE_DIR}/lib/libglfw.dylib
+		glfw
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"
