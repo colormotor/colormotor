@@ -20,6 +20,8 @@ namespace ImGui
     bool IconSelectable(const std::string &str, bool active);
     bool ColorSelector(const std::string &label, cm::V4* clr);
 
+    bool Knob(const char* label, float* p_value, float v_min, float v_max, float angle_padding=1.);
+    
     void ImGui::ShowDemoWindow(bool* p_open);
 }
 

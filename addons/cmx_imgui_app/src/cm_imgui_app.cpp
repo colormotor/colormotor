@@ -524,8 +524,11 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
 
     style.WindowRounding = 0.0f;
     //style.WindowPadding = ImVec2(4,4);
-    style.ItemSpacing = ImVec2(8,5);
-    style.FramePadding = ImVec2(8,2);
+    style.ItemSpacing = ImVec2(8, 5);
+    style.FramePadding = ImVec2(6, 3);
+    style.WindowPadding = ImVec2(6, 8);
+    style.FrameRounding = 2.0f;
+    style.IndentSpacing = 9.;
     style.Alpha  = 1.; //0.95f;
     style.ScrollbarSize = 15.0f;
     style.GrabMinSize = 9.0;

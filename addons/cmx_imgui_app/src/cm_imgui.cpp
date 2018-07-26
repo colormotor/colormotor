@@ -46,6 +46,58 @@ namespace ImGui
         alwaystrue = true;
     }
     
+    bool Knob(const char* label, float* p_value, float v_min, float v_max, float angle_padding)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiStyle& style = ImGui::GetStyle();
+        
+        float radius_outer = 20.0f;
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+        ImVec2 center = ImVec2(pos.x + radius_outer, pos.y + radius_outer);
+        float line_height = ImGui::GetTextLineHeight();
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        
+        float ANGLE_MIN = 0.; //3.141592f * (angle_padding); 
+        float ANGLE_MAX = 3.141592f*2; //3.141592f * (1-angle_padding);
+        
+        ImGui::InvisibleButton(label, ImVec2(radius_outer*2, radius_outer*2 + line_height + style.ItemInnerSpacing.y));
+        bool value_changed = false;
+        bool is_active = ImGui::IsItemActive();
+        bool is_hovered = ImGui::IsItemActive();
+        if (is_active && io.MouseDelta.x != 0.0f)
+        {
+            float step = (v_max - v_min) / 100.0f;
+            *p_value += io.MouseDelta.x * step;
+            if (*p_value < v_min) *p_value = v_min;
+            if (*p_value > v_max) *p_value = v_max;
+            value_changed = true;
+        }
+        
+        float t = (*p_value - v_min) / (v_max - v_min);
+        float angle = ANGLE_MIN + (ANGLE_MAX - ANGLE_MIN) * t;
+        float angle_cos = cosf(angle), angle_sin = sinf(angle);
+        float radius_inner = radius_outer*0.40f;
+        ImVec2 tick_pos =  ImVec2(center.x + angle_cos*(radius_outer-2), center.y + angle_sin*(radius_outer-2));
+        draw_list->AddCircleFilled(center, radius_outer, ImGui::GetColorU32(ImGuiCol_FrameBg), 16);
+        draw_list->AddLine(ImVec2(center.x + angle_cos*radius_inner, center.y + angle_sin*radius_inner), tick_pos, ImGui::GetColorU32(ImGuiCol_SliderGrabActive), 2.0f);
+        draw_list->AddCircleFilled(center, radius_inner, ImGui::GetColorU32(is_active ? ImGuiCol_FrameBgActive : is_hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_Header), 16);
+        draw_list->AddCircleFilled(tick_pos, radius_inner*0.3, ImGui::GetColorU32(ImGuiCol_CheckMark), 12);
+        
+        
+        draw_list->AddText(ImVec2(pos.x, pos.y + radius_outer * 2 + style.ItemInnerSpacing.y), ImGui::GetColorU32(ImGuiCol_Text), label);
+        
+        if (is_active || is_hovered)
+        {
+            ImGui::SetNextWindowPos(ImVec2(pos.x - style.WindowPadding.x, pos.y - line_height - style.ItemInnerSpacing.y - style.WindowPadding.y));
+            ImGui::BeginTooltip();
+            ImGui::Text("%.3f", *p_value);
+            ImGui::EndTooltip();
+        }
+        
+        return value_changed;
+    }
+    
+
     void SetupStyle(ImVec4 col_text,
                     ImVec4 col_main,
                     ImVec4 col_back,
@@ -246,7 +298,11 @@ void imgui( ParamList& plist, float cursorPos  )
 
     float cposyPrev = ImGui::GetCursorPosY();
     
-    bool vis = ImGui::CollapsingHeader(plist.getName().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DefaultOpen); //, NULL, true, true);
+    bool vis;
+    if (plist.hasOption("hidden"))
+        vis = ImGui::CollapsingHeader(plist.getName().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap); //, NULL, true, true);
+    else
+        vis = ImGui::CollapsingHeader(plist.getName().c_str(), ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DefaultOpen); //, NULL, true, true);
     
     float cposyNext = ImGui::GetCursorPosY();
     //ImGUi::SetCursorPosY(cposyPrev);
@@ -254,27 +310,30 @@ void imgui( ParamList& plist, float cursorPos  )
     
     //ImGui::PushItemWidth(-10);
     // in cm_imgui_app
-    extern ImFont * iconFont;
-    ImGui::PushFont(iconFont);
-    ImGui::PushID("btns");
-    ImGui::SameLine(ImGui::GetWindowWidth()-100);
+    if (!plist.hasOption("child"))
+    {
+        extern ImFont * iconFont;
+        ImGui::PushFont(iconFont);
+        ImGui::PushID("btns");
+        ImGui::SameLine(ImGui::GetWindowWidth()-100);
 
-    if(ImGui::ButtonEx("l", ImVec2(0,0), ImGuiButtonFlags_PressedOnClick)) // Hack default onRelease with Button does not seem to work
-    {
-        std::string path;
-        if(openFileDialog(path,"xml"))
-            plist.loadXml(path.c_str());
+        if(ImGui::ButtonEx("l", ImVec2(0,0), ImGuiButtonFlags_PressedOnClick)) // Hack default onRelease with Button does not seem to work
+        {
+            std::string path;
+            if(openFileDialog(path,"xml"))
+                plist.loadXml(path.c_str());
+        }
+        //ImGui::NextColumn();
+        ImGui::SameLine();
+        if(ImGui::ButtonEx("s",ImVec2(0,0), ImGuiButtonFlags_PressedOnClick))//, ImVec2(100,20)))
+        {
+            std::string path;
+            if(saveFileDialog(path,"xml"))
+                plist.saveXml(path.c_str());
+        }
+        ImGui::PopID();
+        ImGui::PopFont();
     }
-    //ImGui::NextColumn();
-    ImGui::SameLine();
-    if(ImGui::ButtonEx("s",ImVec2(0,0), ImGuiButtonFlags_PressedOnClick))//, ImVec2(100,20)))
-    {
-        std::string path;
-        if(saveFileDialog(path,"xml"))
-            plist.saveXml(path.c_str());
-    }
-    ImGui::PopID();
-    ImGui::PopFont();
     //ImGui::PopItemWidth();
     
     if(!vis)
@@ -301,9 +360,26 @@ void imgui( ParamList& plist, float cursorPos  )
         switch(p->getType())
         {
             case PARAM_FLOAT:
-                if(p->hasOption("v"))
+                if (!p->hasOptions())
+                {
+                    p->dirty = ImGui::SliderFloat(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
+                }
+                else if (p->hasOption("v") || p->hasOption("field"))
                 {
                     p->dirty = ImGui::InputFloat(p->getName(),(float*)p->getAddress());
+                }
+                else if (p->hasOption("knob"))
+                {
+                    p->dirty = ImGui::Knob(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
+                }
+                else if (p->hasOption("angle"))
+                {
+                    p->dirty = ImGui::SliderAngle(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
+                }
+                else if (p->hasOption("vslider"))
+                {
+                    // quite arbitrary size
+                    p->dirty = ImGui::VSliderFloat(p->getName(), ImVec2(30,60), (float*)p->getAddress(), p->getMin(), p->getMax());
                 }
                 else
                 {
@@ -372,7 +448,7 @@ void imgui( ParamList& plist, float cursorPos  )
     for( int i = 0; i < plist.getNumChildren(); i++ )
     {
         ImGui::Indent();
-        imgui(*plist.getChild(i), cursorPos+20.0 );
+        imgui(*plist.getChild(i), cursorPos+10.0 );
         ImGui::Unindent();
     }
     
