@@ -52,10 +52,6 @@ elseif(UNIX)
 	)
 endif()
 
-add_library(pycm SHARED
-	${src}
-)
-
 include_directories(
 	  ${PROJECT_SOURCE_DIR}/../../src/
 	  ${PROJECT_SOURCE_DIR}/../../libs/
@@ -69,34 +65,34 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
 	message(Compling for apple)
-	set(PYTHON_BASE_DIR $ENV{HOME}/miniconda2)
-	#set(PYTHON_BASE_DIR /usr/local)
-	#/usr/local/Frameworks/Python.framework/Headers
+	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda2)
+	
+	set(CMAKE_EXE_LINKER_FLAGS "-rpath ${BASE_SEARCH_DIR}/lib")
+	set(CMAKE_MACOSX_RPATH 1)
+	
+	#set(CMAKE_INSTALL_RPATH "${BASE_SEARCH_DIR}/lib")
 
-	message("Base dir is " ${PYTHON_BASE_DIR})
+	message("Base dir is " ${BASE_SEARCH_DIR})
 
 	include_directories(
-		${PYTHON_BASE_DIR}/lib/python2.7/site-packages/numpy/core/include/
-		${PYTHON_BASE_DIR}/include
-		${PYTHON_BASE_DIR}/include/python2.7
+		${BASE_SEARCH_DIR}/lib/python2.7/site-packages/numpy/core/include/
+		${BASE_SEARCH_DIR}/include
+		${BASE_SEARCH_DIR}/include/python2.7
 		/usr/local/include
 	)
 
-	#/usr/local/lib
-
 	link_directories(
-		${PYTHON_BASE_DIR}/lib
-		/usr/local/Frameworks
-		/usr/local/lib
+		${BASE_SEARCH_DIR}/lib
+		#/usr/local/Frameworks
 	)
 
 	#/usr/local/Frameworks/Python.framework
-	#${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
-	# ${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
-	# ${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
-	# ${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
-	# ${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
-	# ${PYTHON_BASE_DIR}/lib/libarmadillo.dylib
+	#${BASE_SEARCH_DIR}/lib/libarmadillo.dylib
+	# ${BASE_SEARCH_DIR}/lib/libopencv_core.dylib
+	# ${BASE_SEARCH_DIR}/lib/libopencv_imgproc.dylib
+	# ${BASE_SEARCH_DIR}/lib/libopencv_highgui.dylib
+	# ${BASE_SEARCH_DIR}/lib/libopencv_imgcodecs.dylib
+	# ${BASE_SEARCH_DIR}/lib/libarmadillo.dylib
 	
 	# -lopencv_core
 	# -lopencv_imgproc
@@ -104,16 +100,22 @@ if(APPLE)
 	# -lopencv_imgcodecs
 	# -larmadillo
 	
+	# set(CMAKE_EXE_LINKER_FLAGS "-rpath ${BASE_SEARCH_DIR}/lib")
+
+	add_library(pycm SHARED
+		${src}
+	)
+
 	target_link_libraries(pycm
-		${PYTHON_BASE_DIR}/lib/libopencv_core.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_imgproc.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_highgui.dylib
-		${PYTHON_BASE_DIR}/lib/libopencv_imgcodecs.dylib
-		${PYTHON_BASE_DIR}/lib/libarmadillo.dylib	
+		opencv_core
+		opencv_imgproc
+		opencv_highgui
+		opencv_imgcodecs
+		armadillo
 		lapack
 		blas
-		${PYTHON_BASE_DIR}/lib/libglfw.dylib
-		${PYTHON_BASE_DIR}/lib/libpython2.7.dylib
+		glfw
+		python2.7
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"
@@ -171,6 +173,11 @@ elseif(UNIX)
 	${GTK2_CFLAGS_OTHER}
 	)
 
+
+	add_library(pycm SHARED
+		${src}
+	)
+
 	# Mess
 	# Using PYTHON LIB DIR FOR ANACONDA COMPAT
 	target_link_libraries(pycm
@@ -193,12 +200,9 @@ elseif(UNIX)
     COMMAND rm -f ${PROJECT_SOURCE_DIR}/modules/_cm.so 
     COMMAND ln -s ${PROJECT_SOURCE_DIR}/modules/libpycm.so ${PROJECT_SOURCE_DIR}/modules/_cm.so 
 	)
+
+	
 endif()
-
-
-
-
-
 
 
 
