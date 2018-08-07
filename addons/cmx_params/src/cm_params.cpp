@@ -458,7 +458,8 @@ void Param::setDouble( double val, int index, bool bInformListeners )
 		return;
 		
 	((double*)_addr)[index] = val;
-	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -479,7 +480,8 @@ void Param::setFloat( float val, int index, bool bInformListeners )
 		return;
 		
 	((float*)_addr)[index] = val;
-	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -492,7 +494,8 @@ void Param::setBool( bool val, bool bInformListeners )
 		return;
 
 	*((bool*)_addr) = val;
-	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -505,7 +508,8 @@ void Param::setInt( int val , bool bInformListeners)
 		return;
 
 	*((int*)_addr) = val;
-	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -533,6 +537,8 @@ void Param::setString( const std::string& val, bool bInformListeners )
 		(*s) = val;
 	}
 	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -545,6 +551,7 @@ void Param::setVectorf( const std::vector<float>& v, bool bInformListeners )
 		return;
 
 	*((std::vector<float>*)_addr) = v;
+	dirty = true;
 
 	if(bInformListeners)
 	{
@@ -558,6 +565,7 @@ void Param::setVectord( const std::vector<double>& v, bool bInformListeners )
 		return;
 
 	*((std::vector<double>*)_addr) = v;
+	dirty = true;
 
 	if(bInformListeners)
 	{
@@ -612,7 +620,8 @@ void Param::setFloatArray( float * buf, bool bInformListeners )
 		return;
 		
 	memcpy( _addr, buf, sizeof(float)*_numElements );
-	
+	dirty = true;
+
 	CALL_LISTENERS(onParamChanged)
 }
 
@@ -626,7 +635,8 @@ void Param::setFloatArray01( float * buf, bool bInformListeners )
 	{
 		faddr[i] = _min + buf[i]*(_max-_min);;
 	}
-	
+	dirty = true;
+
 	if(bInformListeners)
 	{
 		CALL_LISTENERS(onParamChanged)
@@ -904,6 +914,8 @@ bool	Param::readXML( XMLElement * elem )
 		if(elm)
 			getData()->readXML(elm);
 	}
+	
+	dirty = true;
 	
 	return true;
 } 
