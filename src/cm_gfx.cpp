@@ -420,7 +420,15 @@ void	setBlendMode( int mode )
 	    { GL_ZERO, GL_SRC_COLOR }, // multiply
 	};
 
-	glBlendFunc( blendtable[mode][0], blendtable[mode][1] );
+	if (mode == BLENDMODE_ALPHA)
+	{
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                    GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+	}
+	else
+	{
+		glBlendFunc( blendtable[mode][0], blendtable[mode][1] );
+	}
 }
 
 void	setFillMode( int mode )
