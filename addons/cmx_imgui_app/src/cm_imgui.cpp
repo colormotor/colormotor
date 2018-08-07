@@ -266,20 +266,22 @@ namespace ImGui
         return res;
     }
 
-}
 
-
-// Combo box helper allowing to pass an array of strings.
-static bool stringCombo(const char* label, int* current_item, const std::vector<std::string> items )
-{
-    std::string str = "";
-    for( int i = 0; i < items.size(); i++ )
+    // Combo box helper allowing to pass an array of strings.
+    bool StringCombo(const char* label, int* current_item, const std::vector<std::string> items )
     {
-        str += items[i];
-        str += (char)0;
+        std::string str = "";
+        for( int i = 0; i < items.size(); i++ )
+        {
+            str += items[i];
+            str += (char)0;
+        }
+        return ImGui::Combo(label, current_item, str.c_str());
     }
-    return ImGui::Combo(label, current_item, str.c_str());
+
+
 }
+
 
 namespace cm
 {
@@ -413,7 +415,7 @@ void imgui( ParamList& plist, float cursorPos  )
                 break;
                 
             case PARAM_SELECTION:
-                p->dirty = stringCombo(p->getName(),(int*)p->getAddress(), p->getSelectionNames() );
+                p->dirty = ImGui::StringCombo(p->getName(),(int*)p->getAddress(), p->getSelectionNames() );
                 break;
                 
             case PARAM_STRING:

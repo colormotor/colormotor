@@ -21,7 +21,8 @@ namespace ImGui
     bool ColorSelector(const std::string &label, cm::V4* clr);
 
     bool Knob(const char* label, float* p_value, float v_min, float v_max, float angle_padding=1.);
-    
+    bool StringCombo(const char* label, int* current_item, const std::vector<std::string> items );
+
     void ImGui::ShowDemoWindow(bool* p_open);
 }
 
