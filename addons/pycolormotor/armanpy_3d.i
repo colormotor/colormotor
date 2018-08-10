@@ -391,8 +391,8 @@
     %typemap( in, fragment="armanpy_cube_typemaps" )
         ( ARMA_MAT_TYPE &)
     {
-        if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true, true )             ) SWIG_fail;
-        if( ! armanpy_numpy_as_cube_with_shared_memory< ARMA_MAT_TYPE >( $input, &($1) ) ) SWIG_fail;
+        if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true, true )             ) { PyErr_SetString( PyExc_RuntimeError, "Argument not a valid armadillo cube" ); SWIG_fail; }
+        if( ! armanpy_numpy_as_cube_with_shared_memory< ARMA_MAT_TYPE >( $input, &($1) ) ) { PyErr_SetString( PyExc_RuntimeError, "Numpy array can not be wrapped as armadillo cube" ); SWIG_fail; }
     }
 
     %typemap( argout, fragment="armanpy_cube_typemaps" )
@@ -438,7 +438,7 @@
         ( ARMA_MAT_TYPE )
     {
       PyObject* array = armanpy_cube_copy_to_numpy< ARMA_MAT_TYPE >( &$1 );
-      if ( !array ) SWIG_fail;
+      if ( !array ) { PyErr_SetString( PyExc_RuntimeError, "Return by value failed (armanpy_cube_copy_to_numpy)." ); SWIG_fail; }
       $result = SWIG_Python_AppendOutput($result, array);
     }
 %enddef
@@ -469,7 +469,7 @@
         (       ARMA_MAT_TYPE & )
     {
       PyObject* array = armanpy_cube_copy_to_numpy< ARMA_MAT_TYPE >( $1 );
-      if ( !array ) SWIG_fail;
+      if ( !array ) { PyErr_SetString( PyExc_RuntimeError, "Return by reference failed (armanpy_cube_copy_to_numpy)." ); SWIG_fail; }
       $result = SWIG_Python_AppendOutput($result, array);
     }
 %enddef

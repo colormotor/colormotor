@@ -182,7 +182,11 @@
         typedef typename MatT::elem_type eT;
         npy_intp dims[2] = { 1, 1 };
         PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(2, dims, NumpyType<eT>::val, false);
-        if ( !ary || !array_is_fortran(ary) ) { return NULL; }
+        if ( !ary || !array_is_fortran(ary) )
+        {
+            PyErr_SetString( PyExc_TypeError, "Creation of 2-dimensional return array failed" );
+            return NULL;
+        }
 
         array_dimensions(ary)[0] = m->n_rows;
         array_dimensions(ary)[1] = m->n_cols;
@@ -404,8 +408,8 @@
     %typemap( in, fragment="armanpy_mat_typemaps" )
         ( ARMA_MAT_TYPE &)
     {
-        if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true, true )            ) SWIG_fail;
-        if( ! armanpy_numpy_as_mat_with_shared_memory< ARMA_MAT_TYPE >( $input, &($1) ) ) SWIG_fail;
+        if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true, true )            ) { PyErr_SetString( PyExc_RuntimeError, "Argument not a valid armadillo matrix" ); SWIG_fail; }
+        if( ! armanpy_numpy_as_mat_with_shared_memory< ARMA_MAT_TYPE >( $input, &($1) ) ) { PyErr_SetString( PyExc_RuntimeError, "Numpy array can not be wrapped as armadillo matrix" ); SWIG_fail; }
     }
 
     %typemap( argout, fragment="armanpy_mat_typemaps" )
@@ -451,7 +455,7 @@
         ( ARMA_MAT_TYPE )
     {
       PyObject* array = armanpy_mat_copy_to_numpy< ARMA_MAT_TYPE >( &$1 );
-      if ( !array ) SWIG_fail;
+      if ( !array ) { PyErr_SetString( PyExc_RuntimeError, "Return by value failed (armanpy_mat_copy_to_numpy)." ); SWIG_fail; }
       $result = SWIG_Python_AppendOutput($result, array);
     }
 %enddef

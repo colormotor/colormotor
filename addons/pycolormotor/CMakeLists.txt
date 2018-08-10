@@ -65,7 +65,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
 	message(Compling for apple)
-	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda2)
+	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda3)
 	
 	set(CMAKE_EXE_LINKER_FLAGS "-rpath ${BASE_SEARCH_DIR}/lib")
 	set(CMAKE_MACOSX_RPATH 1)
@@ -75,9 +75,9 @@ if(APPLE)
 	message("Base dir is " ${BASE_SEARCH_DIR})
 
 	include_directories(
-		${BASE_SEARCH_DIR}/lib/python2.7/site-packages/numpy/core/include/
+		${BASE_SEARCH_DIR}/lib/python3.6/site-packages/numpy/core/include/
 		${BASE_SEARCH_DIR}/include
-		${BASE_SEARCH_DIR}/include/python2.7
+		${BASE_SEARCH_DIR}/include/python3.6m
 		/usr/local/include
 	)
 
@@ -115,7 +115,7 @@ if(APPLE)
 		lapack
 		blas
 		glfw
-		python2.7
+		python3.6m
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"

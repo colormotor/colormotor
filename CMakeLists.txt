@@ -59,7 +59,7 @@ add_library(colormotor STATIC
 
 if(APPLE)
 	# Change this to your anaconda path, wander if there is an automatic way to handle this
-	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda2)
+	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda3)
 
 	include_directories(
 		${BASE_SEARCH_DIR}/lib/python2.7/site-packages/numpy/core/include/

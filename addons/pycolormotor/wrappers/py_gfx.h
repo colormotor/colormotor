@@ -96,15 +96,6 @@ Contour()
         points = arma::zeros(1,1);
 	}
 
-	Contour( const std::vector< arma::vec > & ptList, bool closed = false )
-	:
-    closed(closed)
-	{
-	    points = arma::zeros(ptList.size(), ptList[0].size());//,2);
-	    for( int i = 0; i < ptList.size(); i++ )
-			points.row(i) = ptList[i];
-	}
-
 	Contour( const arma::mat& mat, bool closed = false  )
 	:
     closed(closed)
