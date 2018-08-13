@@ -66,6 +66,18 @@ public:
 	Param* appendOption( const std::string & opt ) { options += opt; return this; }
 	bool hasOption( const std::string & opt );
 	
+	const std::string & getOptions() const { return options; }
+	Param* setOptions( const std::string & opt ) { options = opt + ";"; return this; }
+	Param* appendOption( const std::string & opt ) { options += opt + ";"; return this; }
+	bool hasOption( const std::string & opt );
+	bool hasOptions() const { return options.length() != 0; }
+
+	Param* describe( const std::string& desc )
+	{
+		this->description = desc; return this;
+	}
+
+
 	const std::string & getPath() const { return _path; }
 	void setPath( const std::string & path );
     
