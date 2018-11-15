@@ -183,9 +183,9 @@ namespace ImGui
         style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(col_main.x, col_main.y, col_main.z, 0.20f);
         style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(col_main.x, col_main.y, col_main.z, 0.78f);
         style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
-        style.Colors[ImGuiCol_CloseButton]           = ImVec4(col_text.x, col_text.y, col_text.z, 0.16f);
-        style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(col_text.x, col_text.y, col_text.z, 0.39f);
-        style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(col_text.x, col_text.y, col_text.z, 1.00f);
+        //style.Colors[ImGuiCol_CloseButton]           = ImVec4(col_text.x, col_text.y, col_text.z, 0.16f);
+        //style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(col_text.x, col_text.y, col_text.z, 0.39f);
+        //style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(col_text.x, col_text.y, col_text.z, 1.00f);
         style.Colors[ImGuiCol_PlotLines]             = ImVec4(col_text.x, col_text.y, col_text.z, 0.63f);
         style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
         style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(col_text.x, col_text.y, col_text.z, 0.63f);
@@ -194,7 +194,7 @@ namespace ImGui
 
 
 //        style.Colors[ImGuiCol_TooltipBg]             = ImVec4(col_main.x, col_main.y, col_main.z, 0.92f);
-        style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+        style.Colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
     }
 
     void SetupStyleFromHue()
@@ -279,6 +279,16 @@ namespace ImGui
         return ImGui::Combo(label, current_item, str.c_str());
     }
 
+    bool StringInputText(const char* label, std::string& str, int maxLen)
+    {
+        char tmpStr[1024];
+        strcpy(tmpStr, str.c_str());
+
+        bool dirty = ImGui::InputText(label, tmpStr, 1024);
+        str = tmpStr;
+        return dirty;
+    }
+
 
 }
 
@@ -289,11 +299,107 @@ namespace cm
 ImVec2 Mouse::_oldp;
 ImVec2 Mouse::_delta;
     
+void imgui( Param* p, std::string label )
+{
+    static char tmpStr[1024];
+
+    bool found = true;
+    if (label=="")
+        label = p->getName();
+
+    switch(p->getType())
+    {
+        case PARAM_FLOAT:
+            if (!p->hasOptions())
+            {
+                p->dirty = ImGui::SliderFloat(label.c_str(), (float*)p->getAddress(), p->getMin(), p->getMax());
+            }
+            else if (p->hasOption("v") || p->hasOption("field"))
+            {
+                p->dirty = ImGui::InputFloat(label.c_str(),(float*)p->getAddress());
+            }
+            else if (p->hasOption("knob"))
+            {
+                p->dirty = ImGui::Knob(label.c_str(), (float*)p->getAddress(), p->getMin(), p->getMax());
+            }
+            else if (p->hasOption("angle"))
+            {
+                p->dirty = ImGui::SliderAngle(label.c_str(), (float*)p->getAddress(), p->getMin(), p->getMax());
+            }
+            else if (p->hasOption("vslider"))
+            {
+                // quite arbitrary size
+                p->dirty = ImGui::VSliderFloat(label.c_str(), ImVec2(30,60), (float*)p->getAddress(), p->getMin(), p->getMax());
+            }
+            else
+            {
+                p->dirty = ImGui::SliderFloat(label.c_str(), (float*)p->getAddress(), p->getMin(), p->getMax());
+            }
+            break;
+            
+        case PARAM_INT:
+            p->dirty = ImGui::InputInt(label.c_str(), (int*)p->getAddress());
+            break;
+            
+        case PARAM_EVENT:
+            if(ImGui::Button(label.c_str()))
+            {
+                p->dirty = true;
+                p->setBool(!p->getBool());
+            }
+            break;
+            
+        /*case PARAM_COLOR:
+            ImGui::ColorEdit3(label.c_str(), (float*)p->getAddress());
+            break;
+        */
+            
+        case PARAM_BOOL:
+            p->dirty = ImGui::Checkbox(label.c_str(), (bool*)p->getAddress());
+            break;
+            
+        case PARAM_UNKNOWN:
+            ImGui::Separator();
+            break;
+            
+        case PARAM_SELECTION:
+            p->dirty = ImGui::StringCombo(label.c_str(), (int*)p->getAddress(), p->getSelectionNames() );
+            break;
+            
+        case PARAM_STRING:
+        {
+            strcpy(tmpStr, p->getString());
+            p->dirty = ImGui::InputText(label.c_str(), tmpStr, 50); // HACK!
+            if(p->dirty)
+                p->setString(tmpStr);
+            break;
+        }
+
+        case PARAM_CSTRING:
+            p->dirty = ImGui::InputText(label.c_str(),(char*)p->getAddress(), 50); // HACK!
+            break;
+
+        case PARAM_COLOR:
+            p->dirty = ImGui::ColorSelector(label.c_str(), (V4*)p->getAddress());
+            break;
+        
+        default:
+            found = false;
+            break;
+    }
+    
+    if (found && p->description.length())
+    {
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip(p->description.c_str());
+    }
+}
+
 
 void imgui( ParamList& plist, float cursorPos  )
 {
     static bool opendemo=true;
-    
+        
     std::string id = plist.getPath() + "_ID";
     ImGui::PushID(id.c_str());
     //ImGui::BeginChild(id.c_str()); //"content");
@@ -349,7 +455,7 @@ void imgui( ParamList& plist, float cursorPos  )
     //if(!)
     //ImGui::OpenNextNode(true);
     //if(!ImGui::TreeNode(plist.getName().c_str()))
-    static char tmpStr[1024];
+    
     for( int i = 0; i < plist.getNumParams(); i++ )
     {
         Param * p = plist.getParam(i);
@@ -358,93 +464,7 @@ void imgui( ParamList& plist, float cursorPos  )
         if(p->hasOption("sameline"))
             ImGui::SameLine();
         
-        bool found = true;
-        switch(p->getType())
-        {
-            case PARAM_FLOAT:
-                if (!p->hasOptions())
-                {
-                    p->dirty = ImGui::SliderFloat(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
-                }
-                else if (p->hasOption("v") || p->hasOption("field"))
-                {
-                    p->dirty = ImGui::InputFloat(p->getName(),(float*)p->getAddress());
-                }
-                else if (p->hasOption("knob"))
-                {
-                    p->dirty = ImGui::Knob(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
-                }
-                else if (p->hasOption("angle"))
-                {
-                    p->dirty = ImGui::SliderAngle(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
-                }
-                else if (p->hasOption("vslider"))
-                {
-                    // quite arbitrary size
-                    p->dirty = ImGui::VSliderFloat(p->getName(), ImVec2(30,60), (float*)p->getAddress(), p->getMin(), p->getMax());
-                }
-                else
-                {
-                    p->dirty = ImGui::SliderFloat(p->getName(), (float*)p->getAddress(), p->getMin(), p->getMax());
-                }
-                break;
-                
-            case PARAM_INT:
-                p->dirty = ImGui::InputInt(p->getName(), (int*)p->getAddress());
-                break;
-                
-            case PARAM_EVENT:
-                if(ImGui::Button(p->getName()))
-                {
-                    p->dirty = true;
-                    p->setBool(!p->getBool());
-                }
-                break;
-                
-            /*case PARAM_COLOR:
-                ImGui::ColorEdit3(p->getName(), (float*)p->getAddress());
-                break;
-            */
-                
-            case PARAM_BOOL:
-                p->dirty = ImGui::Checkbox(p->getName(), (bool*)p->getAddress());
-                break;
-                
-            case PARAM_UNKNOWN:
-                ImGui::Separator();
-                break;
-                
-            case PARAM_SELECTION:
-                p->dirty = ImGui::StringCombo(p->getName(),(int*)p->getAddress(), p->getSelectionNames() );
-                break;
-                
-            case PARAM_STRING:
-            {
-                strcpy(tmpStr, p->getString());
-                p->dirty = ImGui::InputText(p->getName(), tmpStr, 50); // HACK!
-                if(p->dirty)
-                    p->setString(tmpStr);
-                break;
-            }
-
-            case PARAM_CSTRING:
-                p->dirty = ImGui::InputText(p->getName(),(char*)p->getAddress(), 50); // HACK!
-                break;
-
-            case PARAM_COLOR:
-                p->dirty = ImGui::ColorSelector(p->getName(), (V4*)p->getAddress());
-                break;
-            
-            default:
-                found = false;
-                break;
-        }
-
-        if (found && p->description.length())
-        {
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip(p->description.c_str());
-        }
+        imgui(p);
     }
     
     for( int i = 0; i < plist.getNumChildren(); i++ )

@@ -121,6 +121,7 @@ void ImGui_ImplGlfw_RenderDrawLists(ImDrawData* draw_data)
 }
 */
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
+/*
 void ImGui_ImplGlfw_RenderDrawLists(ImDrawData* draw_data)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
 // If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
@@ -203,7 +204,101 @@ void ImGui_ImplGlfw_RenderDrawLists(ImDrawData* draw_data)
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
 }
+*/
 
+
+void ImGui_ImplOpenGL2_RenderDrawData(ImDrawData* draw_data)
+{
+    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
+    ImGuiIO& io = ImGui::GetIO();
+    int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+    int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+    if (fb_width == 0 || fb_height == 0)
+        return;
+    draw_data->ScaleClipRects(io.DisplayFramebufferScale);
+
+    // We are using the OpenGL fixed pipeline to make the example code simpler to read!
+    // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, vertex/texcoord/color pointers, polygon fill.
+    GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+    GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
+    GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
+    GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box); 
+    glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_COLOR_MATERIAL);
+    glEnable(GL_SCISSOR_TEST);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnable(GL_TEXTURE_2D);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
+
+    // Setup viewport, orthographic projection matrix
+    // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayMin is typically (0,0) for single viewport apps.
+    glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(draw_data->DisplayPos.x, draw_data->DisplayPos.x + draw_data->DisplaySize.x, draw_data->DisplayPos.y + draw_data->DisplaySize.y, draw_data->DisplayPos.y, -1.0f, +1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Render command lists
+    ImVec2 pos = draw_data->DisplayPos;
+    for (int n = 0; n < draw_data->CmdListsCount; n++)
+    {
+        const ImDrawList* cmd_list = draw_data->CmdLists[n];
+        const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
+        const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
+        glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos)));
+        glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, uv)));
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, col)));
+
+        for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+        {
+            const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+            if (pcmd->UserCallback)
+            {
+                // User callback (registered via ImDrawList::AddCallback)
+                pcmd->UserCallback(cmd_list, pcmd);
+            }
+            else
+            {
+                ImVec4 clip_rect = ImVec4(pcmd->ClipRect.x - pos.x, pcmd->ClipRect.y - pos.y, pcmd->ClipRect.z - pos.x, pcmd->ClipRect.w - pos.y);
+                if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
+                {
+                    // Apply scissor/clipping rectangle
+                    glScissor((int)clip_rect.x, (int)(fb_height - clip_rect.w), (int)(clip_rect.z - clip_rect.x), (int)(clip_rect.w - clip_rect.y));
+
+                    // Bind texture, Draw
+                    glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+                    glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
+                }
+            }
+            idx_buffer += pcmd->ElemCount;
+        }
+    }
+
+    // Restore modified state
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)last_texture);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
+    glPolygonMode(GL_FRONT, (GLenum)last_polygon_mode[0]); glPolygonMode(GL_BACK, (GLenum)last_polygon_mode[1]);
+    glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
+    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+}
 
 static const char* ImGui_ImplGlfw_GetClipboardText(void* userData)
 {
@@ -284,7 +379,13 @@ void    ImGui_ImplGlfw_InvalidateDeviceObjects()
     }
 }
 
-bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
+ImVector<ImWchar> ranges;
+
+bool    ImGui_ImplGlfw_Init(GLFWwindow* window, 
+                            bool install_callbacks,
+                            const char* font_path,
+                            int font_size,
+                            unsigned int supported_glyphs)
 {
     printf("Initialization\n");
 
@@ -310,7 +411,10 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
     io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
-    io.RenderDrawListsFn = ImGui_ImplGlfw_RenderDrawLists;
+    io.KeyMap[GLFW_KEY_S] = GLFW_KEY_S;
+    io.KeyMap[GLFW_KEY_O] = GLFW_KEY_O;
+
+    //io.RenderDrawListsFn = ImGui_ImplGlfw_RenderDrawLists;
     io.SetClipboardTextFn = ImGui_ImplGlfw_SetClipboardText;
     io.GetClipboardTextFn = ImGui_ImplGlfw_GetClipboardText;
 #ifdef _MSC_VER
@@ -369,15 +473,12 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(1.00f, 1.00f, 1.00f, 0.43f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);
-            style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.50f, 0.50f, 0.90f, 0.50f);
-            style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.70f, 0.70f, 0.90f, 0.60f);
-            style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
             style.Colors[ImGuiCol_PlotLines]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
             style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
             style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
             style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
             style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.00f, 0.00f, 1.00f, 0.55f);
-            style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+            style.Colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
             break;
         case 1: // Acqua IMGUI style (base example from github)
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.85f, 0.91f, 0.92f, 1.00f);
@@ -414,15 +515,12 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.19f, 0.58f, 0.63f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.19f, 0.58f, 0.63f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
-            style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.85f, 0.91f, 0.92f, 0.16f);
-            style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.85f, 0.91f, 0.92f, 0.39f);
-            style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.85f, 0.91f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.85f, 0.91f, 0.92f, 0.63f);
             style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
             style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.85f, 0.91f, 0.92f, 0.63f);
             style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.19f, 0.58f, 0.63f, 1.00f);
             style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.19f, 0.58f, 0.63f, 0.43f);
-            style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+            style.Colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
             break;
             
         case 2:
@@ -435,8 +533,8 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_Border]                = ImVec4(0.92f, 0.89f, 0.85f, 0.30f);
             style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
             style.Colors[ImGuiCol_FrameBg]               = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
-            style.Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.47f, 0.44f, 0.39f, 0.68f);
-            style.Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
+            style.Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.27f, 0.24f, 0.32f, 0.68f);
+            style.Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.27f, 0.24f, 0.32f, 0.68f);
             style.Colors[ImGuiCol_TitleBg]               = ImVec4(0.47f, 0.44f, 0.39f, 0.45f);
             style.Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.47f, 0.44f, 0.39f, 0.35f);
             style.Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.47f, 0.44f, 0.39f, 0.78f);
@@ -461,15 +559,12 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.47f, 0.44f, 0.39f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.47f, 0.44f, 0.39f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
-            style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.92f, 0.89f, 0.85f, 0.16f);
-            style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.92f, 0.89f, 0.85f, 0.39f);
-            style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.92f, 0.89f, 0.85f, 1.00f);
             style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.92f, 0.89f, 0.85f, 0.63f);
             style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
             style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.92f, 0.89f, 0.85f, 0.63f);
             style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.47f, 0.44f, 0.39f, 1.00f);
             style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.47f, 0.44f, 0.39f, 0.43f);
-            style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+            style.Colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
             break;
             
         case 3:
@@ -508,15 +603,12 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
             style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.80f, 0.00f, 0.77f, 0.20f);
             style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.80f, 0.00f, 0.77f, 0.78f);
             style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
-            style.Colors[ImGuiCol_CloseButton]           = ImVec4(0.92f, 0.85f, 0.92f, 0.16f);
-            style.Colors[ImGuiCol_CloseButtonHovered]    = ImVec4(0.92f, 0.85f, 0.92f, 0.39f);
-            style.Colors[ImGuiCol_CloseButtonActive]     = ImVec4(0.92f, 0.85f, 0.92f, 1.00f);
             style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.92f, 0.85f, 0.92f, 0.63f);
             style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
             style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.92f, 0.85f, 0.92f, 0.63f);
             style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.80f, 0.00f, 0.77f, 1.00f);
             style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.80f, 0.00f, 0.77f, 0.43f);
-            style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+            style.Colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
             break;
     }
     //style.Colors[ImGuiCol_TooltipBg]             = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
@@ -534,11 +626,30 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
     style.GrabMinSize = 9.0;
     
     // Actual font atlas will be initialized later in createFontTexture()
+    if (font_path==0)
     {
-    unsigned char * memfont = new unsigned char[THEFONT_BUF_SIZE];
-    memcpy(memfont , THEFONT, THEFONT_BUF_SIZE);
-    ImFont * font = io.Fonts->AddFontFromMemoryTTF(memfont, THEFONT_BUF_SIZE, THEFONT_SIZE); 
-    font->DisplayOffset.y += 1;
+        unsigned char * memfont = new unsigned char[THEFONT_BUF_SIZE];
+        memcpy(memfont , THEFONT, THEFONT_BUF_SIZE);
+        ImFont * font = io.Fonts->AddFontFromMemoryTTF(memfont, THEFONT_BUF_SIZE, THEFONT_SIZE); 
+        font->DisplayOffset.y += 1;
+    }
+    else
+    {
+        ImFontAtlas::GlyphRangesBuilder builder;
+
+        builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesDefault()); // Add one of the default ranges
+        if (supported_glyphs & cm::GLYPH_SUPPORT_JAPANESE)
+            builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesJapanese()); 
+        if (supported_glyphs & cm::GLYPH_SUPPORT_CHINESE)
+            builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesChineseFull());
+        if (supported_glyphs & cm::GLYPH_SUPPORT_KOREAN)
+            builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesKorean());
+
+        builder.BuildRanges(&ranges);                          // Build the final result (ordered ranges with all the unique characters submitted)
+        
+        ImFont * font = io.Fonts->AddFontFromFileTTF(font_path, font_size, NULL, ranges.Data);
+        font->DisplayOffset.y += 1;
+        //io.Fonts->Build();     // Need this? 
     }
     
     {
@@ -551,6 +662,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
     }
     
     
+
     glEnable(GL_MULTISAMPLE);
     
     return true;
@@ -559,7 +671,7 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window, bool install_callbacks)
 void ImGui_ImplGlfw_Shutdown()
 {
     ImGui_ImplGlfw_InvalidateDeviceObjects();
-    ImGui::Shutdown();
+    //ImGui::Shutdown();
 }
 
 void ImGui_ImplGlfw_NewFrame()
@@ -574,7 +686,8 @@ void ImGui_ImplGlfw_NewFrame()
     int display_w, display_h;
     glfwGetWindowSize(g_Window, &w, &h);
     glfwGetFramebufferSize(g_Window, &display_w, &display_h);
-    io.DisplaySize = ImVec2((float)display_w, (float)display_h);
+    io.DisplaySize = ImVec2((float)w, (float)h);
+    io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
     // Setup time step
     double current_time =  glfwGetTime();
@@ -587,8 +700,8 @@ void ImGui_ImplGlfw_NewFrame()
     {
         double mouse_x, mouse_y;
         glfwGetCursorPos(g_Window, &mouse_x, &mouse_y);
-        mouse_x *= (float)display_w / w;                        // Convert mouse coordinates to pixels
-        mouse_y *= (float)display_h / h;
+        //mouse_x *= (float)display_w / w;                        // Convert mouse coordinates to pixels
+        //mouse_y *= (float)display_h / h;
         io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
     }
     else
@@ -663,7 +776,10 @@ int imguiApp(int argc, char** argv,
             std::function<int(void*,int,char**)> appInit_,
             std::function<void(void)> appExit_,
             std::function<void(void)> appGui_,
-            std::function<void(float,float)> appRender_)
+            std::function<void(float,float)> appRender_,
+            const char* font_path,
+            int font_size,
+            unsigned int supported_glyphs)
 {
     //Callbacks
     appInit = appInit_;
@@ -684,9 +800,11 @@ int imguiApp(int argc, char** argv,
     glfwMakeContextCurrent(window);
 
     glfwSwapInterval(0);
-    
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
     // Setup ImGui binding
-    ImGui_ImplGlfw_Init(window, true);
+    ImGui_ImplGlfw_Init(window, true, font_path, font_size, supported_glyphs);
     glfwPollEvents();
     ImGui_ImplGlfw_NewFrame();
     
@@ -698,15 +816,15 @@ int imguiApp(int argc, char** argv,
     
     ImVec4 clear_color = ImColor(114, 144, 154);
     
-    cm::appInit(NULL, argc, argv);
+    ImGui::Render();
     
+    cm::appInit(NULL, argc, argv);
     createFontTexture();
     
     Mouse::_oldp = ImGui::GetMousePos();
     
     double curTime = getTickCount();
     
-    ImGui::Render();
     
     while (!glfwWindowShouldClose(window)){
         
@@ -723,20 +841,20 @@ int imguiApp(int argc, char** argv,
         Mouse::_oldp = mp;
         
         
+        ImGuiIO& io = ImGui::GetIO();
+        int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+        int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
 
-        float w = ImGui::GetIO().DisplaySize.x;
-        float h = ImGui::GetIO().DisplaySize.y;
-
-        //Rendering
-        glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+        glViewport(0, 0, fb_width, fb_height);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        cm::appRender(w, h);
+        cm::appRender(io.DisplaySize.x, io.DisplaySize.y);
         
         cm::appGui();
         
         ImGui::Render();
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
     }
@@ -746,6 +864,9 @@ int imguiApp(int argc, char** argv,
     // Cleanup
     gfx::exit();
     ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;
