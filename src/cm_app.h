@@ -22,6 +22,7 @@ public:
 	/// Initialize 
 	virtual bool init() { return false; }
 	virtual bool gui() { return false; }
+	virtual void menu() {}
 	virtual void update() {}
 	virtual void render() {}
 	virtual void exit() {}
