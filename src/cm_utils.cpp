@@ -139,7 +139,7 @@ std::string joinPath( std::string a, std::string b )
 
 ///////////////////////////////////////////////////////////////////////
 
-std::vector <std::string> getFilesInFolder( const std::string& path)
+std::vector <std::string> getFilesInFolder( const std::string& path, const std::string& ext)
 {
 	std::vector <std::string> files;
 	struct dirent *de=NULL;
@@ -163,6 +163,9 @@ std::vector <std::string> getFilesInFolder( const std::string& path)
 		{
 			std::string name = de->d_name;// de->d_type
 			
+			if (ext != "" && name.find(ext)==std::string::npos)
+				continue;
+
 			if(name!=".DS_Store")
 			{
 				files.push_back( p+name );

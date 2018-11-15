@@ -63,7 +63,7 @@ bool	fileExists( const std::string & fileName );
 std::string joinPath( std::string a, std::string b );
 
 /// List files in folder @ path
-std::vector <std::string> getFilesInFolder( const std::string& path);
+std::vector <std::string> getFilesInFolder( const std::string& path, const std::string& ext="");
 
 /// Get current working dir
 std::string getCurrentDirectory();
