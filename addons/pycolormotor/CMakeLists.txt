@@ -18,6 +18,9 @@ add_definitions(-DSWIG_TYPE_TABLE=colormotor)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/modules)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/modules)
 
+find_package(PythonLibs REQUIRED)
+
+
 set(src
 	${PROJECT_SOURCE_DIR}/cm_wrap.cxx
 	${PROJECT_SOURCE_DIR}/../../src/cm_epsfile.cpp
@@ -37,6 +40,7 @@ set(src
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/gfx_ui.cpp
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_widgets.cpp
 )
 
 if(APPLE)
@@ -65,6 +69,18 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
 
 if(APPLE)
 	message(Compling for apple)
+
+	# Nasty workaround to avoid conflicts (which popped out of nowhere, but make sense)
+	# with multiple linking of Python.:
+	# https://stackoverflow.com/questions/25421479/clang-and-undefined-symbols-when-building-a-library
+	# The crpytic PyThreadState_Get() error message, means that 
+	# the function is defined BOTH in the py executable and in the linked lib, evidently the old Python
+	# interpreter used to link to a shared lib while the new one has all static linked?. 
+	# Ideally, we would want to use distutils to get information on how to link python, quite involved anyhow
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+	set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+	endif()
+
 	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda3)
 	
 	set(CMAKE_EXE_LINKER_FLAGS "-rpath ${BASE_SEARCH_DIR}/lib")
@@ -77,7 +93,8 @@ if(APPLE)
 	include_directories(
 		${BASE_SEARCH_DIR}/lib/python3.6/site-packages/numpy/core/include/
 		${BASE_SEARCH_DIR}/include
-		${BASE_SEARCH_DIR}/include/python3.6m
+		#${BASE_SEARCH_DIR}/include/python3.6m
+		${PYTHON_INCLUDE_PATH}
 		/usr/local/include
 	)
 
@@ -115,7 +132,7 @@ if(APPLE)
 		lapack
 		blas
 		glfw
-		python3.6m
+		#python3.6m
 		"-framework CoreFoundation"
 		"-framework OpenGL"	
 		"-framework Cocoa"
