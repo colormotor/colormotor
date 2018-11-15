@@ -29,6 +29,7 @@ set(src
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/gfx_ui.cpp
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/addons/cmx_imgui_app/src/imgui_widgets.cpp
 )
 
 include_directories(
@@ -41,6 +42,7 @@ include_directories(
 
 
 if(APPLE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shorten-64-to-32 -Wno-deprecated-declarations")
 	set(src
 		${src}
 		${PROJECT_SOURCE_DIR}/src/platform/cm_utils_osx.mm
