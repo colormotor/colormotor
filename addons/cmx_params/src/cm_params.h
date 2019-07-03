@@ -391,6 +391,37 @@ public:
 	std::string options;
 };
 
+
+class ParamModifiedTracker
+{
+public:
+    ParamModifiedTracker() {}
+    
+    void operator << (Param* p) { params.push_back(p); }
+    
+    bool modified()
+    {
+        bool res = false;
+        for (auto p: params)
+        {
+            if (p->isDirty())
+                res = true;
+        }
+        if (force_modified)
+        {
+            force_modified=false;
+            return true;
+        }
+        
+        return res;
+    }
+    
+    void operator | (bool v) { if (v) force_modified=true; }
+    bool force_modified=true;
+    std::vector<Param*> params;
+};
+
+
 }
 
 
