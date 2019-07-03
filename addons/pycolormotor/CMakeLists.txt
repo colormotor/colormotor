@@ -96,6 +96,7 @@ if(APPLE)
 		#${BASE_SEARCH_DIR}/include/python3.6m
 		${PYTHON_INCLUDE_PATH}
 		/usr/local/include
+		${BASE_SEARCH_DIR}/include/opencv4
 	)
 
 	link_directories(
