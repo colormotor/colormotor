@@ -30,7 +30,7 @@ static const char * arrowCode = STRINGIFY(
 /tailx currentpoint \n
 /taily exch \n
 /tip 22.5 cos 22.5 sin div \n
-/headwidth 7 \n
+/headwidth 14 \n
 >> \n
 begin \n
 /dx tipx tailx sub def \n
@@ -40,7 +40,7 @@ begin \n
   dx dx mul dy dy mul add sqrt \n
 def \n
 /tiplength \n
-  tip currentlinewidth 2 div mul \n
+  tip currentlinewidth 4 div mul \n
 def /base \n
   arrowlength tiplength sub \n
 def \n
@@ -463,6 +463,22 @@ namespace cm
 		P(_file,"grestore\n");
 	}
 	
+	/////////////////////////////////////////////////////
+	void		EpsFile::setdash(float d0, float offset)
+	{
+		if(!_file)
+			return;
+		
+		if (d0<1e-10)
+		{
+			P(_file,"[] %.5f setdash \n", offset);
+		}else
+		{
+			P(_file,"[%.5f] %.5f setdash \n",d0,offset);
+		}	
+		
+	}
+
 	/////////////////////////////////////////////////////
 	void		EpsFile::setdash(float d0, float d1, float offset)
 	{
