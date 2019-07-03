@@ -66,6 +66,7 @@ if(APPLE)
 	include_directories(
 		${BASE_SEARCH_DIR}/lib/python2.7/site-packages/numpy/core/include/
 		${BASE_SEARCH_DIR}/include
+		${BASE_SEARCH_DIR}/include/opencv4
 	 )
 
 	link_directories(
@@ -78,6 +79,7 @@ if(APPLE)
 		opencv_imgproc
 		opencv_highgui
 		opencv_imgcodecs
+		opencv_videoio
 		armadillo
 		LAPACK
 		blas
