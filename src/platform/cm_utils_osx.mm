@@ -349,12 +349,12 @@ void FileWatcher::stop()
 {
     if(running)
     {
-        mutex.lock();
+        //mutex.lock();
         printf("Joining thread\n");
         running = false;
         thread.join();
         printf("Stopped file watching thread\n");
-        mutex.unlock();
+        //mutex.unlock();
     }
 }
 
