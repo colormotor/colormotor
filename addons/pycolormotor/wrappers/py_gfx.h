@@ -1013,6 +1013,8 @@ int reloadShader( int id, const std::string& vs, const std::string& ps, const st
 bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();
+std::string shaderErrors();
+
 
 bool setShaderInt( const std::string& handle, int v );
 //bool setBool( const std::string& handle, bool v );
