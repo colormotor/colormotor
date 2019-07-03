@@ -1159,6 +1159,14 @@ void exit();
 void 	beginEps( const std::string & path, const Box & rect );
 void 	endEps();
 bool 	isRenderingToEps();
+bool 	beginScreenRecording( const std::string& path, int w, int h, float fps=30.0f );
+void	saveScreenFrame();
+bool	isScreenRecording();
+void 	endScreenRecording();
+
+bool 	beginScreenRecordingGif( const std::string& path, int w, int h, float fps=30.0f );
+
+
 
 /// Clear frame and depth buffers
 void clear( float r, float g, float b, float a, bool depth=true, float depthClear=1.0f );
@@ -1430,6 +1438,7 @@ void deleteAllShaders();
 int loadShader( std::string vs, std::string ps, const std::string& prepend="" );
 int reloadShader( int id, const std::string& vs, const std::string& ps, const std::string& prepend="" );
 std::string shaderString( const std::string& path );
+std::string shaderErrors();
 bool setTexture( const std::string& handle, int sampler );
 void bindShader( int id );
 void unbindShader();

@@ -17,6 +17,7 @@ namespace cm
 #include "deps/nanosvg.h"
 #include "deps/stb_image.h"
 #include "deps/stb_image_write.h"
+#include "deps/gif.h"
 
 Mesh toMesh( const Shape& shape, int winding )
 {
@@ -78,7 +79,9 @@ void exit()
 
 static int currentPrimitive = -1;
 
-    
+////////////////////////////////////////////
+// postscript saving
+   
 #ifdef GFX_TO_EPS
 static EpsFile eps;
 static bool renderingToEps = false;
@@ -86,6 +89,10 @@ static Contour currentEpsPath;
 static bool drawingEpsPath = false;
 static bool firstPointInPath = false;
 static V4 currentColor=V4(0,0,0,1);
+
+std::string _shaderErrors;
+std::string shaderErrors() { return _shaderErrors; }
+
 #define EPS_LINEWIDTHSCALE 0.5
 
 void 	beginEps( const std::string & path, const Box & rect )
@@ -117,6 +124,85 @@ EpsFile *getEps()
 }
 
 #endif
+
+////////////////////////////////////////////
+// screen recording
+
+static struct
+{
+	std::string path;
+	bool active = false;
+	Image image; 
+	cv::VideoWriter vwOut;
+	bool gif=false;
+	int delay;
+	GifWriter gif_writer;
+} recording;
+
+
+bool 	beginScreenRecording( const std::string& path, int w, int h, float fps )
+{
+	recording.vwOut.open(path, cv::VideoWriter::fourcc('m','p','4','v'), fps, cv::Size(w, h));
+	recording.image = Image(w, h, Image::BGR);
+
+	if (recording.vwOut.isOpened())
+	{
+		recording.active = true;
+		return true;
+	}
+	
+
+	std::cout << "failed to open CV video out\n";
+	return false;
+}
+
+bool 	beginScreenRecordingGif( const std::string& path, int w, int h, float fps )
+{
+	recording.image = Image(w, h, Image::BGRA);
+	recording.gif = true;
+	recording.active = true;
+	recording.delay = 100/fps;
+	 
+	GifBegin( &recording.gif_writer, path.c_str(), w, h, recording.delay, 8, false );
+
+	std::cout << "failed to open CV video out\n";
+	return false;
+} 
+
+void	saveScreenFrame()
+{	
+	if (recording.active)
+	{
+		recording.image.grabFrameBuffer(); 
+		if (!recording.gif)
+			recording.vwOut.write(recording.image.mat);
+		else
+		{
+			cv::Mat rgba;
+			cv::cvtColor(recording.image.mat, rgba, cv::COLOR_BGRA2RGBA);
+			GifWriteFrame( &recording.gif_writer, rgba.data, recording.image.width(), recording.image.height(), recording.delay, 8, false);
+		}
+	}
+}
+
+bool	isScreenRecording()
+{
+	return recording.active;
+}
+
+void 	endScreenRecording()
+{
+	if (recording.active)
+	{
+		if (recording.gif)
+			GifEnd( &recording.gif_writer );
+		else
+			recording.vwOut.release();
+		recording.active = false;
+	}
+}
+
+
 
 
 static std::vector<GLObj> objects;
@@ -1821,6 +1907,11 @@ void drawSphere( const V3& center, float radius, int segments )
 void lineWidth( float w )
 {
 	glLineWidth(w);
+	if ( renderingToEps )
+	{
+		//eps.gsave();
+        eps.setlinewidth(EPS_LINEWIDTHSCALE*w);
+	}
 }
 
 void lineStipple( int factor, unsigned short pattern )
@@ -1828,11 +1919,19 @@ void lineStipple( int factor, unsigned short pattern )
 	if(factor == 0)
 	{
 		glDisable(GL_LINE_STIPPLE);
+		if ( renderingToEps )
+		{
+			eps.setdash(0, 0);
+		}
 	}
 	else
 	{
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(factor, pattern);
+		if ( renderingToEps )
+		{
+			eps.setdash(factor, 0);
+		}
 	}
 }
 
@@ -4127,10 +4226,10 @@ void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
 				dst = src.clone();
 				break;
 			case Image::BGR:
-				cv::cvtColor(src, dst, CV_GRAY2BGR);
+				cv::cvtColor(src, dst, cv::COLOR_GRAY2BGR);
 				break;
 			case Image::BGRA:
-				cv::cvtColor(src, dst, CV_GRAY2BGRA);
+				cv::cvtColor(src, dst, cv::COLOR_GRAY2BGRA);
 				break;
 		}
 	}
@@ -4139,14 +4238,14 @@ void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
 		switch(format)
 		{
 			case Image::GRAYSCALE:
-				cv::cvtColor(src, dst, CV_BGR2GRAY);
+				cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);
 				
 				break;
 			case Image::BGR:
 				dst = src.clone();
 				break;
 			case Image::BGRA:
-				cv::cvtColor(src, dst, CV_BGR2BGRA);
+				cv::cvtColor(src, dst, cv::COLOR_BGR2BGRA);
 				break;
 		}
 	}
@@ -4155,11 +4254,11 @@ void convertColor( const cv::Mat& src, cv::Mat& dst, int format )
 		switch(format)
 		{
 			case Image::GRAYSCALE:
-				cv::cvtColor(src, dst, CV_BGRA2GRAY);
+				cv::cvtColor(src, dst, cv::COLOR_BGRA2GRAY);
 				
 				break;
 			case Image::BGR:
-				cv::cvtColor(src, dst, CV_BGRA2BGR);
+				cv::cvtColor(src, dst, cv::COLOR_BGRA2BGR);
 				break;
 			case Image::BGRA:
 				dst = src.clone();
@@ -4216,14 +4315,14 @@ Image::Image( const std::string & path, int fmt )
     /// CV_LOAD_IMAGE_GRAYSCALE ( 0) loads the image as an intensity one
     /// CV_LOAD_IMAGE_COLOR (>0) loads the image in the RGB format
 
-    int loadMode = CV_LOAD_IMAGE_UNCHANGED;
+    int loadMode = cv::IMREAD_UNCHANGED;
     if(fmt == Image::BGR)
     {
-        loadMode = CV_LOAD_IMAGE_COLOR;
+        loadMode = cv::IMREAD_COLOR;
     }
     else if(fmt == Image::GRAYSCALE)
     {
-        loadMode = CV_LOAD_IMAGE_GRAYSCALE;
+        loadMode = cv::IMREAD_GRAYSCALE;
     }
     
 	mat = cv::imread(path.c_str(), loadMode);
@@ -4470,7 +4569,7 @@ void Image::save( const std::string& path ) const
 void Image::threshold(float thresh, bool inv)
 {
 	convertColor(mat, tmp, Image::GRAYSCALE);
-    cv::threshold( tmp, mat, thresh, 255, inv ? CV_THRESH_BINARY_INV : CV_THRESH_BINARY );
+    cv::threshold( tmp, mat, thresh, 255, inv ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY );
     dirty = true;
 }
 
@@ -4500,7 +4599,7 @@ Shape Image::findContours( bool approx, float minArea, float maxArea )
     /// Find contours
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
-    cv::findContours( tmp, contours, hierarchy, CV_RETR_TREE, approx?CV_CHAIN_APPROX_TC89_KCOS:CV_CHAIN_APPROX_NONE, cv::Point(0, 0) );
+    cv::findContours( tmp, contours, hierarchy, cv::RETR_TREE, approx?cv::CHAIN_APPROX_TC89_KCOS:cv::CHAIN_APPROX_NONE, cv::Point(0, 0) );
     
     bool prune = false;
     if(minArea > 0.0)
@@ -4690,8 +4789,7 @@ void deleteAllShaders()
 }
 
 static bool compileShader( GLuint id, const char* shaderStr )
-{	
-	char errors[1024];
+{
 	
 	glShaderSource(id, 1, (const GLchar**)&shaderStr,NULL);
 	
@@ -4701,13 +4799,20 @@ static bool compileShader( GLuint id, const char* shaderStr )
 	glCompileShader(id);
 	glGetShaderiv(id, GL_COMPILE_STATUS, &compiled);
 	
+	static char errors[1024];
 	if (!compiled)
 	{
+		
 		glGetShaderInfoLog(	id, 1024, &len, errors );
-		printf("shader errors: %s\n",errors);
+		_shaderErrors = "shader errors: " + std::string(errors);
+		std::cout << _shaderErrors << std::endl;
         return false;
 	}     
-	
+	else
+	{
+		_shaderErrors="";
+	}
+
 	return true;
 }
 
@@ -4775,17 +4880,23 @@ int	linkShader( int vs, int ps )
 	glLinkProgram(id);
 	
 	GLint linked;
-	char errors[1024];
 	GLsizei len;
+
+	static char errors[1024];
 
 	glGetProgramiv(id, GL_LINK_STATUS, &linked);
 	if (!linked)
 	{
 	   glGetProgramInfoLog(id, 1024, &len, errors );
-	   printf("GLSL Shader linker error:%s\n",errors);
-	   assert(0);
-	   return -1;
-	}      
+	   //assert(0);
+	    _shaderErrors = "shader linker errors: " + std::string(errors);
+		std::cout << _shaderErrors << std::endl;
+        return false;
+	}     
+	else
+	{
+		_shaderErrors="";
+	}
 
     shaderProgramMap[id] = ShaderProgram(id, vs, ps);
     incShaderRefCount(vs);

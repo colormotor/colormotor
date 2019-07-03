@@ -99,7 +99,7 @@ arma::vec interpolate( const arma::vec& Y, const arma::vec& Xi, const char* meth
 
 /// Uniformly sample a contour at distance s
 arma::mat uniformSample( const arma::mat & P, float ds, bool closed=false );
-   
+
 /// Save points to file of type @type, if @savePointsAsRows is true (default) the 
 /// contour will be saved transposed with respect to the armadillo matrix layout
 void save( const arma::mat& P, const std::string & path, arma::file_type type = arma::csv_ascii, bool savePointsAsRows = true );
