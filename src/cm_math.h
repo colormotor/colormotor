@@ -23,6 +23,13 @@ arma::vec col_norm( const arma::mat& X );
 
 arma::vec normalizeSignal( const arma::vec& X );
 
+CM_INLINE arma::vec affineMul( const arma::mat& m, const arma::vec& v )
+{
+    arma::vec va = arma::ones(m.n_cols,1);
+    va.subvec(0,v.size()-1) = v;
+    va = m*va;
+    return va.subvec(0,v.size()-1);
+}
 /// Handy for armadillo matrices
 /// 3d transformations
 //@{
@@ -45,6 +52,8 @@ arma::mat scaling2d( const arma::vec& xy, bool affine=true );
 arma::mat scaling2d( double s, bool affine=true );
 arma::mat scaling2d( double x, double y, bool affine=true );
 //@}
+
+//double affine_scale_factor(const arma::mat& m);
 
 /// Utils for getting and settings columns of matrix
 //@{
@@ -186,6 +195,93 @@ float newtonRaphson( FuncT f, DFuncT df, T a, T b, int maxiter, T tol )
     return x;
 }
 
+
+template <class T>
+T easeInQuad( T a, T b, double t )
+{
+	T c = b-a;
+	return c*t*t + a;
+}
+
+
+template <class T>
+T easeOutQuad( T a, T b, double t )
+{
+	T c = b-a;
+	return -c*t*(t-2) + a;
+}
+
+
+template <class T>
+T easeInOutQuad( T a, T b, double t )
+{
+	T c = b-a;
+	t*=2.0;
+	
+	if (t < 1) return c/2*t*t + a;
+	t--;
+	return -c/2 * (t*(t-2) - 1) + a;
+}
+
+
+template <class T>
+T easeInExpo ( T a, T b, double t )
+{
+	T c = b-a;
+	return (t==0) ? a : c * powf(2, 10 * (t - 1)) + a - c * 0.001;
+}
+
+
+template <class T>
+T easeInElastic ( T a, T b, double t )//, float period, float amplitude )
+{
+	float period = 0.01;
+	float amplitude = 3.0;
+	T c = b-a;
+	
+	if (t==0) return a;
+	if (t==1) return a+c;
+	
+	float s;
+	
+	if(amplitude==0.0f || amplitude < fabs(c))
+	{
+		amplitude = c;
+		s = period/4.0f;
+	}
+	else
+	{
+		s = period/(2.0f*PI)*asin(c/amplitude);
+	}
+	
+	t-=1.0f;
+	return -(amplitude*pow(2.0,10.0*t)*sin( (t-s)*(TWOPI)/period )) + a;
+}
+
+template <class T>
+T easeOutElastic ( T a, T b, double t )
+{
+	float p = 0.3;
+	float amp = 1.0;
+	T c = b-a;
+	
+	if (t==0) return a;
+	if (t==1) return b;
+	
+	float s;
+	
+	if (amp == 0.0f || amp < fabs(c)) 
+	{
+		amp = c;
+		s = p/4;
+	} 
+	else 
+	{
+		s = p/(TWOPI) * asin (c/amp);
+	}
+	
+	return (amp*powf(2,-10.0*t) * sin( (t-s)*(TWOPI)/p ) + c + a);
+}
 
 
 

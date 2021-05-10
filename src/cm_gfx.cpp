@@ -1,10 +1,10 @@
  #include "cm_gfx.h"
 
-#define GFX_TO_EPS
+#define GFX_EXPORTS
 
-#ifdef GFX_TO_EPS
-#include "cm_epsfile.h"
-#define EPS_ADDP(v) if( renderingToEps && drawingEpsPath ){currentEpsPath.addPoint(v);}
+#ifdef GFX_EXPORTS
+#include "cm_vector_export.h"
+#define EPS_ADDP(v) if( vector_export.exporting && exportingPath ){currentExportPath.addPoint(v);}
 #else
 #define EPS_ADDP(v)
 #endif
@@ -30,6 +30,152 @@ Mesh toMesh( const Contour& shape, int winding )
 	Tessellator tess = Tessellator(shape, winding);
 	return tess.mesh;
 }
+
+static __stdcall void vertex_cb( GLvoid * v, void * data )
+{
+	Tessellator * inst = (Tessellator*)data;
+	inst->mesh.indices.push_back((long)v);
+}
+
+static __stdcall void combine_cb( GLdouble coords[3],
+									void * vdata[4],
+									GLfloat weights[4],
+									void ** out,
+									void * data )
+{
+	Tessellator * inst = (Tessellator*)data;
+	
+	int n = inst->mesh.numVertices();
+	inst->mesh.vertex( arma::vec({(double)coords[0], (double)coords[1], (double)coords[2]}) );
+	*out = (void*)(long)n;
+}
+
+static __stdcall void edge_cb( GLenum flag, void * data  )
+{
+	
+}
+
+// Tessellator::Tessellator( const Shape& shape, int windin )
+// {
+// 	tess = gluNewTess();
+
+// 	gluTessCallback( tess, GLU_TESS_VERTEX_DATA, (_GLUfuncptr) &Tessellator::vertex_cb );
+// 	gluTessCallback( tess, GLU_TESS_EDGE_FLAG_DATA, (_GLUfuncptr) &Tessellator::edge_cb );
+// 	gluTessCallback( tess, GLU_TESS_COMBINE_DATA,( _GLUfuncptr) &Tessellator::combine_cb );
+
+// 	gluTessBeginPolygon( tess, this );
+
+// 	gluTessProperty( tess, GLU_TESS_WINDING_RULE, (GLenum)winding );
+
+// 	count = 0;
+	
+// 	for( int i = 0; i < shape.contours.size(); i++ )
+// 	{
+// 		const Contour& ctr = shape.contours[i];
+// 		if(!ctr.size())
+// 			continue;
+		
+// 		gluTessBeginContour(tess);
+// 		for( int j = 0; j < ctr.size(); j++ )
+// 		{
+// 			arma::vec v = ctr[j];
+// 			mesh.vertex( v );
+// 			verts.push_back( XYZ(v[0], v[1], v[2]) );
+// 			gluTessVertex( tess, &verts.back().x, (void*)(long)count );
+// 			count++;
+// 		}
+// 		gluTessEndContour(tess);
+// 	}
+
+// 	gluTessEndPolygon( tess );
+// 	gluDeleteTess(tess);
+	
+// 	//printf("Mesh has %d inds and %d verts\n", mesh.numIndices(), mesh.numVertices() );
+	
+// }
+
+
+
+Tessellator::Tessellator( const Shape& shape, int winding)
+{
+
+	tess = gluNewTess();
+
+	gluTessCallback( tess, GLU_TESS_VERTEX_DATA, (_GLUfuncptr) &vertex_cb );
+	gluTessCallback( tess, GLU_TESS_EDGE_FLAG_DATA, (_GLUfuncptr) &edge_cb );
+	gluTessCallback( tess, GLU_TESS_COMBINE_DATA,( _GLUfuncptr) &combine_cb );
+
+	gluTessBeginPolygon( tess, this );
+
+	gluTessProperty( tess, GLU_TESS_WINDING_RULE, (GLenum)winding );
+
+	count = 0;
+	
+	int sz = 0;
+	for( int i = 0; i < shape.contours.size(); i++ )
+		sz += shape.contours[i].size();
+	XYZ* verts = new XYZ[sz];
+
+    for( int i = 0; i < shape.contours.size(); i++ )
+	{
+	
+		const Contour& ctr = shape.contours[i];
+		if(!ctr.size())
+			continue;
+		
+		gluTessBeginContour(tess);
+	
+		
+		for( int j = 0; j < ctr.size(); j++ )
+		{
+			arma::vec v = arma::vec({ctr[j](0), ctr[j](1), 0.});
+            if (v.has_nan())
+            {
+                printf("point has NaN!\n");
+                continue;
+            }
+			mesh.vertex( v );
+            
+			verts[j] = XYZ(v[0], v[1], v[2]);
+			gluTessVertex( tess, &verts[j].x, (void*)(long)count );
+			count++;
+		}
+		
+		gluTessEndContour(tess);
+	}
+
+
+	gluTessEndPolygon( tess );
+	gluDeleteTess(tess);
+	
+	delete [] verts;
+	
+}
+
+// void Tessellator::vertex_cb( GLvoid * v, void * data )
+// {
+// 	Tessellator * inst = (Tessellator*)data;
+// 	inst->mesh.indices.push_back((long)v);
+// 	// printf("Vertex %d\n",(int)(long)v);
+// }
+
+// void Tessellator::combine_cb( GLdouble coords[3],
+// 			void * vdata[4],
+// 			GLfloat weights[4],
+// 			void ** out,
+// 			void * data )
+// {
+// 	Tessellator * inst = (Tessellator*)data;
+	
+// 	int n = inst->mesh.numVertices();
+// 	inst->mesh.vertex( arma::vec({(double)coords[0], (double)coords[1], (double)coords[2]}) );
+// 	*out = (void*)(long)n;
+// 	//printf("combine\n");
+// }
+
+// void Tessellator::edge_cb( GLenum flag, void * data  )
+// {
+// }
 
 namespace gfx
 {
@@ -81,47 +227,46 @@ static int currentPrimitive = -1;
 
 ////////////////////////////////////////////
 // postscript saving
-   
-#ifdef GFX_TO_EPS
-static EpsFile eps;
-static bool renderingToEps = false;
-static Contour currentEpsPath;
-static bool drawingEpsPath = false;
-static bool firstPointInPath = false;
-static V4 currentColor=V4(0,0,0,1);
-
 std::string _shaderErrors;
 std::string shaderErrors() { return _shaderErrors; }
+
+#ifdef GFX_EXPORTS
+
+static SVGExport vector_export;
+static Contour currentExportPath;
+static bool exportingPath = false;
+static bool firstPointInPath = false;
+static V4 currentColor=V4(0,0,0,1);
 
 #define EPS_LINEWIDTHSCALE 0.5
 
 void 	beginEps( const std::string & path, const Box & rect )
 {
-	eps.open(path);
-	eps.header(rect);
-	renderingToEps = true;
-	eps.setlinewidth(EPS_LINEWIDTHSCALE);
+	vector_export.begin(path, rect);
+	vector_export.exporting = true;
+	vector_export.setLineWidth(EPS_LINEWIDTHSCALE);
 }
 void 	endEps()
 {
-	eps.close();
-	renderingToEps = false;
+	vector_export.end();
+	vector_export.exporting = false;
 }
 
 bool 	isRenderingToEps() 
 {
-	return renderingToEps;
+	return vector_export.exporting;
 }
 
 V4 	getCurrentColor()
 {
 	return currentColor;
 }
-
+/*
 EpsFile *getEps()
 {
 	return &eps;
-}
+}*/
+VectorExport* getVectorExport() { return &vector_export; }
 
 #endif
 
@@ -300,7 +445,6 @@ void setPowerOfTwoTexturesSupport( bool flag )
 /// From NVIDIA code
 bool checkFramebufferStatus()
 {
-
 	GLenum status;
 	status = (GLenum) glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	switch(status) 
@@ -942,10 +1086,10 @@ void applyMatrix( const arma::mat& m_ )
 	}
 	glMultMatrixd(m.memptr());
     
-#ifdef GFX_TO_EPS
-    if( renderingToEps )
+#ifdef GFX_EXPORTS
+    if( vector_export.exporting )
     {
-        eps.applyMatrix(m_);
+        vector_export.applyMatrix(m_);
     }
 #endif
 }
@@ -1218,18 +1362,18 @@ void	beginVertices( int prim )
 	glBegin(getGLPRIMITIVETYPE(prim));
 	currentPrimitive = prim;
 	
-	#ifdef GFX_TO_EPS
-	if( renderingToEps )
+	#ifdef GFX_EXPORTS
+	if( vector_export.exporting )
 	{
         if( prim == gfx::LINESTRIP ||
             prim == gfx::LINELOOP )
         {
-            currentEpsPath.clear();
+            currentExportPath.clear();
 			if(prim==gfx::LINELOOP)
-				currentEpsPath.close(true);
+				currentExportPath.close(true);
 			else
-				currentEpsPath.close(false);
-            drawingEpsPath = true;
+				currentExportPath.close(false);
+            exportingPath = true;
         }
 	}
 	#endif
@@ -1241,15 +1385,15 @@ void	endVertices()
 	glEnd();
     glActiveTexture(GL_TEXTURE0+0);
 
-    #ifdef GFX_TO_EPS
-	if( renderingToEps && drawingEpsPath )
+    #ifdef GFX_EXPORTS
+	if( vector_export.exporting && exportingPath )
 	{
 		// if( currentPrimitive == gfx::LINELOOP )
-		// 	currentEpsPath.close();
+		// 	currentExportPath.close();
 
-		eps.strokeShape(currentEpsPath, currentColor);
-		currentEpsPath.clear();
-		drawingEpsPath = false;
+		vector_export.stroke(currentExportPath, currentColor);
+		currentExportPath.clear();
+		exportingPath = false;
 	}
 	#endif
 }
@@ -1317,10 +1461,10 @@ void draw( const arma::mat& P, bool closed, int from, int to )
 
 	gfx::endVertices();
     
-// #ifdef GFX_TO_EPS
-//     if(renderingToEps)
+// #ifdef GFX_EXPORTS
+//     if(vector_export.exporting)
 //     {
-//         eps.strokeShape(Contour(P, closed), currentColor);
+//         vector_export.strokeShape(Contour(P, closed), currentColor);
 //     }
 // #endif
     
@@ -1434,10 +1578,10 @@ void fill( const Contour& shape, int winding )
 {
 	Tessellator tess = Tessellator(shape, winding);
 	gfx::draw( tess.mesh );
-#ifdef GFX_TO_EPS
-    if(renderingToEps)
+#ifdef GFX_EXPORTS
+    if(vector_export.exporting)
     {
-        eps.fillShape(shape, currentColor);
+        vector_export.fill(shape, currentColor);
     }
 #endif
 }
@@ -1447,10 +1591,10 @@ void fill( const Shape& shape, int winding )
 {
 	Tessellator tess = Tessellator(shape, winding);
 	gfx::draw( tess.mesh );
-#ifdef GFX_TO_EPS
-    if(renderingToEps)
+#ifdef GFX_EXPORTS
+    if(vector_export.exporting)
     {
-        eps.fillShape(shape, currentColor);
+        vector_export.fill(shape, currentColor);
     }
 #endif
 }
@@ -1509,10 +1653,10 @@ void translate( const arma::vec& v )
 void	translate( float x, float y , float z  )
 {
 	glTranslatef(x,y,z);
-	#ifdef GFX_TO_EPS
-	if( renderingToEps )
+	#ifdef GFX_EXPORTS
+	if( vector_export.exporting )
 	{
-		eps.translate(x, y);
+		vector_export.translate(x, y);
 	}
 	#endif
 }
@@ -1528,9 +1672,9 @@ void	rotate( float z )
 {
 	glRotatef(z,0,0,1);
 
-	#ifdef GFX_TO_EPS
-	if( renderingToEps )
-		eps.rotate(z);
+	#ifdef GFX_EXPORTS
+	if( vector_export.exporting )
+		vector_export.rotate(z);
 	#endif
 }
 
@@ -1538,9 +1682,9 @@ void	scale( const V3& s  )
 {
 	glScalef(s.x, s.y, s.z);
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
-		eps.scale(s.x, s.y);
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
+		vector_export.scale(s.x, s.y);
 	#endif
 }
 
@@ -1548,9 +1692,9 @@ void	scale( const V2& s  )
 {
 	glScalef(s.x, s.y, 1);
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
-		eps.scale(s.x, s.y);
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
+		vector_export.scale(s.x, s.y);
 	#endif
 }
 
@@ -1558,9 +1702,9 @@ void	scale( float x, float y, float z  )
 {
 	glScalef(x,y,z);
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
-		eps.scale(x, y);
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
+		vector_export.scale(x, y);
 	#endif
 }
 
@@ -1568,9 +1712,9 @@ void	scale( float s )
 {
 	glScalef(s,s,s);
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
-		eps.scale(s, s);
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
+		vector_export.scale(s, s);
 	#endif
 }
 
@@ -1596,11 +1740,11 @@ void	pushMatrix()
 {
 	glPushMatrix();
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
 	{
-		//eps.gsave();
-        eps.pushMatrix();
+		//vector_export.gsave();
+        vector_export.pushMatrix();
 	}
 	#endif
 }
@@ -1609,11 +1753,11 @@ void	popMatrix()
 {
 	glPopMatrix();
 
-	#ifdef GFX_TO_EPS
-	if ( renderingToEps )
+	#ifdef GFX_EXPORTS
+	if ( vector_export.exporting )
 	{
-		//eps.grestore();
-        eps.popMatrix();
+		//vector_export.grestore();
+        vector_export.popMatrix();
 	}
 	#endif
 }
@@ -1625,15 +1769,15 @@ void drawLine(  const arma::vec&  a,  const arma::vec&  b )
 	vertex(b);
 	endVertices();
 
-	#ifdef GFX_TO_EPS
-	if( renderingToEps )
+	#ifdef GFX_EXPORTS
+	if( vector_export.exporting )
 	{
-		drawingEpsPath=true;
-		currentEpsPath.clear();
+		exportingPath=true;
+		currentExportPath.clear();
 		EPS_ADDP(a);
 		EPS_ADDP(b);
-		eps.strokeShape(currentEpsPath, currentColor);
-		drawingEpsPath=false;
+		vector_export.stroke(currentExportPath, currentColor);
+		exportingPath=false;
 
 	}
 	#endif
@@ -1648,9 +1792,9 @@ void drawLine( float x0, float y0, float x1, float y1)
 
 void drawArrow( const V2&a, const V2&b, float size )
 {
-	#ifdef GFX_TO_EPS
-		bool tmpEps = renderingToEps;
-		renderingToEps = false;
+	#ifdef GFX_EXPORTS
+		bool tmpEps = vector_export.exporting;
+		vector_export.exporting = false;
 	#endif
 	gfx::drawLine(a,b);
 	arma::vec d = b-a;
@@ -1662,11 +1806,11 @@ void drawArrow( const V2&a, const V2&b, float size )
 	gfx::drawLine(b-d-perp,b);
 	gfx::drawLine(b-d+perp,b);
 
-	#ifdef GFX_TO_EPS
-	renderingToEps = tmpEps;
+	#ifdef GFX_EXPORTS
+	vector_export.exporting = tmpEps;
 	
-	if(renderingToEps)
-    	eps.drawArrow(a, b, size, currentColor);
+	if(vector_export.exporting)
+    	vector_export.drawArrow(a, b, size, currentColor);
 #endif
 }
 
@@ -1694,9 +1838,9 @@ void fillCircle( const V2& center, float radius, int numSegments )
 	glDisableClientState( GL_VERTEX_ARRAY );
 	delete [] verts;
 
-#ifdef GFX_TO_EPS
-	if(renderingToEps)
-		eps.fillCircle(center, radius, currentColor);
+#ifdef GFX_EXPORTS
+	if(vector_export.exporting)
+		vector_export.fillCircle(center, radius, currentColor);
 #endif
 }
 
@@ -1721,9 +1865,9 @@ void drawCircle( const V2&center, float radius, int numSegments )
 	glDisableClientState( GL_VERTEX_ARRAY );
 	delete [] verts;
 
-#ifdef GFX_TO_EPS
-	if(renderingToEps)
-		eps.strokeCircle(center, radius, currentColor);
+#ifdef GFX_EXPORTS
+	if(vector_export.exporting)
+		vector_export.strokeCircle(center, radius, currentColor);
 #endif
 
 }
@@ -1907,10 +2051,10 @@ void drawSphere( const V3& center, float radius, int segments )
 void lineWidth( float w )
 {
 	glLineWidth(w);
-	if ( renderingToEps )
+	if ( vector_export.exporting )
 	{
-		//eps.gsave();
-        eps.setlinewidth(EPS_LINEWIDTHSCALE*w);
+		//vector_export.gsave();
+        vector_export.setLineWidth(EPS_LINEWIDTHSCALE*w);
 	}
 }
 
@@ -1919,18 +2063,18 @@ void lineStipple( int factor, unsigned short pattern )
 	if(factor == 0)
 	{
 		glDisable(GL_LINE_STIPPLE);
-		if ( renderingToEps )
+		if ( vector_export.exporting )
 		{
-			eps.setdash(0, 0);
+			vector_export.setStipple(0, 0);
 		}
 	}
 	else
 	{
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(factor, pattern);
-		if ( renderingToEps )
+		if ( vector_export.exporting )
 		{
-			eps.setdash(factor, 0);
+			vector_export.setStipple(factor, 0);
 		}
 	}
 }
@@ -2063,10 +2207,10 @@ void drawRect( float x, float y, float w, float h )
 	glDisableClientState( GL_VERTEX_ARRAY );
     
     
-#ifdef GFX_TO_EPS
-    if(renderingToEps)
+#ifdef GFX_EXPORTS
+    if(vector_export.exporting)
     {
-        eps.strokeShape(Contour(Box(x,y,w,h).corners(),true), currentColor);
+        vector_export.stroke(Contour(Box(x,y,w,h).corners(),true), currentColor);
     }
 #endif
     
@@ -2087,10 +2231,10 @@ void fillRect( float x, float y, float w, float h )
 	glDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
 	glDisableClientState( GL_VERTEX_ARRAY );
     
-#ifdef GFX_TO_EPS
-    if(renderingToEps)
+#ifdef GFX_EXPORTS
+    if(vector_export.exporting)
     {
-        eps.fillShape(Contour(Box(x,y,w,h).corners(),true), currentColor);
+        vector_export.fill(Contour(Box(x,y,w,h).corners(),true), currentColor);
     }
 #endif
 
@@ -2997,8 +3141,12 @@ flipY(false)
 }
 
 Texture::Texture( int w, int h, int fmt, int miplevels  )
-{
-    
+:
+_boundSampler(-1),
+_format(FORMAT_UNKNOWN),
+flipX(false),
+flipY(false)
+{    
     memset( &info, 0, sizeof( Texture::Info ) );
     info.glId = -1;
     memset( matrix, 0, sizeof( matrix ) );
@@ -3115,14 +3263,12 @@ bool	Texture::load( const char * path, int miplevels )
     return textureFromImage(this,path,0,miplevels);
 }
 
-bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
+bool	Texture::create( void * data, int w, int h, int fmt, int mipLevels )
 {
     init();
     
     if(fmt == Texture::FORMAT_UNKNOWN)
         return false;
-    
-    
     
     // reset all samplers
     resetAllSamplers();
@@ -3134,13 +3280,13 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     
-    void * data = idata;
-    
     _format = fmt;
     
     info.width =  w;
     info.height =  h;
     
+	unsigned char * dst = 0;
+	
     if( gfx::areNonPowerOfTwoTexturesSupported() )
     {
         info.hwWidth = w;
@@ -3159,14 +3305,15 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
         int sz = glFormatDescs[fmt].bytesPerPixel;
         
         unsigned char * src = (unsigned char*)data;
-        unsigned char * dst = new unsigned char[ hww*hwh*sz ];
-        data = dst;
+        dst = new unsigned char[ hww*hwh*sz ];
         
         memset( dst, 0, hww*hwh*sz );
         for( int y = 0; y < h; y++ )
         {
             memcpy(&dst[y*hww*sz],&src[y*w*sz],w*sz);
         }
+
+		data = dst;
     }
     
     info.maxU = ((float)info.width) / info.hwWidth;
@@ -3182,13 +3329,7 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
     info.bytesPerPixel = desc.bytesPerPixel;
     
     info.mipLevels = mipLevels;
-    
-    // this could be handy
-    // setPixelFunc();
-    
-    if(CM_GLERROR)
-        return false;
-    
+
     glGenTextures(1, &info.glId);					// Create 1 Texture
     glBindTexture(GL_TEXTURE_2D, info.glId);			// Bind The Texture
     
@@ -3204,11 +3345,8 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );//GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );//GL_CLAMP_TO_EDGE);
     
-    if(CM_GLERROR)
-        return false;
-    
+
 #ifndef CM_GLES
-    
     if( mipLevels == 0 && gfx::GLExtension("GL_SGIS_generate_mipmap") )
     {
         glTexImage2D( GL_TEXTURE_2D,
@@ -3220,10 +3358,6 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
                      info.glDataFormat,
                      info.glDataType,
                      data );
-        
-        if(CM_GLERROR)
-            return false;
-        
         // auto gen mip maps... /// ?? testme
         glGenerateMipmapEXT(GL_TEXTURE_2D);
     }
@@ -3269,20 +3403,18 @@ bool	Texture::create( void * idata, int w, int h, int fmt, int mipLevels )
     mipLevels = 1;
     info.mipLevels = 1;
 #endif
-    
-    if(CM_GLERROR)
-        return false;
+    if (dst)
+		delete [] dst;
+    // if(CM_GLERROR)
+    //     return false;
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
-    
-    if(CM_GLERROR)
-        return false;
-    
     glDisable(GL_TEXTURE_2D);
-    
     // set pixel callback
     setPixelFunc();
     
+	if (CM_GLERROR)
+		return false;
     return true; 
 }
 
@@ -3396,7 +3528,7 @@ void	Texture::createFromGL( int w, int h,
 
 bool Texture::isValid()
 {
-    return info.glId != 0;
+    return info.glId >= 0;
 }
 
 bool Texture::update( void * data, int w, int h)
@@ -3418,7 +3550,7 @@ bool Texture::update( void * data, int w, int h)
                     info.glDataFormat,
                     info.glDataType,
                     data);
-    
+    //glGenerateMipmap(GL_TEXTURE_2D);
     if(CM_GLERROR)
         return false;
     
@@ -3448,7 +3580,7 @@ bool Texture::update( void * data, int x, int y, int w, int h)
                     info.glDataFormat,
                     info.glDataType,
                     data);
-    
+    //glGenerateMipmap(GL_TEXTURE_2D);
     if(CM_GLERROR)
         return false;
     
@@ -4306,7 +4438,7 @@ Image::Image( const Image & mom, int format )
 /// Create from opencv Mat
 Image::Image( const cv::Mat & m )
 {
-	mat = m;
+	mat = m.clone();
 }
 
 Image::Image( const std::string & path, int fmt )
@@ -4383,6 +4515,8 @@ void Image::bind( int sampler )
 {
 	updateTexture();
     tex.bind(sampler);
+	tex.setMinFilter(Texture::FILTER::LINEAR);
+	tex.setMagFilter(Texture::FILTER::LINEAR);
 	//gfx::bindTexture( tex.texId(), sampler );
 	boundSampler = sampler;
 }
@@ -4392,6 +4526,37 @@ void Image::unbind()
     tex.unbind();
 	//gfx::bindTexture( boundSampler );
 	boundSampler = -1;
+}
+
+void	Image::setWrap( int wrap )
+{
+	tex.setWrap(wrap);
+}
+
+void	Image::setWrapS( int wrap )
+{
+	tex.setWrapS(wrap);
+}
+
+void	Image::setWrapT( int wrap )
+{
+	tex.setWrapT(wrap);
+}
+
+void	Image::setMinFilter( int filter )
+{
+	tex.setWrap(filter);
+}
+
+void	Image::setMagFilter( int filter )
+{
+	tex.setMinFilter(filter);
+}
+
+void Image::dummy()
+{
+	dirty = true;
+	return;
 }
 
 void Image::mirror( bool x, bool y )
@@ -4405,50 +4570,63 @@ void Image::mirror( bool x, bool y )
 	else if( y && x ) 
 		flipMode = -1;
 	else return;
-
+    
+    //tmp = mat;
+    //cv::Mat tp = mat.clone();// = mat;//.copy();
+    //mat.release();
 	cv::flip( mat, tmp, flipMode );
 	mat = tmp;
-
+    //tp.copyTo(mat);
+    //tp.copyTo(mat);
+    //tp.release();
+	//mat = tmp.clone();
+    
 	dirty = true;
 }
 
 void Image::updateTexture()
 {
-    
-    if(dirty || tex.empty())
+    if(dirty)
     {
-        dirty = false;
-        Texture::FORMAT tfmt;
-        switch (mat.channels()) {
+        if(tex.empty()) // || tex.width() != width() || tex.height() != height())
+        {
+            dirty = false;
+            Texture::FORMAT tfmt;
+            switch (mat.channels()) {
+                    
+                case Image::BGR:
+                    if( !tex.create(mat.ptr(), mat.step/3, height(), Texture::R8G8B8, 4) )
+                    {
+                        debugPrint("Failed to create texture!");
+                    }
+                    break;
+                    
+                case Image::BGRA:
+                    if( !tex.create(mat.ptr(), mat.step/4, height(), Texture::A8R8G8B8, 4) )
+                    {
+                        debugPrint("Failed to create texture!");
+                    }
+                    break;
+                    
+                case Image::GRAYSCALE:
+                    if( !tex.create(mat.ptr(), mat.step, height(), Texture::L8, 4) )
+                    {
+                        debugPrint("Failed to create texture!");
+                    }
+                    break;
+                    
                 
-            case Image::BGR:
-                if( !tex.create(mat.ptr(), mat.step/3, height(), Texture::R8G8B8) )
-                {
-                    debugPrint("Failed to create texture!");
-                }
-                break;
-                
-            case Image::BGRA:
-                if( !tex.create(mat.ptr(), mat.step/4, height(), Texture::A8R8G8B8) )
-                {
-                    debugPrint("Failed to create texture!");
-                }
-                break;
-                
-            case Image::GRAYSCALE:
-                if( !tex.create(mat.ptr(), mat.step, height(), Texture::L8) )
-                {
-                    debugPrint("Failed to create texture!");
-                }
-                break;
-                
-            
-            default:
-            	debugPrint("Cannot create texture for image format\n");
-                break;
-        }
+                default:
+                    debugPrint("Cannot create texture for image format\n");
+                    break;
+            }
 
-        tex.setSize(width(), height());
+            tex.setSize(width(), height());
+        }
+        else
+        {
+            tex.update( mat.ptr(), width(), height()); // <- gotta fix
+        }
     }
 }
 

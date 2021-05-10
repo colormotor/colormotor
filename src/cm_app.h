@@ -30,6 +30,8 @@ public:
 	virtual void activated() {}
 	virtual void deactivated() {}
 	
+	virtual void* getData() { return 0; }
+
 	std::string filename() const
 	{
         std::string fname = name;

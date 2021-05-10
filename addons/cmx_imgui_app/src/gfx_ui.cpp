@@ -51,6 +51,18 @@ namespace ui
         //config.colors.push_back(config.color);
     }
     
+    bool isMouseDown()
+    {
+        ImGuiContext& g = *GImGui;
+        // Allow mouse interaction if over background window
+        if( g.HoveredWindow == uiWindow && g.IO.MouseDown[0])
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     bool hasFocus()
     {
         ImGuiContext& g = *GImGui;
@@ -420,7 +432,7 @@ namespace ui
             mod = true;
         }
         
-        if(ImGui::IsMouseDragging() && dragging)
+        if(ImGui::IsMouseDragging(ImGuiMouseButton_Left) && dragging)
         {
             mod = true;
             return makeFlipRect(clickp, ImGui::GetMousePos());
@@ -437,7 +449,7 @@ namespace ui
         return ImGui::GetIO().MouseDelta;
     }
     
-    int toolbar( const std::string& title, const std::string& items, int selectedItem, bool horizontal, bool showAscii )
+    int toolbar( const std::string& title, const std::string& items, int selectedItem, bool horizontal, bool showAscii, const std::vector<std::string>& tooltips )
     {
         ImVec2 size;
         
@@ -462,6 +474,12 @@ namespace ui
         ImGui::PushFont(iconFont);
     
         int sel = selectedItem;
+
+        int tooltip = -1;
+        bool has_tooltips = false;
+        if (tooltips.size() == items.length())
+            has_tooltips = true;
+
         for( int i = 0; i < items.length(); i++ )
         {
             std::stringstream ss;
@@ -476,11 +494,18 @@ namespace ui
             if( showAscii && ImGui::IsItemHovered() )
                 ImGui::SetTooltip("%c",items[i]);
 
+            if (has_tooltips && ImGui::IsItemHovered())
+                tooltip = i;
+
             if( horizontal && i < items.length()-1 )
                 ImGui::SameLine();
         }
         
         ImGui::PopFont();
+
+        if (tooltip > -1)
+            ImGui::SetTooltip(tooltips[tooltip].c_str());
+
         ImGui::End();
         //ImGui::PopID();
         

@@ -488,6 +488,12 @@ void Param::setFloat( float val, int index, bool bInformListeners )
 	}
 }
 
+
+void Param::setFloat01( float val, int index, bool bInformListeners )
+{
+	setFloat(getMin() + (getMax() - getMin())*val, index, bInformListeners);
+}
+
 void Param::setBool( bool val, bool bInformListeners )
 {
 	if( _type != PARAM_BOOL && _type != PARAM_EVENT )
@@ -1314,7 +1320,7 @@ Param * ParamList::find( const std::string& name_ )
 	
 	return 0;
 	*/
-	std::vector<std::string> toks = tokenize(name_,".");
+	std::vector<std::string> toks = tokenize(name_,"./");
 	
 	if(!toks.size())
 	{

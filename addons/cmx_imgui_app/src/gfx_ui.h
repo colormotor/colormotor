@@ -97,6 +97,8 @@ namespace ui
     /// your application should handle mouse events
     bool hasFocus();
     
+    bool isMouseDown();
+
     /// Initialization, starts up the font
     /// This function should be called BEFORE the IMGUI texture atlas is created 
     /// And AFTER the default IMGUI texture has been loaded. 
@@ -141,7 +143,12 @@ namespace ui
     ImVec2 dragDelta();
     
     /// Creates a font-icon toolbar (not necessary to call between begin and end)
-    int toolbar( const std::string& title, const std::string& items, int selectedItem, bool horizontal=false, bool showAscii=false );
+    int toolbar( const std::string& title, 
+                 const std::string& items, 
+                 int selectedItem, 
+                 bool horizontal=false, 
+                 bool showAscii=false, 
+                 const std::vector<std::string>& tooltips=std::vector<std::string>());
     
     void demo();   
 }

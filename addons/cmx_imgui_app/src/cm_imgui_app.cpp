@@ -1,4 +1,4 @@
-// ImGui GLFW binding with OpenGL
+  // ImGui GLFW binding with OpenGL
 // https://github.com/ocornut/imgui
 
 #include "imgui.h"
@@ -344,7 +344,7 @@ void ImGui_ImplGlfw_CharCallback(GLFWwindow*, unsigned int c)
 {
     ImGuiIO& io = ImGui::GetIO();
     if (c > 0 && c < 0x10000)
-        io.AddInputCharacter((unsigned short)c);
+        io.AddInputCharacter(c);
 }
 
 bool ImGui_ImplGlfw_CreateDeviceObjects()
@@ -411,8 +411,8 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window,
     io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
-    io.KeyMap[GLFW_KEY_S] = GLFW_KEY_S;
-    io.KeyMap[GLFW_KEY_O] = GLFW_KEY_O;
+    //io.KeyMap[GLFW_KEY_S] = GLFW_KEY_S;
+    //io.KeyMap[GLFW_KEY_O] = GLFW_KEY_O;
 
     //io.RenderDrawListsFn = ImGui_ImplGlfw_RenderDrawLists;
     io.SetClipboardTextFn = ImGui_ImplGlfw_SetClipboardText;
@@ -435,9 +435,13 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window,
    
     ImGuiStyle& style = ImGui::GetStyle();
     //ImGui::StyleColorsClassic();
-    int theme = 2;
+    int theme = -1; //-1; //2;
     switch(theme)
     {
+        case -1:
+            ImGui::Spectrum::StyleColorsSpectrum();
+            break;
+
         case 0:
             style.Colors[ImGuiCol_Text]                  = ImVec4(0.72f, 0.79f, 1.00f, 1.00f);
             style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -613,29 +617,39 @@ bool    ImGui_ImplGlfw_Init(GLFWwindow* window,
     }
     //style.Colors[ImGuiCol_TooltipBg]             = ImVec4(0.05f, 0.05f, 0.10f, 0.90f);
 
+    if (true) //theme!=-1)
+    {
+        style.WindowRounding = 0.0f;
+        //style.WindowPadding = ImVec2(4,4);
+        style.ItemSpacing = ImVec2(8, 5);
+        style.FramePadding = ImVec2(6, 3);
+        style.WindowPadding = ImVec2(6, 8);
+        style.FrameRounding = 0.0f;
+        style.IndentSpacing = 9.;
+        style.Alpha  = 1.; //0.95f;
+        style.ScrollbarSize = 15.0f;
+        style.GrabMinSize = 9.0;
+    }
 
-    style.WindowRounding = 0.0f;
-    //style.WindowPadding = ImVec2(4,4);
-    style.ItemSpacing = ImVec2(8, 5);
-    style.FramePadding = ImVec2(6, 3);
-    style.WindowPadding = ImVec2(6, 8);
-    style.FrameRounding = 2.0f;
-    style.IndentSpacing = 9.;
-    style.Alpha  = 1.; //0.95f;
-    style.ScrollbarSize = 15.0f;
-    style.GrabMinSize = 9.0;
-    
     // Actual font atlas will be initialized later in createFontTexture()
     if (font_path==0)
     {
-        unsigned char * memfont = new unsigned char[THEFONT_BUF_SIZE];
-        memcpy(memfont , THEFONT, THEFONT_BUF_SIZE);
-        ImFont * font = io.Fonts->AddFontFromMemoryTTF(memfont, THEFONT_BUF_SIZE, THEFONT_SIZE); 
-        font->DisplayOffset.y += 1;
+        if (theme != -1)
+        {
+            unsigned char * memfont = new unsigned char[THEFONT_BUF_SIZE];
+            memcpy(memfont , THEFONT, THEFONT_BUF_SIZE);
+            ImFont * font = io.Fonts->AddFontFromMemoryTTF(memfont, THEFONT_BUF_SIZE, THEFONT_SIZE); 
+            font->DisplayOffset.y += 1;
+        }
+        else
+        {
+            ImGui::GetIO().Fonts->Clear();
+            ImGui::Spectrum::LoadFont(THEFONT_SIZE);
+        }
     }
     else
     {
-        ImFontAtlas::GlyphRangesBuilder builder;
+        ImFontGlyphRangesBuilder builder;
 
         builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesDefault()); // Add one of the default ranges
         if (supported_glyphs & cm::GLYPH_SUPPORT_JAPANESE)
@@ -759,7 +773,8 @@ static void _appRender( float w, float h ) {}
 namespace cm
 {
 static double frameTime;
-
+static GLFWwindow* window;
+    
 static std::function<int (void *, int, char**)> appInit=0;
 static std::function<void (void)> appExit;
 static std::function<void (void)> appGui=0;
@@ -769,7 +784,24 @@ float appWidth() { return ImGui::GetIO().DisplaySize.x; }
 float appHeight() { return ImGui::GetIO().DisplaySize.y; }
 V2 appCenter() { return V2(appWidth()/2, appHeight()/2); }
 double appFrameTime() { return frameTime; }
- 
+void setWindowSize(int w, int h) { glfwSetWindowSize(window, w, h); }
+void setWindowPos(int x, int y) { glfwSetWindowPos(window, x, y); }
+void getWindowSize(int* w, int* h) { glfwGetWindowSize(window, w, h); }
+void getWindowPos(int* x, int* y) 
+{ 
+    //GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+    int mx = 0; 
+    int my = 0;
+    // if (monitor)
+    // {
+    //     glfwGetMonitorPos(monitor, &mx, &my);
+    // }
+    int wx, wy;
+    glfwGetWindowPos(window, &wx, &wy); 
+    *x = wx + mx;
+    *y = wy + my;
+}
+
 int imguiApp(int argc, char** argv, 
             const char * name, 
             int w, int h,
@@ -794,7 +826,7 @@ int imguiApp(int argc, char** argv,
           exit(1);
     
     glfwWindowHint(GLFW_SAMPLES, 4);
-    GLFWwindow* window = glfwCreateWindow(w, h, name,  NULL, NULL);
+    window = glfwCreateWindow(w, h, name,  NULL, NULL);
     //glfwOpenWindowHint( GLFW_REFRESH_RATE, 500 );
 
     glfwMakeContextCurrent(window);

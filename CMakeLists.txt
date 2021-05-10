@@ -17,6 +17,7 @@ set(src
 	${PROJECT_SOURCE_DIR}/src/cm_gfx.cpp
 	${PROJECT_SOURCE_DIR}/src/cm_math.cpp
 	${PROJECT_SOURCE_DIR}/src/cm_utils.cpp
+	${PROJECT_SOURCE_DIR}/src/cm_vector_export.cpp
 	
 	${PROJECT_SOURCE_DIR}/src/deps/clipper/clipper.cpp
 	
@@ -73,7 +74,7 @@ if(APPLE)
 		${BASE_SEARCH_DIR}/lib
 		/usr/local/Frameworks
 	)
-
+	
 	target_link_libraries(colormotor
 		opencv_core
 		opencv_imgproc

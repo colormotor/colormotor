@@ -699,50 +699,50 @@ public:
 }
 
 // Necessary for conversions
-//namespace arma
-//{
-template<>
-struct arma::is_arma_type<cm::V2>
+namespace arma
 {
-    static const bool value=true;
-};
 
-template<>
-struct arma::is_arma_type<cm::V3>
-{
-    static const bool value=true;
-};
+// template<>
+// struct is_arma_type<cm::V2>
+// {
+//     static const bool value=true;
+// };
+
+// template<>
+// struct is_arma_type<cm::V3>
+// {
+//     static const bool value=true;
+// };
     
-template<>
-struct arma::is_arma_type<cm::V4>
-{
-    static const bool value=true;
-};
+// template<>
+// struct is_arma_type<cm::V4>
+// {
+//     static const bool value=true;
+// };
 
-template<>
-struct arma::is_same_type<cm::V2,cm::V2>
-{
-    static const bool value = true;
-    static const bool yes   = true;
-    static const bool no    = false;
-};
+// template<>
+// struct is_same_type<cm::V2,cm::V2>
+// {
+//     static const bool value = true;
+//     static const bool yes   = true;
+//     static const bool no    = false;
+// };
 
-template<>
-struct arma::is_same_type<arma::vec2,cm::V2>
-{
-    static const bool value = true;
-    static const bool yes   = true;
-    static const bool no    = false;
-};
+// template<>
+// struct is_same_type<arma::vec2,cm::V2>
+// {
+//     static const bool value = true;
+//     static const bool yes   = true;
+//     static const bool no    = false;
+// };
 
-template<>
-struct arma::is_same_type<cm::V2, arma::vec2>
-{
-    static const bool value = true;
-    static const bool yes   = true;
-    static const bool no    = false;
-};
+// template<>
+// struct is_same_type<cm::V2, arma::vec2>
+// {
+//     static const bool value = true;
+//     static const bool yes   = true;
+//     static const bool no    = false;
+// };
 
 
-//}
-
+}

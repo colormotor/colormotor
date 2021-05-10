@@ -1,6 +1,6 @@
 
 /********************************************************************
- --------------------------------------------------------------------
+--------------------------------------------------------------------
  --           _,(_)._
  --      ___,(_______).      ____
  --    ,'__.           \    /\___\-.
@@ -760,12 +760,19 @@ public:
 	// Number of bytes for each row
 	int step() const { return mat.step; }
 
+		void	setWrap( int wrap );
+		void	setWrapS( int wrap );
+		void	setWrapT( int wrap );
+		void	setMinFilter( int filter );
+		void	setMagFilter( int filter );
+
 	void bind( int sampler = 0 );
 	void unbind();
 
 	bool isBound() const { return boundSampler != -1; }
 
 	void mirror( bool x, bool y );
+	void dummy();
 
 	void updateTexture();
 
@@ -814,7 +821,13 @@ public:
     
     static V3 projectToSphere( const V2 & p, const V2 & center, float radius, bool constrained=false, const V3& axis=V3(1,0,0) );
     void update( const V2 & mousePos, const V2 & mouseDelta, const V2 & center, float radius, bool contrained=false );
-    
+
+		void setMatrix(const arma::mat& m)
+		{
+			mat = m;
+			rot = quat(mat);
+		}
+
     V4 rot;
     M44 mat;
 };
@@ -1059,6 +1072,7 @@ struct Tessellator
 {
     struct XYZ
     {
+        XYZ() {}
 	XYZ( double x,
 	     double y,
 	     double z )
@@ -1066,88 +1080,23 @@ struct Tessellator
 	double x, y, z;
     };
 
-    
-    
     Tessellator() {}
-    
-    Tessellator( const Shape& shape, int winding=WINDING_ODD )
-	{
-	    tess = gluNewTess();
-
-	    gluTessCallback( tess, GLU_TESS_VERTEX_DATA, (_GLUfuncptr) &Tessellator::vertex_cb );
-	    gluTessCallback( tess, GLU_TESS_EDGE_FLAG_DATA, (_GLUfuncptr) &Tessellator::edge_cb );
-	    gluTessCallback( tess, GLU_TESS_COMBINE_DATA,( _GLUfuncptr) &Tessellator::combine_cb );
-
-	    gluTessBeginPolygon( tess, this );
-
-	    gluTessProperty( tess, GLU_TESS_WINDING_RULE, (GLenum)winding );
-
-	    count = 0;
-	    
-	    for( int i = 0; i < shape.contours.size(); i++ )
-	    {
-		const Contour& ctr = shape.contours[i];
-		if(!ctr.size())
-		    continue;
-		
-		gluTessBeginContour(tess);
-		for( int j = 0; j < ctr.size(); j++ )
-		{
-		    arma::vec v = ctr[j];
-		    mesh.vertex( v );
-		    verts.push_back( XYZ(v[0], v[1], v[2]) );
-		    gluTessVertex( tess, &verts.back().x, (void*)(long)count );
-		    count++;
-		}
-		gluTessEndContour(tess);
-	    }
-
-	    gluTessEndPolygon( tess );
-	    gluDeleteTess(tess);
-	    
-	    //printf("Mesh has %d inds and %d verts\n", mesh.numIndices(), mesh.numVertices() );
-	    
-	}
-
     ~Tessellator()
 	{
 	    
 	}
-    
-    static void vertex_cb( GLvoid * v, void * data )
-	{
-	    Tessellator * inst = (Tessellator*)data;
-	    inst->mesh.indices.push_back((long)v);
-	    // printf("Vertex %d\n",(int)(long)v);
-	}
-    
-    static void combine_cb( GLdouble coords[3],
-			    void * vdata[4],
-			    GLfloat weights[4],
-			    void ** out,
-			    void * data )
-	{
-	    Tessellator * inst = (Tessellator*)data;
-	    
-	    int n = inst->mesh.numVertices();
-	    inst->mesh.vertex( arma::vec({(double)coords[0], (double)coords[1], (double)coords[2]}) );
-	    *out = (void*)(long)n;
-	    //printf("combine\n");
-	}
 
-    static void edge_cb( GLenum flag, void * data  )
-	{
-	}
-    
-    
+    Tessellator( const Shape& shape, int winding=WINDING_ODD );
+
     int count;
     Mesh mesh;
     GLUtesselator * tess;
-    std::vector<XYZ> verts;
+    //std::vector<XYZ> verts;
 };
 
 Mesh toMesh( const Shape& shape, int winding=WINDING_ODD );
 Mesh toMesh( const Contour& shape, int winding=WINDING_ODD );
+
 
 namespace gfx
 {
@@ -1165,8 +1114,6 @@ bool	isScreenRecording();
 void 	endScreenRecording();
 
 bool 	beginScreenRecordingGif( const std::string& path, int w, int h, float fps=30.0f );
-
-
 
 /// Clear frame and depth buffers
 void clear( float r, float g, float b, float a, bool depth=true, float depthClear=1.0f );
@@ -1336,7 +1283,7 @@ void beginVertices( int prim );
 void endVertices();
 
 /// Draw a 2d quad providing texture coordinates (u,v)
-void drawUVQuad( float x  , float y  , float w , float h, float maxU=0.0f, float maxV=1.0f, bool flip=true );
+void drawUVQuad( float x  , float y  , float w , float h, float maxU=1.0f, float maxV=1.0f, bool flip=true );
 /// Draw a 2d quad
 void drawQuad( float x  , float y  , float w , float h );
 

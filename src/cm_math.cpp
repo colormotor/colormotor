@@ -235,6 +235,11 @@ arma::mat scaling2d( double x, double y, bool affine )
 	return scaling2d( arma::vec({x, y}), affine );
 }
 
+// double affine_scale_factor(const arma::mat& m)
+// {
+//     arma::uword n=m.n_cols;
+//     return sqrt(arma::det(m.submat(arma::span(0,m-2),arma::span(0,m-2))));
+// }
 
 void x44( arma::mat & m, const arma::vec & v )
 {

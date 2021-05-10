@@ -138,7 +138,6 @@ public:
 	bool loadXml( const std::string & fname );
 };
 
-
 class Param 
 : public XmlBase
 {
@@ -171,6 +170,7 @@ public:
 	
 	void setDouble( double val, int index = 0, bool bInformListeners=true );
 	void setFloat( float val, int index = 0, bool bInformListeners=true );
+	void setFloat01( float val, int index = 0, bool bInformListeners=true );
 	void setBool( bool val, bool bInformListeners=true );
 	void setString( const std::string& val, bool bInformListeners=true );
 	void setInt( int val, bool bInformListeners=true );
@@ -262,8 +262,6 @@ protected:
 	std::string oscAddress;
 	std::string options;
 	
-	
-	
 	std::vector <ParamListener*> listeners;
 	std::string _name;
 	std::string _path;
@@ -287,6 +285,10 @@ protected:
 
 };
 
+
+
+
+class ParamModifier;
 
 class ParamList
 :
@@ -375,6 +377,8 @@ public:
 	XMLElement	*createXML(XMLDocument& doc);
 	bool	readXML( XMLElement * elem );
 	
+	std::vector<ParamModifier*> modifiers;
+	
 	std::vector<Param*> params;
 	std::vector<Param*> paramsThatHaveChanged;
 	
@@ -392,12 +396,15 @@ public:
 };
 
 
+
+
+
 class ParamModifiedTracker
 {
 public:
     ParamModifiedTracker() {}
     
-    void operator << (Param* p) { params.push_back(p); }
+    Param* operator << (Param* p) { params.push_back(p); return p; }
     
     bool modified()
     {
@@ -420,6 +427,45 @@ public:
     bool force_modified=true;
     std::vector<Param*> params;
 };
+
+
+class ParamModifier
+{
+	public:
+		ParamModifier(Param* param):param(param) {}
+		
+		virtual void update(double dt) = 0;
+		Param* param;
+		ParamList params;
+
+};
+
+class SinModifier: public ParamModifier
+{
+	public:
+		float freq;
+		float phase;
+		double t;
+
+		SinModifier(Param* param, float freq, float phase=0.):
+		ParamModifier(param),
+		freq(freq),
+		phase(phase)
+		{
+			assert(param->getType()==PARAM_FLOAT ||
+				   param->getType()==PARAM_DOUBLE);
+			t = 0.;
+			params.addFloat("freq", &freq, 0, 10. );
+			params.addFloat("phase", &phase, 0, TWOPI );
+		}
+
+		void update(double dt)
+		{
+			t += dt;
+			param->setFloat01(sin(t*freq + phase)*0.5+0.5);
+		}
+};
+
 
 
 }

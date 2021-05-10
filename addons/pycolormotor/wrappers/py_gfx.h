@@ -533,7 +533,13 @@ public:
 
 	int width() const { return mat.rows; }
 	int height() const { return mat.rows; }
-	
+
+    void	setWrap( int wrap );
+	void	setWrapS( int wrap );
+	void	setWrapT( int wrap );
+	void	setMinFilter( int filter );
+	void	setMagFilter( int filter );
+
 	void bind( int sampler = 0 );
 	void unbind();
 
@@ -583,7 +589,9 @@ public:
     
     static V3 projectToSphere( const V2 & p, const V2 & center, float radius, bool constrained=false, const V3& axis=V3(1,0,0) );
     void update( const V2 & mousePos, const V2 & mouseDelta, const V2 & center, float radius, bool contrained=false );
-    
+
+    void setMatrix(const arma::mat& m);
+
     V4 rot;
     M44 mat;
 };
@@ -814,6 +822,11 @@ void setStencilOp( int fail, int zfail, int zpass );
 
 void setStencilOp( int failFront, int zfailFront, int zpassFront,
 			      int failBack, int zfailBack, int zpassBack );
+
+void beginMask(bool draw=false);
+void endMask();
+void beginMasked(bool inverted=false);
+void endMasked();
 
 void setPointSize( float s );
 

@@ -5,6 +5,8 @@ endif()
 
 project(pycm)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
@@ -28,7 +30,8 @@ set(src
 	${PROJECT_SOURCE_DIR}/../../src/cm_gfx.cpp
 	${PROJECT_SOURCE_DIR}/../../src/cm_math.cpp
 	${PROJECT_SOURCE_DIR}/../../src/cm_utils.cpp
-	
+	${PROJECT_SOURCE_DIR}/../../src/cm_vector_export.cpp
+
 	${PROJECT_SOURCE_DIR}/../../src/deps/clipper/clipper.cpp
 
 	${PROJECT_SOURCE_DIR}/../cmx_params/src/cm_params.cpp
@@ -41,6 +44,7 @@ set(src
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_draw.cpp
 	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/imgui_widgets.cpp
+	${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/spectrum.cpp
 )
 
 if(APPLE)
@@ -61,11 +65,14 @@ include_directories(
 	  ${PROJECT_SOURCE_DIR}/../../libs/
 	  
 	  ${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src
+	  ${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/glfw3/include
 	  ${PROJECT_SOURCE_DIR}/../cmx_params/src
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated")
+
+find_package(PythonLibs REQUIRED)
 
 if(APPLE)
 	message(Compling for apple)
@@ -81,7 +88,7 @@ if(APPLE)
 	set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 	endif()
 
-	set(BASE_SEARCH_DIR $ENV{HOME}/miniconda3)
+	set(BASE_SEARCH_DIR $ENV{HOME}/opt/miniconda3)
 	
 	set(CMAKE_EXE_LINKER_FLAGS "-rpath ${BASE_SEARCH_DIR}/lib")
 	set(CMAKE_MACOSX_RPATH 1)
@@ -89,18 +96,21 @@ if(APPLE)
 	#set(CMAKE_INSTALL_RPATH "${BASE_SEARCH_DIR}/lib")
 
 	message("Base dir is " ${BASE_SEARCH_DIR})
+	message("Python dir is " ${PYTHON_INCLUDE_PATH})
 
 	include_directories(
-		${BASE_SEARCH_DIR}/lib/python3.6/site-packages/numpy/core/include/
+		${BASE_SEARCH_DIR}/lib/python3.8/site-packages/numpy/core/include/
 		${BASE_SEARCH_DIR}/include
 		#${BASE_SEARCH_DIR}/include/python3.6m
 		${PYTHON_INCLUDE_PATH}
 		/usr/local/include
 		${BASE_SEARCH_DIR}/include/opencv4
+		${PYTHON_INCLUDE_PATH}
 	)
 
 	link_directories(
-		${BASE_SEARCH_DIR}/lib
+	  ${BASE_SEARCH_DIR}/lib
+	  ${PROJECT_SOURCE_DIR}/../cmx_imgui_app/src/glfw3/lib/osx
 		#/usr/local/Frameworks
 	)
 
@@ -132,7 +142,7 @@ if(APPLE)
 		armadillo
 		lapack
 		blas
-		glfw
+		glfw3
 		#python3.6m
 		"-framework CoreFoundation"
 		"-framework OpenGL"	

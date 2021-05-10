@@ -1,5 +1,8 @@
+#pragma once
+
 // ImGui GLFW binding with OpenGL
 // https://github.com/ocornut/imgui
+
 #include "colormotor.h"
 #include "cm_imgui.h"
 
@@ -10,7 +13,11 @@ float appWidth();
 float appHeight();
 double appFrameTime();
 V2 appCenter();
-    
+void setWindowSize(int w, int h);
+void setWindowPos(int x, int y);
+void getWindowSize(int* w, int* h);
+void getWindowPos(int* x, int* y);
+
 enum 
 {
     GLYPH_SUPPORT_JAPANESE=1,
